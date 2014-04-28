@@ -25,7 +25,7 @@ public class JvmMetricsModule extends AbstractModule
         JvmMetricsSets(MetricRegistry metrics, MBeanServer mbs)
         {
             metrics.registerAll(new BufferPoolMetricSet(mbs));
-            metrics.register("open-file-descriptors", new FileDescriptorRatioGauge());
+            metrics.register("fd-used-ratio", new FileDescriptorRatioGauge());
             metrics.registerAll(new GarbageCollectorMetricSet());
             metrics.registerAll(new MemoryUsageGaugeSet());
             metrics.registerAll(new ThreadStatesGaugeSet());

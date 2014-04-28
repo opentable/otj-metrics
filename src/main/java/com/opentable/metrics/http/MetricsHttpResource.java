@@ -6,14 +6,22 @@ import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.inject.Inject;
 
 @Path("/service-status")
+@Produces(MediaType.APPLICATION_JSON)
 public class MetricsHttpResource
 {
     private final MetricRegistry metrics;
@@ -51,11 +59,26 @@ public class MetricsHttpResource
 
     private MonitorResponse toResponse(String name, Metric metric)
     {
-        throw new UnsupportedOperationException(); // TODO
+        if (metric instanceof Counter) {
+            return new CounterResponse(name, (Counter) metric);
+        }
+        if (metric instanceof Gauge) {
+            return new GaugeResponse(name, (Gauge<?>) metric);
+        }
+        if (metric instanceof Histogram) {
+            return new HistogramResponse(name, (Histogram) metric);
+        }
+        if (metric instanceof Timer) {
+            return new TimerResponse(name, (Timer) metric);
+        }
+        if (metric instanceof Meter) {
+            return new MeterResponse(name, (Meter) metric);
+        }
+        throw new IllegalStateException("don't know how to handle '" + name + "': " + metric.getClass());
     }
 
     private MonitorResponse toResponse(String name, HealthCheck.Result result)
     {
-        throw new UnsupportedOperationException(); // TODO
+        return new HealthCheckResponse(name, result);
     }
 }
