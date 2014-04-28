@@ -1,13 +1,10 @@
 package com.opentable.metrics.http;
 
-import java.util.Map;
-
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.servlets.AdminServlet;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Scopes;
 import com.google.inject.servlet.ServletModule;
@@ -21,14 +18,8 @@ public class MetricsHttpModule extends ServletModule
     {
         bind (MetricsHttpResource.class);
 
-        final Map<String, String> initParams = ImmutableMap.<String, String>builder()
-                .put("metrics-uri", "/metrics/metrics")
-                .put("ping-uri", "/metrics/ping")
-                .put("threads-uri", "/metrics/threads")
-                .put("healthcheck-uri", "/metrics/health")
-            .build();
-
-        serve ("/metrics").with(AdminServlet.class, initParams);
+        serve ("/metrics*").with(AdminServlet.class);
+        bind (AdminServlet.class).in(Scopes.SINGLETON);
 
         HttpServerHandlerBinder.bindServletContextListener(binder())
             .to(MetricsContextListener.class).in(Scopes.SINGLETON);
