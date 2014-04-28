@@ -10,15 +10,15 @@
   </parent>
 
   <scm>
-    <connection>scm:git:git://github.com/opentable/otj-metrics-http.git</connection>
-    <developerConnection>scm:git:git@github.com:opentable/otj-metrics-http.git</developerConnection>
-    <url>http://github.com/opentable/otj-metrics-http</url>
+    <connection>scm:git:git://github.com/opentable/otj-metrics.git</connection>
+    <developerConnection>scm:git:git@github.com:opentable/otj-metrics.git</developerConnection>
+    <url>http://github.com/opentable/otj-metrics</url>
     <tag>HEAD</tag>
   </scm>
 
   <groupId>com.opentable.components</groupId>
-  <artifactId>otj-metrics-http</artifactId>
-  <name>metrics-http</name>
+  <artifactId>otj-metrics</artifactId>
+  <name>otj-metrics</name>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Expose Codahale Metrics over HTTP in OpenTable format</description>
@@ -51,6 +51,14 @@
     <dependency>
       <groupId>com.codahale.metrics</groupId>
       <artifactId>metrics-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.codahale.metrics</groupId>
+      <artifactId>metrics-jvm</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.codahale.metrics</groupId>
+      <artifactId>metrics-jetty9</artifactId>
     </dependency>
     <dependency>
       <groupId>com.codahale.metrics</groupId>
