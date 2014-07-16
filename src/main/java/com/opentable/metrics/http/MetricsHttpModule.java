@@ -1,9 +1,7 @@
 package com.opentable.metrics.http;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.servlets.AdminServlet;
-import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.google.inject.Inject;
 import com.google.inject.Scopes;
@@ -23,8 +21,6 @@ public class MetricsHttpModule extends ServletModule
 
         HttpServerHandlerBinder.bindServletContextListener(binder())
             .to(MetricsContextListener.class).in(Scopes.SINGLETON);
-        HttpServerHandlerBinder.bindServletContextListener(binder())
-            .to(HealthContextListener.class).in(Scopes.SINGLETON);
     }
 
     private static class MetricsContextListener extends MetricsServlet.ContextListener
@@ -41,23 +37,6 @@ public class MetricsHttpModule extends ServletModule
         protected MetricRegistry getMetricRegistry()
         {
             return metrics;
-        }
-    }
-
-    private static class HealthContextListener extends HealthCheckServlet.ContextListener
-    {
-        private final HealthCheckRegistry health;
-
-        @Inject
-        HealthContextListener(HealthCheckRegistry health)
-        {
-            this.health = health;
-        }
-
-        @Override
-        public HealthCheckRegistry getHealthCheckRegistry()
-        {
-            return health;
         }
     }
 }

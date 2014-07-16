@@ -2,6 +2,8 @@ package com.opentable.metrics;
 
 import com.google.inject.AbstractModule;
 
+import com.opentable.metrics.health.HealthModule;
+
 public class DefaultMetricsModule extends AbstractModule
 {
     @Override
@@ -9,5 +11,6 @@ public class DefaultMetricsModule extends AbstractModule
     {
         install (new JettyServerMetricsModule());
         install (new JvmMetricsModule());
+        install (new HealthModule());
     }
 }
