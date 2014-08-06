@@ -15,7 +15,7 @@ import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import com.opentable.httpserver.HttpServerHandlerBinder;
 import com.opentable.httpserver.HttpServerModule;
 
-public class JettyServerMetricsModule extends AbstractModule
+public final class JettyServerMetricsModule extends AbstractModule
 {
     @Override
     protected void configure()
@@ -58,5 +58,17 @@ public class JettyServerMetricsModule extends AbstractModule
             instrumented.setHandler(handler);
             return instrumented;
         }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj != null && getClass().equals(obj.getClass());
     }
 }

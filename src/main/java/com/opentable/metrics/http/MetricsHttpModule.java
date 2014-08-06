@@ -9,7 +9,7 @@ import com.google.inject.servlet.ServletModule;
 
 import com.opentable.httpserver.HttpServerHandlerBinder;
 
-public class MetricsHttpModule extends ServletModule
+public final class MetricsHttpModule extends ServletModule
 {
     @Override
     protected void configureServlets()
@@ -38,5 +38,17 @@ public class MetricsHttpModule extends ServletModule
         {
             return metrics;
         }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj != null && getClass().equals(obj.getClass());
     }
 }

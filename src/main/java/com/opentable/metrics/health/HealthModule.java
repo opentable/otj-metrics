@@ -18,7 +18,7 @@ import com.opentable.httpserver.HttpServerHandlerBinder;
 import com.opentable.jackson.OpenTableObjectMapperBinder;
 import com.opentable.metrics.HealthCheckBinder;
 
-public class HealthModule extends ServletModule
+public final class HealthModule extends ServletModule
 {
     private static final String HEALTH_CHECK_POOL_NAME = "health-check";
 
@@ -72,5 +72,17 @@ public class HealthModule extends ServletModule
         {
             return executor;
         }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj != null && getClass().equals(obj.getClass());
     }
 }
