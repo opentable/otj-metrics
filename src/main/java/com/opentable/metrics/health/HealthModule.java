@@ -45,7 +45,7 @@ public final class HealthModule extends ServletModule
         @Inject
         HealthRegistrar(HealthCheckRegistry registry, Map<String, HealthCheck> checks)
         {
-            checks.forEach((name, check) -> registry.register(name, check));
+            checks.forEach(registry::register);
         }
     }
 
