@@ -20,7 +20,7 @@ import com.opentable.metrics.HealthCheckBinder;
 
 public final class HealthModule extends ServletModule
 {
-    private static final String HEALTH_CHECK_POOL_NAME = "health-check";
+    public static final String HEALTH_CHECK_POOL_NAME = "health-check";
 
     @Override
     protected void configureServlets()
@@ -32,10 +32,8 @@ public final class HealthModule extends ServletModule
         OpenTableObjectMapperBinder.bindJacksonModule(binder()).to(HealthCheckModule.class);
 
         bind (HealthCheckContextListener.class).in(Scopes.SINGLETON);
-        bind (HealthCheckServlet.class).in(Scopes.SINGLETON);
 
         HttpServerHandlerBinder.bindServletContextListener(binder()).to(HealthCheckContextListener.class);
-        serve("/health").with(HealthCheckServlet.class);
 
         HealthCheckBinder.bind(binder(), "jvm").to(JvmHealthCheck.class);
     }

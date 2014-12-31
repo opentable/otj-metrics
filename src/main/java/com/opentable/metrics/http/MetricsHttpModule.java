@@ -14,6 +14,8 @@ public final class MetricsHttpModule extends ServletModule
     @Override
     protected void configureServlets()
     {
+        bind (HealthController.class).in(Scopes.SINGLETON);
+        bind (HealthResource.class);
         bind (MetricsHttpResource.class);
 
         serve ("/metrics*").with(AdminServlet.class);
