@@ -2,6 +2,7 @@ package com.opentable.metrics;
 
 import com.google.inject.AbstractModule;
 
+import com.opentable.metrics.graphite.GraphiteModule;
 import com.opentable.metrics.health.HealthModule;
 
 public final class DefaultMetricsModule extends AbstractModule
@@ -12,6 +13,7 @@ public final class DefaultMetricsModule extends AbstractModule
         install (new JettyServerMetricsModule());
         install (new JvmMetricsModule());
         install (new HealthModule());
+        install (new GraphiteModule());
     }
 
     @Override
