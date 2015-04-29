@@ -88,7 +88,7 @@ public class GraphiteReporter {
         }
 
         //Add CPU Gauge
-        metricRegistry.register(MetricRegistry.name("jvm-cpu"), this.getProcessCpuLoad);
+        metricRegistry.register(MetricRegistry.name("jvm-cpu"), (Gauge<Double>) this::getProcessCpuLoad);
     }
 
     private String getPrefix() {
