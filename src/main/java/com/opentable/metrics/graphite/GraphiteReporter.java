@@ -61,8 +61,7 @@ public class GraphiteReporter {
             return;
         }
 
-        setupCPU(metricRegistry);
-
+        cpuSetupInitial(metricRegistry);
 
         final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
 
@@ -73,22 +72,6 @@ public class GraphiteReporter {
                 .filter(MetricFilter.ALL)
                 .build(graphite);
         reporter.start(reportingPeriodInSeconds, TimeUnit.SECONDS);
-    }
-
-    private Attribute attr = null;
-
-    private void setupCPU(MetricRegistry metricRegistry) {
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        try {
-            ObjectName objectName = ObjectName.getInstance("java.lang:type=OperatingSystem");
-            AttributeList attrList = mbs.getAttributes(objectName, new String[]{"ProcessCpuLoad"});
-            attr = (Attribute)attrList.get(0);
-        } catch (MalformedObjectNameException | ReflectionException | InstanceNotFoundException e) {
-            LOG.error("can't get attribute list for jvm-cpu", e);
-        }
-
-        //Add CPU Gauge
-        metricRegistry.register(MetricRegistry.name("jvm-cpu"), (Gauge<Double>) this::getProcessCpuLoad);
     }
 
     private String getPrefix() {
@@ -134,7 +117,36 @@ public class GraphiteReporter {
         }
     }
 
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();;
+    ObjectName objectName = null;
+    private Attribute attr = null;
+
+    private void cpuSetupInitial(MetricRegistry metricRegistry) {
+        try{
+            objectName = ObjectName.getInstance("java.lang:type=OperatingSystem");
+        } catch (MalformedObjectNameException e) {
+            LOG.error("can't get attribute list for jvm-cpu", e);
+        }
+
+        //Add CPU Gauge
+        metricRegistry.register(MetricRegistry.name("jvm-cpu"), (Gauge<Double>) this::getProcessCpuLoad);
+    }
+
+    private void cpuSetupRefresh() {
+        try{
+            if(objectName == null) {
+                return;
+            }
+            AttributeList attrList = mbs.getAttributes(objectName, new String[]{"ProcessCpuLoad"});
+            attr = (Attribute)attrList.get(0);
+        } catch (ReflectionException | InstanceNotFoundException e) {
+            LOG.error("can't get attribute list for jvm-cpu", e);
+        }
+    }
+
     public double getProcessCpuLoad() {
+        cpuSetupRefresh();
+
         if (attr == null) {
             return Double.NaN;
         }
