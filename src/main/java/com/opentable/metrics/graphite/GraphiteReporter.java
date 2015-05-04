@@ -1,16 +1,11 @@
 package com.opentable.metrics.graphite;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.graphite.Graphite;
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-import com.opentable.server.PortNumberProvider;
-import com.opentable.serverinfo.ServerInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -19,15 +14,29 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
+
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.Graphite;
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.opentable.lifecycle.LifecycleStage;
+import com.opentable.lifecycle.guice.OnStage;
+import com.opentable.server.PortNumberProvider;
+import com.opentable.serverinfo.ServerInfo;
 
 @Singleton
 public class GraphiteReporter {
+
+    private final GraphiteConfig config;
+    private final PortNumberProvider portNumberProvider;
+    private final MetricRegistry metricRegistry;
 
     private String applicationName;
 
@@ -38,8 +47,16 @@ public class GraphiteReporter {
     private int graphitePort = -1;
     private int reportingPeriodInSeconds = -1;
 
+
     @Inject
     public GraphiteReporter(GraphiteConfig config, PortNumberProvider portNumberProvider, MetricRegistry metricRegistry) {
+        this.config = config;
+        this.portNumberProvider = portNumberProvider;
+        this.metricRegistry = metricRegistry;
+    }
+
+    @OnStage(LifecycleStage.START)
+    public void start() {
         applicationName = (String) ServerInfo.get(ServerInfo.SERVER_TYPE);
 
         try {
