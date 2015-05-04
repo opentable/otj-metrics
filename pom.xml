@@ -23,10 +23,6 @@
   <packaging>jar</packaging>
   <description>Expose Codahale Metrics over HTTP in OpenTable format</description>
 
-  <properties>
-    <dep.ot.config>1.3.1</dep.ot.config>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>com.opentable.components</groupId>
