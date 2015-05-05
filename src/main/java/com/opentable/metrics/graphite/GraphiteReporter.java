@@ -1,20 +1,5 @@
 package com.opentable.metrics.graphite;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
@@ -22,14 +7,20 @@ import com.codahale.metrics.graphite.Graphite;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.opentable.lifecycle.LifecycleStage;
 import com.opentable.lifecycle.guice.OnStage;
 import com.opentable.server.PortNumberProvider;
 import com.opentable.serverinfo.ServerInfo;
+import com.sun.management.OperatingSystemMXBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class GraphiteReporter {
@@ -134,46 +125,21 @@ public class GraphiteReporter {
         }
     }
 
-    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();;
-    ObjectName objectName = null;
-    private Attribute attr = null;
-
+    final int cores = Runtime.getRuntime().availableProcessors();
+    OperatingSystemMXBean osMXBean;
     private void cpuSetupInitial(MetricRegistry metricRegistry) {
-        try{
-            objectName = ObjectName.getInstance("java.lang:type=OperatingSystem");
-        } catch (MalformedObjectNameException e) {
-            LOG.error("can't get attribute list for jvm-cpu", e);
-        }
-
+        osMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         //Add CPU Gauge
         metricRegistry.register(MetricRegistry.name("jvm-cpu"), (Gauge<Double>) this::getProcessCpuLoad);
     }
 
-    private void cpuSetupRefresh() {
-        try{
-            if(objectName == null) {
-                return;
-            }
-            AttributeList attrList = mbs.getAttributes(objectName, new String[]{"ProcessCpuLoad"});
-            attr = (Attribute)attrList.get(0);
-        } catch (ReflectionException | InstanceNotFoundException e) {
-            LOG.error("can't get attribute list for jvm-cpu", e);
-        }
-    }
-
     public double getProcessCpuLoad() {
-        cpuSetupRefresh();
-
-        if (attr == null) {
+        if(osMXBean == null) {
             return Double.NaN;
         }
-        Double value  = (Double)attr.getValue();
-
-        if (value == null || value == -1.0) {
-            return Double.NaN;
-        }
+        final double processCpuLoad = osMXBean.getProcessCpuLoad();
 
         //Like Top: Percentage with 1 decimal point
-        return ((int)(value * 1000) / 10.0);
+        return ((int)(processCpuLoad * 1000 * cores) / 10.0);
     }
 }
