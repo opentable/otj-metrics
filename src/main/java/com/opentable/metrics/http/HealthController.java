@@ -47,7 +47,7 @@ public class HealthController {
         this.groups = new HashMap<>();
         while(iterator.hasNext()) {
             String group = iterator.next().toString();
-            Set<String> groupItems = ImmutableSet.copyOf((groupBaseConf.getStringArray(group)));
+            Set<String> groupItems = ImmutableSet.copyOf(groupBaseConf.getStringArray(group));
             groups.put(group, groupItems);
         }
     }
