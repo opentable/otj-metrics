@@ -34,6 +34,7 @@ public final class JvmMetricsModule extends AbstractModule
             metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
             metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
             metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
+            metrics.registerAll(namespace("nmt", new NmtGaugeSet()));
         }
     }
 
