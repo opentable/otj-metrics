@@ -14,6 +14,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 
+import com.opentable.metrics.jvm.NmtGaugeSet;
+
 public final class JvmMetricsModule extends AbstractModule
 {
     private static final String base = "jvm";

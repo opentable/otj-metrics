@@ -1,4 +1,4 @@
-package com.opentable.metrics;
+package com.opentable.metrics.jvm;
 
 import java.util.Collections;
 import java.util.HashMap;
