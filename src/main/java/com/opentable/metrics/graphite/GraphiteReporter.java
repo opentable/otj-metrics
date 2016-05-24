@@ -1,6 +1,5 @@
 package com.opentable.metrics.graphite;
 
-import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -9,9 +8,6 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import com.sun.management.OperatingSystemMXBean;
-
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
@@ -61,8 +57,6 @@ public class GraphiteReporter {
             return;
         }
 
-        cpuSetupInitial(metricRegistry);
-
         final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
 
         com.codahale.metrics.graphite.GraphiteReporter reporter = com.codahale.metrics.graphite.GraphiteReporter.forRegistry(metricRegistry)
@@ -91,24 +85,6 @@ public class GraphiteReporter {
     private String getInstanceNo() {
         final String i = getenv.apply("INSTANCE_NO");
         return i == null ? "unknown" : i;
-    }
-
-    final int cores = Runtime.getRuntime().availableProcessors();
-    OperatingSystemMXBean osMXBean;
-    private void cpuSetupInitial(MetricRegistry metricRegistry) {
-        osMXBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-        //Add CPU Gauge
-        metricRegistry.register(MetricRegistry.name("jvm-cpu"), (Gauge<Double>) this::getProcessCpuLoad);
-    }
-
-    public double getProcessCpuLoad() {
-        if(osMXBean == null) {
-            return Double.NaN;
-        }
-        final double processCpuLoad = osMXBean.getProcessCpuLoad();
-
-        //Like Top: Percentage with 1 decimal point
-        return ((int)(processCpuLoad * 1000 * cores) / 10.0);
     }
 
     @VisibleForTesting
