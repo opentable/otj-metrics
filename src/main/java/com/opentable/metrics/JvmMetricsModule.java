@@ -1,7 +1,5 @@
 package com.opentable.metrics;
 
-import java.util.Map;
-
 import javax.management.MBeanServer;
 
 import com.codahale.metrics.Metric;
@@ -42,12 +40,7 @@ public final class JvmMetricsModule extends AbstractModule
         metrics.getMetrics().forEach((name, metric) -> builder.put("jvm-" + name, metric));
         final ImmutableMap<String, Metric> built = builder.build();
 
-        return new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                return built;
-            }
-        };
+        return () -> built;
     }
 
     @Override
