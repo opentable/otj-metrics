@@ -68,6 +68,9 @@ public class GraphiteReporter {
         reporter.start(reportingPeriodInSeconds, TimeUnit.SECONDS);
     }
 
+    // TODO When we can distinguish development from being deployed, we should probably blow up instead of setting
+    // things to "unknown"...
+
     @VisibleForTesting
     String getPrefix() {
         final Environment env = getEnvironment();
