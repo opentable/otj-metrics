@@ -1,7 +1,5 @@
 package com.opentable.metrics;
 
-import java.util.Map;
-
 import javax.management.MBeanServer;
 
 import com.codahale.metrics.Metric;
@@ -16,8 +14,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 
+import com.opentable.metrics.jvm.NmtGaugeSet;
+import com.opentable.metrics.jvm.CpuLoadGauge;
+
 public final class JvmMetricsModule extends AbstractModule
 {
+    private static final String base = "jvm";
+
     @Override
     public void configure()
     {
@@ -29,25 +32,23 @@ public final class JvmMetricsModule extends AbstractModule
         @Inject
         JvmMetricsSets(MetricRegistry metrics, MBeanServer mbs)
         {
-            metrics.registerAll(prependJvm(new BufferPoolMetricSet(mbs)));
-            metrics.register("jvm-fd-used-ratio", new FileDescriptorRatioGauge());
-            metrics.registerAll(prependJvm(new GarbageCollectorMetricSet()));
-            metrics.registerAll(prependJvm(new MemoryUsageGaugeSet()));
-            metrics.registerAll(prependJvm(new ThreadStatesGaugeSet()));
+            metrics.registerAll(namespace("bufpool", new BufferPoolMetricSet(mbs)));
+            metrics.register(base + ".fd.used-ratio", new FileDescriptorRatioGauge());
+            metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
+            metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
+            metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
+            metrics.registerAll(namespace("nmt", new NmtGaugeSet()));
+            metrics.register(base + ".cpu.load", new CpuLoadGauge());
         }
     }
 
-    private static MetricSet prependJvm(MetricSet metrics) {
+    private static MetricSet namespace(String namespace, MetricSet metrics) {
         ImmutableMap.Builder<String, Metric> builder = ImmutableMap.builder();
-        metrics.getMetrics().forEach((name, metric) -> builder.put("jvm-" + name, metric));
+        metrics.getMetrics().forEach((name, metric) ->
+                builder.put(String.format("%s.%s.%s", base, namespace, name), metric));
         final ImmutableMap<String, Metric> built = builder.build();
 
-        return new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                return built;
-            }
-        };
+        return () -> built;
     }
 
     @Override
