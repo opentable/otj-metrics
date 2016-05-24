@@ -1,61 +1,56 @@
 package com.opentable.metrics.graphite;
 
+import java.lang.management.ManagementFactory;
+import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import com.sun.management.OperatingSystemMXBean;
+
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.opentable.lifecycle.LifecycleStage;
-import com.opentable.lifecycle.guice.OnStage;
-import com.opentable.server.PortNumberProvider;
-import com.opentable.serverinfo.ServerInfo;
-import com.sun.management.OperatingSystemMXBean;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
+import com.opentable.lifecycle.LifecycleStage;
+import com.opentable.lifecycle.guice.OnStage;
+import com.opentable.serverinfo.ServerInfo;
 
 @Singleton
 public class GraphiteReporter {
+    @VisibleForTesting
+    static Function<String, String> getenv = System::getenv;
 
     private final GraphiteConfig config;
-    private final PortNumberProvider portNumberProvider;
     private final MetricRegistry metricRegistry;
 
     private String applicationName;
-
-    private int port;
 
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporter.class);
     private String graphiteHost = null;
     private int graphitePort = -1;
     private int reportingPeriodInSeconds = -1;
 
-
     @Inject
-    public GraphiteReporter(GraphiteConfig config, PortNumberProvider portNumberProvider, MetricRegistry metricRegistry) {
+    public GraphiteReporter(GraphiteConfig config, MetricRegistry metricRegistry) {
         this.config = config;
-        this.portNumberProvider = portNumberProvider;
         this.metricRegistry = metricRegistry;
     }
 
     @OnStage(LifecycleStage.START)
     public void start() {
         applicationName = (String) ServerInfo.get(ServerInfo.SERVER_TYPE);
-
-        try {
-            port = portNumberProvider.getPort();
-        } catch (IOException e) {
-            LOG.error("Can't find port", e);
-            return;
-        }
 
         graphiteHost = config.getGraphiteHost();
         this.graphitePort = config.getGraphitePort();
@@ -82,47 +77,23 @@ public class GraphiteReporter {
         reporter.start(reportingPeriodInSeconds, TimeUnit.SECONDS);
     }
 
-    private String getPrefix() {
-        return String.format("app_metrics.%s.%s.%s.%s-%s", applicationName, getEnvironment(), getRegion(), getHost().replaceAll("\\.", "-"), port);
+    @VisibleForTesting
+    String getPrefix() {
+        final Environment env = getEnvironment();
+        final String name = env.flavor == null ? applicationName : applicationName + "-" + env.flavor;
+        final String instance = "instance-" + getInstanceNo();
+        return String.join(".", Arrays.asList("app_metrics", name, env.type, env.location, instance));
     }
 
-    private String getEnvironment() {
-        final String[] strings = getProfile().split("-");
-        if (strings.length < 1) {
-            return "default";
-        }
-
-        return strings[0];
+    @VisibleForTesting
+    static Environment getEnvironment() {
+        final String env = getenv.apply("OT_ENV_WHOLE");
+        return env == null ? Environment.unknown : Environment.parse(env);
     }
 
-    private String getRegion() {
-        final String[] strings = getProfile().split("-");
-        if (strings.length < 2) {
-            return "default";
-        }
-
-        return strings[1];
-    }
-
-    private String getProfile() {
-        final String ot_env = System.getenv("OT_ENV");
-        if (ot_env == null) {
-            return "default";
-        }
-        return ot_env;
-    }
-
-    private String getHost() {
-        if (System.getenv("CONTAINER_HOST") != null) {
-            return System.getenv("CONTAINER_HOST");
-        } else {
-            try {
-                return InetAddress.getLocalHost().getCanonicalHostName();
-            } catch (UnknownHostException e) {
-                LOG.error("Error resolving application host", e);
-                throw new RuntimeException(e);
-            }
-        }
+    private String getInstanceNo() {
+        final String i = getenv.apply("INSTANCE_NO");
+        return i == null ? "unknown" : i;
     }
 
     final int cores = Runtime.getRuntime().availableProcessors();
@@ -141,5 +112,31 @@ public class GraphiteReporter {
 
         //Like Top: Percentage with 1 decimal point
         return ((int)(processCpuLoad * 1000 * cores) / 10.0);
+    }
+
+    @VisibleForTesting
+    static class Environment {
+        static final Environment unknown = new Environment("unknown", "unknown", null);
+        final String type;
+        final String location;
+        @Nullable
+        final String flavor;
+        static Environment parse(@Nonnull final String env) {
+            final String[] split1 = env.split("-");
+            if (split1.length < 2) {
+                throw new IllegalArgumentException(
+                        String.format("cannot parse type and location in environment %s", env));
+            }
+            final String type = split1[0];
+            final String[] split2 = split1[1].split("\\.");
+            final String location = split2[0];
+            final String flavor = split2.length == 1 ? null : split2[1];
+            return new Environment(type, location, flavor);
+        }
+        private Environment(final String type, final String location, final String flavor) {
+            this.type = type;
+            this.location = location;
+            this.flavor = flavor;
+        }
     }
 }
