@@ -38,9 +38,6 @@ public class GraphiteReporter {
     private String applicationName;
 
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporter.class);
-    private String graphiteHost = null;
-    private int graphitePort = -1;
-    private int reportingPeriodInSeconds = -1;
 
     @Inject
     public GraphiteReporter(GraphiteConfig config, MetricRegistry metricRegistry) {
@@ -52,9 +49,9 @@ public class GraphiteReporter {
     public void start() {
         applicationName = (String) ServerInfo.get(ServerInfo.SERVER_TYPE);
 
-        graphiteHost = config.getGraphiteHost();
-        this.graphitePort = config.getGraphitePort();
-        this.reportingPeriodInSeconds = config.getReportingPeriodInSeconds();
+        final String graphiteHost = config.getGraphiteHost();
+        final int graphitePort = config.getGraphitePort();
+        final int reportingPeriodInSeconds = config.getReportingPeriodInSeconds();
 
         final String prefix = getPrefix();
         LOG.info("Initializing Graphite metrics reporter with host {}, port {}, prefix {}, refresh period {} seconds", graphiteHost, graphitePort, prefix, reportingPeriodInSeconds);
