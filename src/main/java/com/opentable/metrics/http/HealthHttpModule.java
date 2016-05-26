@@ -1,11 +1,11 @@
 package com.opentable.metrics.http;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
-import com.google.inject.servlet.ServletModule;
 
-public class HealthHttpModule extends ServletModule {
+public class HealthHttpModule extends AbstractModule {
     @Override
-    protected void configureServlets() {
+    protected void configure() {
         bind (HealthController.class).in(Scopes.SINGLETON);
         bind (HealthResource.class);
     }
