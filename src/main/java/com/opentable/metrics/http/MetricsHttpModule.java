@@ -11,6 +11,15 @@ import com.opentable.httpserver.HttpServerHandlerBinder;
 
 public final class MetricsHttpModule extends ServletModule
 {
+    private final String path;
+
+    public MetricsHttpModule(final String path) {
+        this.path = path;
+    }
+
+    public MetricsHttpModule() {
+        this("/metrics");
+    }
     @Override
     protected void configureServlets()
     {
@@ -18,7 +27,7 @@ public final class MetricsHttpModule extends ServletModule
         bind (HealthResource.class);
         bind (MetricsHttpResource.class);
 
-        serve ("/metrics*").with(AdminServlet.class);
+        serve (path + "*").with(AdminServlet.class);
         bind (AdminServlet.class).in(Scopes.SINGLETON);
 
         HttpServerHandlerBinder.bindServletContextListener(binder())
