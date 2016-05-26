@@ -46,8 +46,18 @@ the following namespaces.
 - Jetty: `org.eclipse.jetty.server.handler`
 - JVM: `jvm`
 
-It also implicitly activates a `/metrics` endpoint in your service with
-the above as well as other metric-ish resources.
+You may optionally enable [the Dropwizard Metrics AdminServlet][7] by
+installing the `MetricsHttpModule`.  By default, it will make the
+servlet available at `/metrics`, but you may customize the path at which
+the metrics are available by calling the module constructor with a
+differing path.  See the source code for the format.
+
+Historical Note
+---------------
+Prior to version `1.11.2` of `otj-server`,
+`BasicRestHttpServerTemplateModule` would install the
+`MetricsHttpModule` at `/metrics` _by default_ in your application.  It
+no longer implicitly installs this module.
 
 [1]: https://github.com/graphite-project/carbon
 [2]: https://github.com/opentable/ot-dns/blob/master/internal/otenv.com.db
@@ -55,3 +65,4 @@ the above as well as other metric-ish resources.
 [4]: https://github.com/opentable/otj-server/blob/master/templates/src/main/java/com/opentable/server/templates/BasicRestHttpServerTemplateModule.java
 [5]: https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/tooldescr007.html
 [6]: https://wiki.otcorp.opentable.com/display/CP/ArchTeam+Java+Services
+[7]: http://metrics.dropwizard.io/3.1.0/manual/servlets/#adminservlet
