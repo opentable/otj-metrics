@@ -5,8 +5,8 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.opentable</groupId>
-    <artifactId>otj-parent</artifactId>
-    <version>52</version>
+    <artifactId>otj-parent-spring</artifactId>
+    <version>55-SNAPSHOT</version>
   </parent>
 
   <scm>
@@ -39,23 +39,13 @@
 
     <dependency>
       <groupId>com.opentable.components</groupId>
-      <artifactId>otj-lifecycle</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.opentable.components</groupId>
-      <artifactId>otj-lifecycle-guice</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.opentable.components</groupId>
       <artifactId>otj-executors</artifactId>
     </dependency>
 
     <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-jackson</artifactId>
-      <version>1.2.2</version>
+      <version>2.0.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -65,19 +55,16 @@
 
     <dependency>
       <groupId>com.opentable.components</groupId>
-      <artifactId>otj-config-guice</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.opentable.components</groupId>
       <artifactId>otj-config</artifactId>
     </dependency>
     <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-jvm</artifactId>
     </dependency>
+
     <dependency>
-      <groupId>org.skife.config</groupId>
-      <artifactId>config-magic</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
     </dependency>
 
     <dependency>
@@ -116,19 +103,6 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-util</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject.extensions</groupId>
-      <artifactId>guice-multibindings</artifactId>
     </dependency>
 
     <dependency>
