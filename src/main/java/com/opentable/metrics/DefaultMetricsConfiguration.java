@@ -3,7 +3,7 @@ package com.opentable.metrics;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import com.opentable.metrics.graphite.GraphiteModule;
+import com.opentable.metrics.graphite.GraphiteReporter;
 import com.opentable.metrics.health.HealthConfiguration;
 
 @Configuration
@@ -11,6 +11,6 @@ import com.opentable.metrics.health.HealthConfiguration;
         JettyServerMetricsModule.class,
         JvmMetricsConfiguration.class,
         HealthConfiguration.class,
-        GraphiteModule.class,
+        GraphiteReporter.class,
 })
 public final class DefaultMetricsConfiguration {}
