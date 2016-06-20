@@ -1,34 +1,43 @@
 package com.opentable.metrics.graphite;
 
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
-import com.opentable.lifecycle.LifecycleStage;
-import com.opentable.lifecycle.guice.OnStage;
 import com.opentable.serverinfo.ServerInfo;
 
-@Singleton
+@Named
 public class GraphiteReporter {
     @VisibleForTesting
     static Function<String, String> getenv = System::getenv;
 
-    private final GraphiteConfig config;
+    @Value("${ot.graphite.graphite-host:#{null}}")
+    private String host;
+
+    @Value("${ot.graphite.graphite-port:2003}")
+    private int port;
+
+    @Value("${ot.graphite.reporting-period:PT10s}")
+    private Duration reportingPeriod;
+
     private final MetricRegistry metricRegistry;
 
     private String applicationName;
@@ -36,28 +45,24 @@ public class GraphiteReporter {
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporter.class);
 
     @Inject
-    public GraphiteReporter(GraphiteConfig config, MetricRegistry metricRegistry) {
-        this.config = config;
+    public GraphiteReporter(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
     }
 
-    @OnStage(LifecycleStage.START)
-    public void start() {
+    @PostConstruct
+    public void postConstruct() {
         applicationName = (String) ServerInfo.get(ServerInfo.SERVER_TYPE);
 
-        final String graphiteHost = config.getGraphiteHost();
-        final int graphitePort = config.getGraphitePort();
-        final int reportingPeriodInSeconds = config.getReportingPeriodInSeconds();
-
         final String prefix = getPrefix();
-        LOG.info("Initializing Graphite metrics reporter with host {}, port {}, prefix {}, refresh period {} seconds", graphiteHost, graphitePort, prefix, reportingPeriodInSeconds);
+        LOG.info("Initializing Graphite metrics reporter with host {}, port {}, prefix {}, refresh period {}",
+                host, port, prefix, reportingPeriod);
 
-        if (Strings.isNullOrEmpty(graphiteHost)) {
+        if (Strings.isNullOrEmpty(host)) {
             LOG.info("Skipping Graphite metrics reporter initialization");
             return;
         }
 
-        final Graphite graphite = new Graphite(new InetSocketAddress(graphiteHost, graphitePort));
+        final Graphite graphite = new Graphite(new InetSocketAddress(host, port));
 
         com.codahale.metrics.graphite.GraphiteReporter reporter = com.codahale.metrics.graphite.GraphiteReporter.forRegistry(metricRegistry)
                 .prefixedWith(prefix)
@@ -65,7 +70,7 @@ public class GraphiteReporter {
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .filter(MetricFilter.ALL)
                 .build(graphite);
-        reporter.start(reportingPeriodInSeconds, TimeUnit.SECONDS);
+        reporter.start(reportingPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     // TODO When we can distinguish development from being deployed, we should probably blow up instead of setting
