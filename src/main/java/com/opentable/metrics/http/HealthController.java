@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.opentable.config.Config;
-import com.opentable.metrics.health.HealthModule;
+import com.opentable.metrics.health.HealthConfiguration;
 
 @Singleton
 public class HealthController {
@@ -37,7 +37,7 @@ public class HealthController {
     private final Map<String,Set<String>> groups;
 
     @Inject
-    HealthController(HealthCheckRegistry registry, @Named(HealthModule.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
+    HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
             Config config) {
         this.registry = registry;
         this.executor = executor;
