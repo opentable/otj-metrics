@@ -47,17 +47,14 @@ the following namespaces.
 - JVM: `jvm`
 
 You may optionally enable [the Dropwizard Metrics AdminServlet][7] by
-installing the `MetricsHttpModule`.  By default, it will make the
-servlet available at `/metrics`, but you may customize the path at which
-the metrics are available by calling the module constructor with a
-differing path.  See the source code for the format.
+importing the `MetricsHttpConfiguration` class.  By default, it will
+make the servlet available at `/metrics`, but you may customize the path
+at which the metrics are available by providing the following
+configuration property.
 
-Historical Note
----------------
-Prior to version `1.11.2` of `otj-server`,
-`BasicRestHttpServerTemplateModule` would install the
-`MetricsHttpModule` at `/metrics` _by default_ in your application.  It
-no longer implicitly installs this module.
+    ot.metrics.http.path
+
+See the source code for the format.
 
 [1]: https://github.com/graphite-project/carbon
 [2]: https://github.com/opentable/ot-dns/blob/master/internal/otenv.com.db
