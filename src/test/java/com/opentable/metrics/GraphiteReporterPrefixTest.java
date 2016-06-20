@@ -1,4 +1,4 @@
-package com.opentable.metrics.graphite;
+package com.opentable.metrics;
 
 import java.util.function.Function;
 
@@ -17,6 +17,7 @@ import com.opentable.config.FixedConfigModule;
 import com.opentable.lifecycle.Lifecycle;
 import com.opentable.lifecycle.LifecycleStage;
 import com.opentable.lifecycle.guice.LifecycleModule;
+import com.opentable.metrics.GraphiteReporter;
 import com.opentable.serverinfo.ServerInfo;
 
 public class GraphiteReporterPrefixTest {

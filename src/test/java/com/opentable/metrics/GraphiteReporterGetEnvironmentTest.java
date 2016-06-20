@@ -1,4 +1,4 @@
-package com.opentable.metrics.graphite;
+package com.opentable.metrics;
 
 import java.util.function.Function;
 
@@ -6,6 +6,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.opentable.metrics.GraphiteReporter;
 
 public class GraphiteReporterGetEnvironmentTest {
     private Function<String, String> oldGetenv;
