@@ -16,7 +16,9 @@ will not occur.  You may also customize it further with the following
 two configuration properties.
 
     ot.graphite.graphite-port
-    ot.graphite.reporting-period-in-seconds
+    ot.graphite.reporting-period
+
+TODO Update this next paragraph once `otj-server` is updated.
 
 As in [the demo server][3], ensure that your server class returns an
 instance of the [`BasicRestHttpServerTemplateModule`][4] from its
