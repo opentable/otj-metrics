@@ -1,7 +1,6 @@
 package com.opentable.metrics;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.management.MBeanServer;
 
@@ -24,7 +23,6 @@ public final class JvmMetricsConfiguration {
     private final MetricRegistry metrics;
     private final MBeanServer mbs;
 
-    @Inject
     private JvmMetricsConfiguration(final MetricRegistry metrics, final MBeanServer mbs) {
         this.metrics = metrics;
         this.mbs = mbs;

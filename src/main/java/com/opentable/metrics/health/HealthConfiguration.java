@@ -4,7 +4,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletContextListener;
 
@@ -55,7 +54,6 @@ public final class HealthConfiguration {
         private final HealthCheckRegistry registry;
         private final Map<String, HealthCheck> checks;
 
-        @Inject
         HealthRegistrar(final HealthCheckRegistry registry, final Map<String, HealthCheck> checks) {
             this.registry = registry;
             this.checks = checks;

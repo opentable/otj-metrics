@@ -9,7 +9,6 @@ import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.codahale.metrics.MetricFilter;
@@ -44,7 +43,6 @@ public class GraphiteReporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporter.class);
 
-    @Inject
     public GraphiteReporter(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
     }

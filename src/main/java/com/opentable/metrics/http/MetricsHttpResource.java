@@ -3,7 +3,6 @@ package com.opentable.metrics.http;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,7 +28,6 @@ public class MetricsHttpResource
     private final MetricRegistry metrics;
     private final HealthCheckRegistry health;
 
-    @Inject
     MetricsHttpResource(MetricRegistry metrics, HealthCheckRegistry health)
     {
         this.metrics = metrics;

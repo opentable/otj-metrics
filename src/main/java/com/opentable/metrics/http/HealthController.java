@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
 
-import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.codahale.metrics.health.HealthCheck.Result;
@@ -36,7 +35,6 @@ public class HealthController {
     private final HealthCheckRegistry registry;
     private final ExecutorService executor;
 
-    @Inject
     HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
             ConfigurableEnvironment env) {
         this.registry = registry;
