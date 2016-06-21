@@ -1,55 +1,52 @@
 package com.opentable.metrics.http;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
-import javax.annotation.concurrent.GuardedBy;
+
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.inject.Singleton;
 
 import com.codahale.metrics.health.HealthCheck.Result;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import org.apache.commons.configuration.AbstractConfiguration;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.ConfigurableEnvironment;
 
-import com.opentable.config.Config;
 import com.opentable.metrics.health.HealthConfiguration;
+import com.opentable.spring.PropertySourceUtil;
 
-@Singleton
+@Named
 public class HealthController {
     private static final Logger LOG = LoggerFactory.getLogger(HealthController.class);
+    private static final String CONFIG_PREFIX = "ot.metrics.health.group.";
+
+    private final Map<String, Result> failingChecks = new HashMap<>();
+    private final Map<String, Set<String>> groups = new HashMap<>();
+
     private final HealthCheckRegistry registry;
     private final ExecutorService executor;
 
-    @GuardedBy("this")
-    private final Map<String, Result> failingChecks = Maps.newHashMap();
-
-    private static final String CONFIG_PREFIX = "ot.metrics.health.group.";
-
-    private final Map<String,Set<String>> groups;
-
     @Inject
     HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
-            Config config) {
+            ConfigurableEnvironment env) {
         this.registry = registry;
         this.executor = executor;
-        final AbstractConfiguration groupBaseConf = config.getConfiguration(CONFIG_PREFIX);
-        groupBaseConf.setListDelimiter(',');
-        final Iterator iterator = groupBaseConf.getKeys();
-        this.groups = new HashMap<>();
-        while(iterator.hasNext()) {
-            String group = iterator.next().toString();
-            Set<String> groupItems = ImmutableSet.copyOf(groupBaseConf.getStringArray(group));
+        final Properties groupBaseConf = PropertySourceUtil.getProperties(env, CONFIG_PREFIX);
+        groupBaseConf.stringPropertyNames().forEach(group -> {
+            final Set<String> groupItems = Collections.unmodifiableSet(
+                    new HashSet<>(Arrays.asList(groupBaseConf.getProperty(group).split(","))));
             groups.put(group, groupItems);
-        }
+        });
     }
 
     public Pair<Map<String, Result>, Boolean> runHealthChecks() {

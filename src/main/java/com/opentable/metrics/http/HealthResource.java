@@ -2,6 +2,7 @@ package com.opentable.metrics.http;
 
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -12,6 +13,7 @@ import javax.ws.rs.core.Response;
 import com.codahale.metrics.health.HealthCheck.Result;
 import org.apache.commons.lang3.tuple.Pair;
 
+@Named
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/")
 public class HealthResource {
