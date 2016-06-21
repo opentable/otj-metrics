@@ -7,7 +7,7 @@ import com.opentable.metrics.health.HealthConfiguration;
 
 @Configuration
 @Import({
-        JettyServerMetricsModule.class,
+        JettyServerMetricsConfiguration.class,
         JvmMetricsConfiguration.class,
         HealthConfiguration.class,
         GraphiteReporter.class,
