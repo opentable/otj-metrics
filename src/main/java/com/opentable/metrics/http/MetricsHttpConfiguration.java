@@ -1,7 +1,7 @@
 package com.opentable.metrics.http;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextListener;
 
@@ -15,27 +15,32 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import(MetricsHttpResource.class)
+@Import({
+        MetricsHttpResource.class,
+        MetricsHttpConfiguration.Servlet.class,
+})
 public final class MetricsHttpConfiguration {
-    private final ServletContext container;
-
-    @Value("${ot.metrics.http.path:/metrics}")
-    private String path;
-
-    @Inject
-    public MetricsHttpConfiguration(final ServletContext container) {
-        this.container = container;
-    }
-
-    @PostConstruct
-    public void postConstruct() {
-        final String urlPattern = path + "*";
-        container.addServlet(AdminServlet.class.getCanonicalName(), AdminServlet.class).addMapping(urlPattern);
-    }
-
     @Bean
     public ServletContextListener getMetricsContextListener(final MetricRegistry metrics) {
         return new MetricsContextListener(metrics);
+    }
+
+    @Named
+    static class Servlet {
+        @Value("${ot.metrics.http.path:/metrics}")
+        private String path;
+
+        private final ServletContext container;
+
+        Servlet(final ServletContext container) {
+            this.container = container;
+        }
+
+        @PostConstruct
+        public void postConstruct() {
+            final String urlPattern = path + "*";
+            container.addServlet(AdminServlet.class.getCanonicalName(), AdminServlet.class).addMapping(urlPattern);
+        }
     }
 
     private static class MetricsContextListener extends MetricsServlet.ContextListener {
