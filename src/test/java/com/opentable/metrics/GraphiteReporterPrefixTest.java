@@ -4,28 +4,26 @@ import java.util.function.Function;
 
 import javax.inject.Inject;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Stage;
+import com.codahale.metrics.MetricRegistry;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import com.opentable.config.FixedConfigModule;
-import com.opentable.lifecycle.Lifecycle;
-import com.opentable.lifecycle.LifecycleStage;
-import com.opentable.lifecycle.guice.LifecycleModule;
-import com.opentable.metrics.GraphiteReporter;
 import com.opentable.serverinfo.ServerInfo;
+import com.opentable.spring.ConversionServiceConfiguration;
 
 public class GraphiteReporterPrefixTest {
     private Function<String, String> oldGetenv;
+
     @Inject
     private GraphiteReporter reporter;
-    @Inject
-    private Lifecycle lifecycle;
 
     @Before
     public void before() {
@@ -37,6 +35,8 @@ public class GraphiteReporterPrefixTest {
     public void after() {
         Assert.assertNotNull(oldGetenv);
         GraphiteReporter.getenv = oldGetenv;
+        Assert.assertNotNull(reporter);
+        reporter = null;
     }
 
     @Test
@@ -74,17 +74,24 @@ public class GraphiteReporterPrefixTest {
             return null;
         };
         ServerInfo.add(ServerInfo.SERVER_TYPE, "test-server");
-        final Injector injector = Guice.createInjector(
-                Stage.PRODUCTION,
-                new GraphiteModule(),
-                new FixedConfigModule(),
-                new LifecycleModule());
-        injector.injectMembers(this);
+        final ApplicationContext context = new AnnotationConfigApplicationContext(
+                MetricRegistryConfiguration.class,
+                ConversionServiceConfiguration.class,
+                GraphiteReporter.class
+        );
+        final AutowireCapableBeanFactory factory = context.getAutowireCapableBeanFactory();
+        factory.autowireBean(this);
         Assert.assertNotNull(reporter);
-        Assert.assertNotNull(lifecycle);
-        lifecycle.executeTo(LifecycleStage.START_STAGE);
         final String prefix = reporter.getPrefix();
         Assert.assertNotNull(prefix);
         return prefix;
+    }
+
+    @Configuration
+    public static class MetricRegistryConfiguration {
+        @Bean
+        public MetricRegistry getMetrics() {
+            return new MetricRegistry();
+        }
     }
 }

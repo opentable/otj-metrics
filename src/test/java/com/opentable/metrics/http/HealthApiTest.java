@@ -3,19 +3,20 @@ package com.opentable.metrics.http;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
+
 import javax.ws.rs.core.Response;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.util.concurrent.MoreExecutors;
-import org.junit.Test;
 
-import com.opentable.config.Config;
+import org.junit.Test;
+import org.springframework.mock.env.MockEnvironment;
 
 public class HealthApiTest {
     private final HealthCheckRegistry registry = new HealthCheckRegistry();
     private final HealthController controller = new HealthController(registry, MoreExecutors.newDirectExecutorService(),
-            Config.getFixedConfig(
+            new MockEnvironment().withProperty(
                     "ot.metrics.health.group.mygroup", "a,c"
             ));
     private final HealthResource resource = new HealthResource(controller);
