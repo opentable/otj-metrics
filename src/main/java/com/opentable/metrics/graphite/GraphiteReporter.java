@@ -1,4 +1,4 @@
-package com.opentable.metrics;
+package com.opentable.metrics.graphite;
 
 import java.net.InetSocketAddress;
 import java.time.Duration;

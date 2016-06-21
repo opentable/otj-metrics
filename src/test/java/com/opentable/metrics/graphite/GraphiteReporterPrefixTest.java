@@ -1,4 +1,4 @@
-package com.opentable.metrics;
+package com.opentable.metrics.graphite;
 
 import java.util.function.Function;
 
@@ -17,7 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.opentable.serverinfo.ServerInfo;
-import com.opentable.spring.ConversionServiceConfiguration;
 
 public class GraphiteReporterPrefixTest {
     private Function<String, String> oldGetenv;
@@ -76,8 +75,7 @@ public class GraphiteReporterPrefixTest {
         ServerInfo.add(ServerInfo.SERVER_TYPE, "test-server");
         final ApplicationContext context = new AnnotationConfigApplicationContext(
                 MetricRegistryConfiguration.class,
-                ConversionServiceConfiguration.class,
-                GraphiteReporter.class
+                GraphiteConfiguration.class
         );
         final AutowireCapableBeanFactory factory = context.getAutowireCapableBeanFactory();
         factory.autowireBean(this);
