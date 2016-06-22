@@ -13,4 +13,4 @@ import com.opentable.metrics.health.HealthConfiguration;
         HealthConfiguration.class,
         GraphiteConfiguration.class,
 })
-public final class DefaultMetricsConfiguration {}
+public class DefaultMetricsConfiguration {}

@@ -18,7 +18,7 @@ import com.opentable.metrics.jvm.CpuLoadGauge;
 import com.opentable.metrics.jvm.NmtGaugeSet;
 
 @Named
-public final class JvmMetricsConfiguration {
+public class JvmMetricsConfiguration {
     private static final String base = "jvm";
     private final MetricRegistry metrics;
     private final MBeanServer mbs;

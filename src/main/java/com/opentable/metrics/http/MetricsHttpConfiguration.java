@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Import;
         MetricsHttpResource.class,
         MetricsHttpConfiguration.Servlet.class,
 })
-public final class MetricsHttpConfiguration {
+public class MetricsHttpConfiguration {
     @Bean
     public ServletContextListener getMetricsContextListener(final MetricRegistry metrics) {
         return new MetricsContextListener(metrics);

@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Configuration;
  * in {@code otj-server}.
  */
 @Configuration
-public final class JettyServerMetricsConfiguration {
+public class JettyServerMetricsConfiguration {
     @Bean
     public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metrics) {
         return () -> new InstrumentedQueuedThreadPool(metrics);

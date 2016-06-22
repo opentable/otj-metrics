@@ -21,7 +21,7 @@ import com.opentable.concurrent.ThreadPoolBuilder;
 
 @Configuration
 @Import(HealthConfiguration.HealthRegistrar.class)
-public final class HealthConfiguration {
+public class HealthConfiguration {
     public static final String HEALTH_CHECK_POOL_NAME = "health-check";
 
     @Bean
