@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.opentable.serverinfo.ServerInfo;
+import com.opentable.service.ServiceInfo;
 
 @Named
 public class GraphiteReporter {
@@ -38,19 +38,17 @@ public class GraphiteReporter {
     private Duration reportingPeriod;
 
     private final MetricRegistry metricRegistry;
-
-    private String applicationName;
+    private final String applicationName;
 
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporter.class);
 
-    public GraphiteReporter(MetricRegistry metricRegistry) {
+    public GraphiteReporter(final ServiceInfo serviceInfo, final MetricRegistry metricRegistry) {
+        applicationName = serviceInfo.getName();
         this.metricRegistry = metricRegistry;
     }
 
     @PostConstruct
     public void postConstruct() {
-        applicationName = (String) ServerInfo.get(ServerInfo.SERVER_TYPE);
-
         final String prefix = getPrefix();
         LOG.info("Initializing Graphite metrics reporter with host {}, port {}, prefix {}, refresh period {}",
                 host, port, prefix, reportingPeriod);

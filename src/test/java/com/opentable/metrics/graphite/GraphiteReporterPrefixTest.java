@@ -16,7 +16,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.opentable.serverinfo.ServerInfo;
+import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
     private Function<String, String> oldGetenv;
@@ -72,9 +72,8 @@ public class GraphiteReporterPrefixTest {
             }
             return null;
         };
-        ServerInfo.add(ServerInfo.SERVER_TYPE, "test-server");
         final ApplicationContext context = new AnnotationConfigApplicationContext(
-                MetricRegistryConfiguration.class,
+                TestConfiguration.class,
                 GraphiteConfiguration.class
         );
         final AutowireCapableBeanFactory factory = context.getAutowireCapableBeanFactory();
@@ -86,7 +85,16 @@ public class GraphiteReporterPrefixTest {
     }
 
     @Configuration
-    public static class MetricRegistryConfiguration {
+    public static class TestConfiguration {
+        @Bean
+        public ServiceInfo getServiceInfo() {
+            return new ServiceInfo() {
+                @Override
+                public String getName() {
+                    return "test-server";
+                }
+            };
+        }
         @Bean
         public MetricRegistry getMetrics() {
             return new MetricRegistry();

@@ -26,13 +26,14 @@
   <dependencies>
     <dependency>
       <groupId>com.opentable.components</groupId>
-      <artifactId>otj-executors</artifactId>
+      <artifactId>otj-core</artifactId>
     </dependency>
 
     <dependency>
       <groupId>com.opentable.components</groupId>
-      <artifactId>otj-serverinfo</artifactId>
+      <artifactId>otj-executors</artifactId>
     </dependency>
+
     <dependency>
       <groupId>com.opentable.components</groupId>
       <artifactId>otj-jvm</artifactId>
