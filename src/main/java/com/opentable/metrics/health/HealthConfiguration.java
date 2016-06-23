@@ -20,7 +20,10 @@ import org.springframework.context.annotation.Import;
 import com.opentable.concurrent.ThreadPoolBuilder;
 
 @Configuration
-@Import(HealthConfiguration.HealthRegistrar.class)
+@Import({
+        MediocreHealthCheck.class,
+        HealthConfiguration.HealthRegistrar.class,
+})
 public class HealthConfiguration {
     public static final String HEALTH_CHECK_POOL_NAME = "health-check";
 
@@ -28,12 +31,6 @@ public class HealthConfiguration {
     @Named(HEALTH_CHECK_POOL_NAME)
     public ExecutorService getHealthCheckPool() {
         return ThreadPoolBuilder.shortTaskPool(HEALTH_CHECK_POOL_NAME, 8).build();
-    }
-
-    @Bean
-    @Named("jvm")
-    public JvmHealthCheck getJvmHealthCheck() {
-        return new JvmHealthCheck();
     }
 
     @Bean
