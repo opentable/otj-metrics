@@ -16,7 +16,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/")
+@Path("/health")
 public class HealthResource {
     private final HealthController controller;
 
@@ -25,7 +25,7 @@ public class HealthResource {
     }
 
     @GET
-    @Path("/health")
+    @Path("/")
     public Response getHealth() {
         final Pair<Map<String, Result>, Boolean> result = controller.runHealthChecks();
         final Boolean succeeded = result.getRight();
@@ -34,7 +34,7 @@ public class HealthResource {
     }
 
     @GET
-    @Path("/health/group/{group}")
+    @Path("/group/{group}")
     public Response getHealthGroup(@PathParam("group") String group) {
         final Pair<Map<String, Result>, Boolean> result = controller.runHealthChecks(group);
         if (result == null) {
