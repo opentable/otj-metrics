@@ -1,7 +1,8 @@
 This component provides a number of metrics for your application,
-including metrics for the embedded Jetty component, the JVM, and a
-rudimentary health-check.  In addition, these metrics are automatically
-sent to Graphite, depending on your application's configuration.
+including metrics for the embedded Jetty component, the JVM, a
+rudimentary health-check, and an extensible health-checking framework.
+In addition, these metrics are automatically sent to Graphite, depending
+on your application's configuration.
 
 Requirements
 ------------
@@ -23,6 +24,13 @@ Enabling
 As in [the demo server][1], the simplest route will probably to use the
 `RestHttpServer` from `otj-metrics`.  This will automatically set up
 metric tracking for you.
+
+Health Checking
+---------------
+This module provides a basic report on the health of your application by
+detecting whether the Spring application context has been refreshed or
+closed.  There is also a framework for plugging in additional health
+checks.  The results of all of these are made available at `/health`.
 
 Graphite
 --------
