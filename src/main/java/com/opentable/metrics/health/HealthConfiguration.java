@@ -29,8 +29,8 @@ public class HealthConfiguration {
 
     @Bean
     @Named(HEALTH_CHECK_POOL_NAME)
-    public ExecutorService getHealthCheckPool() {
-        return ThreadPoolBuilder.shortTaskPool(HEALTH_CHECK_POOL_NAME, 8).build();
+    public ThreadPoolBuilder getHealthCheckPoolBuilder() {
+        return ThreadPoolBuilder.shortTaskPool(HEALTH_CHECK_POOL_NAME, 8);
     }
 
     @Bean
