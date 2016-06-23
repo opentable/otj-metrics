@@ -56,8 +56,12 @@ Singularity.
 Underneath this prefix namespace, this library defines its metrics with
 the following namespaces.
 
-- Jetty: `org.eclipse.jetty.server.handler`
 - JVM: `jvm`
+- Jetty.  Dropwizard uses the fully-qualified class names for your
+  webserver's handlers to create the metric namespaces.  This means that
+  depending on the implementation, you may see some of the following.
+  - `org.eclipse.jetty`
+  - `org.springframework.boot.context.embedded.jetty`
 
 NMT
 ---
