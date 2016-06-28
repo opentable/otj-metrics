@@ -43,8 +43,15 @@ For a listing of what [Carbon][2] hosts to connect to in the region in
 which your application is deployed, see [the internal DNS entries][3].
 
 The default is for it to be unset, and in this case, Graphite reporting
-will not occur.  You may also customize it further with the following
-two configuration properties.
+will not occur.  The library will log if this is the case.  In addition,
+if the environment variables accompanying cluster deploymenet are not
+available, Graphite reporting will not occur.  In this case too, the
+library will log.  If you want to test in a non-deployed environment,
+you must mock the `$OT_ENV*` environment variables.  See more on these
+in [the Java Services documentation][4].
+
+You may also customize Graphite reporting further with the following two
+configuration properties.
 
     ot.graphite.graphite-port
     ot.graphite.reporting-period
