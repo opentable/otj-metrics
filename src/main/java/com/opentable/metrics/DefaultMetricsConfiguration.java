@@ -12,5 +12,6 @@ import com.opentable.metrics.health.HealthConfiguration;
         JvmMetricsConfiguration.class,
         HealthConfiguration.class,
         GraphiteConfiguration.class,
+        MetricsJmxExporter.class,
 })
 public class DefaultMetricsConfiguration {}
