@@ -44,7 +44,7 @@ which your application is deployed, see [the internal DNS entries][3].
 
 The default is for it to be unset, and in this case, Graphite reporting
 will not occur.  The library will log if this is the case.  In addition,
-if the environment variables accompanying cluster deploymenet are not
+if the environment variables accompanying cluster deployment are not
 available, Graphite reporting will not occur.  In this case too, the
 library will log.  If you want to test in a non-deployed environment,
 you must mock the `$OT_ENV*` environment variables.  See more on these
