@@ -14,8 +14,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 
-import com.opentable.metrics.jvm.NmtGaugeSet;
 import com.opentable.metrics.jvm.CpuLoadGauge;
+import com.opentable.metrics.jvm.NmtMetrics;
 
 public final class JvmMetricsModule extends AbstractModule
 {
@@ -29,6 +29,8 @@ public final class JvmMetricsModule extends AbstractModule
 
     static class JvmMetricsSets
     {
+        private final NmtMetrics nmtMetrics;
+
         @Inject
         JvmMetricsSets(MetricRegistry metrics, MBeanServer mbs)
         {
@@ -37,8 +39,10 @@ public final class JvmMetricsModule extends AbstractModule
             metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
             metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
             metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
-            metrics.registerAll(namespace("nmt", new NmtGaugeSet()));
             metrics.register(base + ".cpu.load", new CpuLoadGauge());
+
+            nmtMetrics = new NmtMetrics(base + ".nmt", metrics);
+            nmtMetrics.register();
         }
     }
 
