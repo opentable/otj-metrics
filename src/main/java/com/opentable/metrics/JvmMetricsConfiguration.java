@@ -15,17 +15,19 @@ import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.collect.ImmutableMap;
 
 import com.opentable.metrics.jvm.CpuLoadGauge;
-import com.opentable.metrics.jvm.NmtGaugeSet;
+import com.opentable.metrics.jvm.NmtMetrics;
 
 @Named
 public class JvmMetricsConfiguration {
     private static final String base = "jvm";
     private final MetricRegistry metrics;
     private final MBeanServer mbs;
+    private final NmtMetrics nmtMetrics;
 
     private JvmMetricsConfiguration(final MetricRegistry metrics, final MBeanServer mbs) {
         this.metrics = metrics;
         this.mbs = mbs;
+        nmtMetrics = new NmtMetrics(String.format("%s.nmt", base), metrics);
     }
 
     private static MetricSet namespace(String namespace, MetricSet metrics) {
@@ -44,7 +46,8 @@ public class JvmMetricsConfiguration {
         metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
         metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
         metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
-        metrics.registerAll(namespace("nmt", new NmtGaugeSet()));
         metrics.register(base + ".cpu.load", new CpuLoadGauge());
+
+        nmtMetrics.register();
     }
 }
