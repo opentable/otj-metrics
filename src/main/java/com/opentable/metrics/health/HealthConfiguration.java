@@ -1,10 +1,13 @@
 package com.opentable.metrics.health;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Named;
+import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import com.codahale.metrics.health.HealthCheck;
@@ -13,10 +16,13 @@ import com.codahale.metrics.json.HealthCheckModule;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.fasterxml.jackson.databind.Module;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import com.opentable.concurrent.OTExecutors;
 import com.opentable.concurrent.ThreadPoolBuilder;
 
 @Configuration
@@ -68,6 +74,8 @@ public class HealthConfiguration {
     }
 
     private static class HealthCheckContextListener extends HealthCheckServlet.ContextListener {
+        private static final Logger LOG = LoggerFactory.getLogger(HealthCheckContextListener.class);
+
         private final HealthCheckRegistry registry;
         private final ExecutorService executor;
 
@@ -87,6 +95,20 @@ public class HealthConfiguration {
         protected ExecutorService getExecutorService()
         {
             return executor;
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent event) {
+            super.contextDestroyed(event);
+            try {
+                if (!OTExecutors.shutdownAndAwaitTermination(executor, Duration.ofSeconds(5))) {
+                    LOG.error("executor did not shut down cleanly");
+                }
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.error("interrupted shutting down executor", e);
+                // Owning thread is shutting down anyway, no need to re-raise.
+            }
         }
     }
 }
