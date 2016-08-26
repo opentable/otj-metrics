@@ -60,6 +60,11 @@ public class HealthConfiguration {
         private void postConstruct() {
             checks.forEach(registry::register);
         }
+
+        @PreDestroy
+        private void preDestroy() {
+            checks.keySet().forEach(registry::unregister);
+        }
     }
 
     private static class HealthCheckContextListener extends HealthCheckServlet.ContextListener {
