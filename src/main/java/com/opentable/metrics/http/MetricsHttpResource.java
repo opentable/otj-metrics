@@ -3,6 +3,7 @@ package com.opentable.metrics.http;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -18,8 +19,8 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.google.inject.Inject;
 
+@Named
 @Path("/service-status")
 @Produces(MediaType.APPLICATION_JSON)
 public class MetricsHttpResource
@@ -27,7 +28,6 @@ public class MetricsHttpResource
     private final MetricRegistry metrics;
     private final HealthCheckRegistry health;
 
-    @Inject
     MetricsHttpResource(MetricRegistry metrics, HealthCheckRegistry health)
     {
         this.metrics = metrics;

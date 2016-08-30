@@ -1,89 +1,88 @@
 package com.opentable.metrics.graphite;
 
-import java.util.function.Function;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Stage;
+import com.codahale.metrics.MetricRegistry;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.boot.SpringApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-import com.opentable.config.FixedConfigModule;
-import com.opentable.lifecycle.Lifecycle;
-import com.opentable.lifecycle.LifecycleStage;
-import com.opentable.lifecycle.guice.LifecycleModule;
-import com.opentable.serverinfo.ServerInfo;
+import com.opentable.service.AppInfo;
+import com.opentable.service.EnvInfo;
+import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
-    private Function<String, String> oldGetenv;
     @Inject
     private GraphiteReporter reporter;
-    @Inject
-    private Lifecycle lifecycle;
 
-    @Before
-    public void before() {
-        Assert.assertNull(oldGetenv);
-        oldGetenv = GraphiteReporter.getenv;
-    }
-
-    @After
-    public void after() {
-        Assert.assertNotNull(oldGetenv);
-        GraphiteReporter.getenv = oldGetenv;
+    @Test
+    public void withFlavor() {
+        final String prefix = prefixFrom("type-location.flavor", "0");
+        Assert.assertNotNull(prefix);
+        Assert.assertEquals("app_metrics.test-server-flavor.type.location.instance-0", prefix);
     }
 
     @Test
-    public void prefixWhole() {
-        final String prefix = prefixFrom("type-location.flavor", "x");
-        Assert.assertEquals("app_metrics.test-server-flavor.type.location.instance-x", prefix);
-    }
-
-    @Test
-    public void prefixPartial() {
-        final String prefix = prefixFrom("type-location", "x");
-        Assert.assertEquals("app_metrics.test-server.type.location.instance-x", prefix);
-    }
-
-    @Test
-    public void real() {
+    public void noFlavor() {
         final String prefix = prefixFrom("prod-uswest2", "3");
+        Assert.assertNotNull(prefix);
         Assert.assertEquals("app_metrics.test-server.prod.uswest2.instance-3", prefix);
     }
 
     @Test
-    public void unknown() {
-        final String prefix = prefixFrom(null, null);
-        Assert.assertEquals("app_metrics.test-server.unknown.unknown.instance-unknown", prefix);
+    public void bad() {
+        Assert.assertNull(prefixFrom(null, null));
     }
 
     private String prefixFrom(final String env, final String instanceNo) {
-        GraphiteReporter.getenv = name -> {
-            if ("OT_ENV_WHOLE".equals(name)) {
-                return env;
-            }
-            if ("INSTANCE_NO".equals(name)) {
-                return instanceNo;
-            }
-            return null;
-        };
-        ServerInfo.add(ServerInfo.SERVER_TYPE, "test-server");
-        final Injector injector = Guice.createInjector(
-                Stage.PRODUCTION,
-                new GraphiteModule(),
-                new FixedConfigModule(),
-                new LifecycleModule());
-        injector.injectMembers(this);
+        final SpringApplication app = new SpringApplication(
+                TestConfiguration.class,
+                GraphiteConfiguration.class
+        );
+        final Map<String, Object> mockEnv = new HashMap<>();
+        if (env != null) {
+            mockEnv.put("OT_ENV_WHOLE", env);
+            final String[] typeLoc = env.split("-");
+            mockEnv.put("OT_ENV_TYPE", typeLoc[0]);
+            final String[] locFlavor = typeLoc[1].split("\\.");
+            mockEnv.put("OT_ENV_LOCATION", locFlavor[0]);
+            mockEnv.put("OT_ENV_FLAVOR", locFlavor.length == 2 ? locFlavor[1] : "");
+            mockEnv.put("OT_ENV", typeLoc[0] + "-" + locFlavor[0]);
+        }
+        if (instanceNo != null) {
+            mockEnv.put("INSTANCE_NO", instanceNo);
+        }
+        app.setDefaultProperties(mockEnv);
+        app.run().getAutowireCapableBeanFactory().autowireBean(this);
         Assert.assertNotNull(reporter);
-        Assert.assertNotNull(lifecycle);
-        lifecycle.executeTo(LifecycleStage.START_STAGE);
-        final String prefix = reporter.getPrefix();
-        Assert.assertNotNull(prefix);
-        return prefix;
+        return reporter.getPrefix();
+    }
+
+    @Configuration
+    @Import({
+            AppInfo.class,
+            EnvInfo.class,
+    })
+    public static class TestConfiguration {
+        @Bean
+        public ServiceInfo getServiceInfo() {
+            return new ServiceInfo() {
+                @Override
+                public String getName() {
+                    return "test-server";
+                }
+            };
+        }
+        @Bean
+        public MetricRegistry getMetrics() {
+            return new MetricRegistry();
+        }
     }
 }
