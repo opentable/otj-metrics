@@ -8,6 +8,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
+import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
 import com.codahale.metrics.jvm.FileDescriptorRatioGauge;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
@@ -45,6 +46,7 @@ public class JvmMetricsConfiguration {
         metrics.register(base + ".fd.used-ratio", new FileDescriptorRatioGauge());
         metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
         metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
+        metrics.registerAll(namespace("class", new ClassLoadingGaugeSet()));
         metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
         metrics.register(base + ".cpu.load", new CpuLoadGauge());
 
