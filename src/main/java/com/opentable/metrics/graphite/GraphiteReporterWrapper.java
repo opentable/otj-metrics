@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Named;
 
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
@@ -18,12 +17,13 @@ import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
 import com.opentable.service.ServiceInfo;
 
-@Named
+@Component
 public class GraphiteReporterWrapper {
     @Value("${ot.graphite.graphite-host:#{null}}")
     private String host;
