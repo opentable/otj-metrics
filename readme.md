@@ -6,7 +6,8 @@ on your application's configuration.
 
 Requirements
 ------------
-This component requires several classes to be injected.  These are:
+This component requires several classes to be injected.  The first
+several are:
 - `javax.management.MBeanServer`
 - `com.codahale.metrics.MetricRegistry`
 - `com.codahale.metrics.health.HealthCheckRegistry`
@@ -14,10 +15,16 @@ This component requires several classes to be injected.  These are:
 Instances of these classes are provided by the `RestHttpServer` in
 `otj-server`.
 
-Additionally, your application is expected to declare as a Spring Bean
-an implementation of `com.opentable.service.ServiceInfo`.  This
-interface definition comes from `otj-core`.  The implementation will be
-used to generate the Graphite metric namespace prefix.
+More include:
+- `com.opentable.service.ServiceInfo`
+- `com.opentable.service.AppInfo`
+- `com.opentable.service.EnvInfo`
+
+These classes hail from `otj-core`, and are also provided automatically
+for you by `otj-server`.  Note that `ServiceInfo` is an interface, so
+you are expected to declare as a Spring Bean an _implementation_.  This
+implementation, along with the several other info beans, will be used
+to generate the Graphite metric namespace prefix.
 
 Enabling
 --------
@@ -31,6 +38,17 @@ This module provides a basic report on the health of your application by
 detecting whether the Spring application context has been refreshed or
 closed.  There is also a framework for plugging in additional health
 checks.  The results of all of these are made available at `/health`.
+
+Annotations
+-----------
+This component provides automatic support for [the `@Timed`, etc.
+annotations on Spring Beans][7].  There is no need to add
+`@EnableMetrics` in your application.  (See
+`MetricAnnotationConfiguration` for more details.)  Do note that the
+metric names automatically generated as a result of these annotations
+will be a function of the package structure, class naming, and function
+naming.  Therefore, if you rearrange or refactor your code, your metric
+names may implicitly be changed as well.
 
 Graphite
 --------
@@ -111,3 +129,4 @@ TODO
 [4]: https://wiki.otcorp.opentable.com/display/CP/ArchTeam+Java+Services
 [5]: https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/tooldescr007.html
 [6]: http://metrics.dropwizard.io/3.1.0/manual/servlets/#adminservlet
+[7]: https://github.com/ryantenney/metrics-spring
