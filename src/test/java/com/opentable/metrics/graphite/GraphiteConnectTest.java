@@ -46,13 +46,14 @@ public class GraphiteConnectTest {
         final TcpServer server = new TcpServer();
         final int port = server.start();
 
+        final Duration reportingPeriod = Duration.ofMillis(200);
         final Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
                 .put("INSTANCE_NO", "0")
                 .put("OT_ENV_TYPE", "dev")
                 .put("OT_ENV_LOCATION", "somewhere")
                 .put("ot.graphite.graphite-host", "localhost")
                 .put("ot.graphite.graphite-port", Integer.toString(port))
-                .put("ot.graphite.reporting-period", "PT0.2S")
+                .put("ot.graphite.reporting-period", reportingPeriod.toString())
                 .build();
 
         final SpringApplication app = new SpringApplication(TestConfiguration.class);
@@ -60,12 +61,15 @@ public class GraphiteConnectTest {
         final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        Assert.assertFalse(server.contains("foo.bar.baz"));
         final Counter counter = metricRegistry.counter("foo.bar.baz");
         counter.inc();
         counter.inc();
         counter.inc();
-        Thread.sleep(Duration.ofMillis(300).toMillis());
+        // Wait for data relay.
+        Thread.sleep(reportingPeriod.plusMillis(100).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
+        Assert.assertTrue(server.contains("foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server.stopClean();
     }
@@ -74,6 +78,7 @@ public class GraphiteConnectTest {
         private static final Logger LOG = LoggerFactory.getLogger(TcpServer.class);
         private LongAdder bytesRead = new LongAdder();
         private AtomicBoolean running = new AtomicBoolean();
+        private StringBuilder sb = new StringBuilder();
         private ServerSocket sock;
         private ExecutorService exec;
 
@@ -106,6 +111,10 @@ public class GraphiteConnectTest {
             return bytesRead.longValue();
         }
 
+        private boolean contains(final String s) {
+            return sb.toString().contains(s);
+        }
+
         private void run() {
             LOG.info("starting");
             try {
@@ -119,7 +128,9 @@ public class GraphiteConnectTest {
                         break;
                     } else {
                         bytesRead.add(n);
-                        LOG.info("read {} bytes\n{}", n, new String(buf, 0, n, StandardCharsets.US_ASCII));
+                        final String asString = new String(buf, 0, n, StandardCharsets.US_ASCII);
+                        sb.append(asString);
+                        //LOG.info("read {} bytes\n{}", n, asString);
                     }
                     Thread.sleep(Duration.ofMillis(100).toMillis());
                 }
