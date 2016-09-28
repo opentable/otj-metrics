@@ -20,7 +20,7 @@ import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
     @Inject
-    private GraphiteReporter reporter;
+    private GraphiteReporterWrapper reporter;
 
     @Test
     public void withFlavor() {

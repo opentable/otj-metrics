@@ -23,7 +23,7 @@ import com.opentable.service.EnvInfo;
 import com.opentable.service.ServiceInfo;
 
 @Named
-public class GraphiteReporter {
+public class GraphiteReporterWrapper {
     @Value("${ot.graphite.graphite-host:#{null}}")
     private String host;
 
@@ -37,11 +37,11 @@ public class GraphiteReporter {
     private final AppInfo appInfo;
     private final MetricRegistry metricRegistry;
 
-    private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporter.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporterWrapper.class);
 
-    public GraphiteReporter(final ServiceInfo serviceInfo,
-                            final AppInfo appInfo,
-                            final MetricRegistry metricRegistry) {
+    public GraphiteReporterWrapper(final ServiceInfo serviceInfo,
+                                   final AppInfo appInfo,
+                                   final MetricRegistry metricRegistry) {
         applicationName = serviceInfo.getName();
         this.appInfo = appInfo;
         this.metricRegistry = metricRegistry;
