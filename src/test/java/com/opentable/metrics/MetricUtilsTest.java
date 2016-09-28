@@ -81,4 +81,13 @@ public class MetricUtilsTest {
         final Map<String, Metric> map = Collections.singletonMap("foo.bar", c);
         MetricUtils.assertMetricsEqual(() -> map, Collections.singletonMap("foo.bar", x));
     }
+
+    @Test(expected = AssertionError.class)
+    public void assertMetricsEqualFail() {
+        final Meter m = new Meter();
+        final long x = 123;
+        m.mark(x);
+        final Map<String, Metric> map = Collections.singletonMap("bar.baz", m);
+        MetricUtils.assertMetricsEqual(() -> map, Collections.singletonMap("bar.baz", x + 10));
+    }
 }

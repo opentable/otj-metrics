@@ -8,8 +8,6 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 
-import org.junit.Assert;
-
 /**
  * Utilities for dealing with {@link Metric}s.
  */
@@ -86,12 +84,17 @@ public class MetricUtils {
      *
      * @param metricSet The metric set against which to assert.
      * @param assertions Mapping of metric name to asserted value.
+     * @throws AssertionError On the first assertion failure.
      */
-    public static void assertMetricsEqual(final MetricSet metricSet, final Map<String, Number> assertions) {
+    public static void assertMetricsEqual(final MetricSet metricSet, final Map<String, Number> assertions)
+            throws AssertionError {
         assertions.forEach((name, value) -> {
             final long expected = value.longValue();
             final long actual = extractLong(metricSet, name);
-            Assert.assertEquals(String.format("%s assertion failed", name), expected, actual);
+            if (expected != actual) {
+                throw new AssertionError(
+                        String.format("%s assertion failed; expected %d != actual %d", name, expected, actual));
+            }
         });
     }
 }
