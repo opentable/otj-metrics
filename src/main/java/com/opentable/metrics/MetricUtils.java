@@ -27,11 +27,8 @@ public class MetricUtils {
         }
         if (m instanceof Gauge) {
             final Object value = ((Gauge) m).getValue();
-            if (value instanceof Long) {
-                return (long) value;
-            }
-            if (value instanceof Integer) {
-                return ((Integer) value).longValue();
+            if (value instanceof Number) {
+                return ((Number) value).longValue();
             }
         }
         throw new IllegalArgumentException("could not extract long value");

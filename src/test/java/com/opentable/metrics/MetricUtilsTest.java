@@ -27,9 +27,16 @@ public class MetricUtilsTest {
     }
 
     @Test
-    public void extractGauge() {
+    public void extractGaugeInt() {
         final int x = 1234;
         final Gauge<Integer> g = () -> x;
+        Assert.assertEquals(x, MetricUtils.extractLong(g));
+    }
+
+    @Test
+    public void extractGaugeLong() {
+        final long x = 123123;
+        final Gauge<Long> g = () -> x;
         Assert.assertEquals(x, MetricUtils.extractLong(g));
     }
 
