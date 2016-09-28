@@ -40,9 +40,10 @@ public class GraphiteReporterWrapper {
 
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporterWrapper.class);
 
-    public GraphiteReporterWrapper(final ServiceInfo serviceInfo,
-                                   final AppInfo appInfo,
-                                   final MetricRegistry metricRegistry) {
+    public GraphiteReporterWrapper(
+            final ServiceInfo serviceInfo,
+            final AppInfo appInfo,
+            final MetricRegistry metricRegistry) {
         applicationName = serviceInfo.getName();
         this.appInfo = appInfo;
         this.metricRegistry = metricRegistry;
