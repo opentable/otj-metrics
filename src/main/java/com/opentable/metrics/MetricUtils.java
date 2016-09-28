@@ -31,7 +31,7 @@ public class MetricUtils {
                 return ((Number) value).longValue();
             }
         }
-        throw new IllegalArgumentException("could not extract long value");
+        throw new IllegalArgumentException(String.format("could not extract long value from %s", m.getClass()));
     }
 
     /**
