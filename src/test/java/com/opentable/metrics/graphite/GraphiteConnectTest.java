@@ -43,7 +43,7 @@ import com.opentable.service.ServiceInfo;
 public class GraphiteConnectTest {
     @Test
     public void sendTest() throws IOException, InterruptedException {
-        final TcpServer server = new TcpServer();
+        final TcpServer server = new TcpServer(0);
         final int port = server.start();
 
         final Duration reportingPeriod = Duration.ofMillis(200);
@@ -74,16 +74,70 @@ public class GraphiteConnectTest {
         server.stopClean();
     }
 
+    @Test
+    public void reconnectTest() throws IOException, InterruptedException {
+        final TcpServer server = new TcpServer(0);
+        final int port = server.start();
+
+        final Duration reportingPeriod = Duration.ofMillis(200);
+        final Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
+                .put("INSTANCE_NO", "0")
+                .put("OT_ENV_TYPE", "dev")
+                .put("OT_ENV_LOCATION", "somewhere")
+                .put("ot.graphite.graphite-host", "localhost")
+                .put("ot.graphite.graphite-port", Integer.toString(port))
+                .put("ot.graphite.reporting-period", reportingPeriod.toString())
+                .build();
+
+        final SpringApplication app = new SpringApplication(TestConfiguration.class);
+        app.setDefaultProperties(props);
+        final ApplicationContext context = app.run();
+        final BeanFactory factory = context.getAutowireCapableBeanFactory();
+        server.stopClean();
+
+        final Duration waitPeriod = reportingPeriod.multipliedBy(3).plusMillis(100);
+
+        // Wait for connection failure detection.
+        Thread.sleep(waitPeriod.toMillis());
+
+        // New server on same port--wrapper should orchestrate a reconnect.
+        final TcpServer server2 = new TcpServer(port);
+        Assert.assertEquals(server2.start(), port);
+
+        // Wait for reconnect.
+        Thread.sleep(waitPeriod.toMillis());
+
+        Assert.assertFalse(server2.contains("foo.bar.baz"));
+        final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        final Counter counter2 = metricRegistry.counter("foo.bar.baz");
+        counter2.inc();
+        counter2.inc();
+        counter2.inc();
+
+        // Wait for data relay.
+        Thread.sleep(waitPeriod.toMillis());
+
+        Assert.assertTrue(server2.getBytesRead() > 0);
+        Assert.assertTrue(server2.contains("foo.bar.baz"));
+        SpringApplication.exit(context, () -> 0);
+        server2.stopClean();
+    }
+
     private static class TcpServer {
         private static final Logger LOG = LoggerFactory.getLogger(TcpServer.class);
+        private final int desiredPort;
         private LongAdder bytesRead = new LongAdder();
         private AtomicBoolean running = new AtomicBoolean();
         private StringBuilder sb = new StringBuilder();
         private ServerSocket sock;
         private ExecutorService exec;
 
+        private TcpServer(final int desiredPort) {
+            this.desiredPort = desiredPort;
+        }
+
         private int start() throws IOException {
-            sock = new ServerSocket(0);
+            sock = new ServerSocket(desiredPort);
             final int port = sock.getLocalPort();
             exec = Executors.newSingleThreadExecutor("tcp-server");
             running.set(true);
