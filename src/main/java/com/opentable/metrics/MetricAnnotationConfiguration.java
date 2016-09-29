@@ -1,6 +1,7 @@
 package com.opentable.metrics;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.annotation.Timed;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurationSupport;
 
@@ -13,8 +14,9 @@ import org.springframework.core.type.AnnotationMetadata;
  *
  * <p>
  * NB: The metric names automatically generated as a result of these annotations will be a function of the package
- * structure, class naming, and function naming.  Therefore, if you rearrange or refactor your code, your metric names
- * may implicitly be changed as well.
+ * structure, class naming, and function naming (unless you use the, for example,
+ * {@link Timed#name()}/{@link Timed#absolute()} parameters).  Therefore, if you rearrange or refactor your code, your
+ * metric names may implicitly be changed as well.
  *
  * <p>
  * We do not use his {@link com.ryantenney.metrics.spring.config.annotation.EnableMetrics @EnableMetrics} annotation

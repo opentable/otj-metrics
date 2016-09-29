@@ -47,8 +47,9 @@ annotations on Spring Beans][7].  There is no need to add
 `MetricAnnotationConfiguration` for more details.)  Do note that the
 metric names automatically generated as a result of these annotations
 will be a function of the package structure, class naming, and function
-naming.  Therefore, if you rearrange or refactor your code, your metric
-names may implicitly be changed as well.
+naming (unless you use the `name`/`absolute` parameters).  Therefore, if
+you rearrange or refactor your code, your metric names may implicitly be
+changed as well.
 
 Graphite
 --------
