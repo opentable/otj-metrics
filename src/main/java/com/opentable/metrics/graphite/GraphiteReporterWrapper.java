@@ -3,14 +3,20 @@ package com.opentable.metrics.graphite;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.google.common.annotations.VisibleForTesting;
@@ -29,7 +35,7 @@ import com.opentable.service.EnvInfo;
 import com.opentable.service.ServiceInfo;
 
 @Component
-public class GraphiteReporterWrapper {
+public class GraphiteReporterWrapper implements MetricSet {
     @Value("${ot.graphite.graphite-host:#{null}}")
     private String host;
 
@@ -48,6 +54,8 @@ public class GraphiteReporterWrapper {
     private Graphite graphite;
     private GraphiteReporter reporter;
 
+    private final Counter detectedConnectionFailures = new Counter();
+
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteReporterWrapper.class);
 
     public GraphiteReporterWrapper(
@@ -61,6 +69,8 @@ public class GraphiteReporterWrapper {
 
     @PostConstruct
     public void postConstruct() {
+        metricRegistry.registerAll(this::getGlobalMetrics);
+
         if (Strings.isNullOrEmpty(host)) {
             LOG.info("no graphite host; skipping initialization");
             return;
@@ -81,11 +91,18 @@ public class GraphiteReporterWrapper {
 
     @PreDestroy
     public void preDestroy() throws InterruptedException {
+        getGlobalMetrics().keySet().forEach(metricRegistry::remove);
+
         if (prefix != null) {
             OTExecutors.shutdownAndAwaitTermination(exec, Duration.ofSeconds(2));
             exec = null;
             shutdown();
         }
+    }
+
+    @Override
+    public Map<String, Metric> getMetrics() {
+        return Collections.singletonMap("detected-connection-failures", detectedConnectionFailures);
     }
 
     @VisibleForTesting
@@ -98,6 +115,13 @@ public class GraphiteReporterWrapper {
         final String name = env.getFlavor() == null ? applicationName : applicationName + "-" + env.getFlavor();
         final String instance = "instance-" + i;
         return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
+    }
+
+    // Namespaced for global registry.
+    private Map<String, Metric> getGlobalMetrics() {
+        final Map<String, Metric> ret = new HashMap<>();
+        getMetrics().forEach((name, metric) -> ret.put("metrics.graphite.reporter-wrapper." + name, metric));
+        return Collections.unmodifiableMap(ret);
     }
 
     private void init() {
@@ -130,6 +154,7 @@ public class GraphiteReporterWrapper {
         if (!graphite.isConnected() || graphite.getFailures() > 0) {
             LOG.warn("bad graphite state; recycling; connected {}, failures {}",
                     graphite.isConnected(), graphite.getFailures());
+            detectedConnectionFailures.inc();
             shutdown();
             init();
         }
