@@ -60,6 +60,8 @@ public class GraphiteConnectTest {
         app.setDefaultProperties(props);
         final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
+        final GraphiteReporterWrapper reporter = factory.getBean(GraphiteReporterWrapper.class);
+        final Counter detectedConnectionFailures = (Counter) reporter.getMetrics().get("detected-connection-failures");
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
         Assert.assertFalse(server.contains("foo.bar.baz"));
         final Counter counter = metricRegistry.counter("foo.bar.baz");
@@ -72,6 +74,7 @@ public class GraphiteConnectTest {
         Assert.assertTrue(server.contains("foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server.stopClean();
+        Assert.assertEquals(0, detectedConnectionFailures.getCount());
     }
 
     @Test
@@ -79,7 +82,7 @@ public class GraphiteConnectTest {
         final TcpServer server = new TcpServer(0);
         final int port = server.start();
 
-        final Duration reportingPeriod = Duration.ofMillis(200);
+        final Duration reportingPeriod = Duration.ofSeconds(1);
         final Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
                 .put("INSTANCE_NO", "0")
                 .put("OT_ENV_TYPE", "dev")
@@ -93,19 +96,24 @@ public class GraphiteConnectTest {
         app.setDefaultProperties(props);
         final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
+        final GraphiteReporterWrapper reporter = factory.getBean(GraphiteReporterWrapper.class);
+        final Counter detectedConnectionFailures = (Counter) reporter.getMetrics().get("detected-connection-failures");
+
+        // Wait for graphite to connect.
+        Thread.sleep(reportingPeriod.toMillis());
+        Assert.assertTrue(server.getBytesRead() > 0);
+
         server.stopClean();
-
-        final Duration waitPeriod = reportingPeriod.multipliedBy(3).plusMillis(100);
-
-        // Wait for connection failure detection.
-        Thread.sleep(waitPeriod.toMillis());
+        // Wait for connection failure.
+        Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
+        Assert.assertTrue(detectedConnectionFailures.getCount() > 0);
 
         // New server on same port--wrapper should orchestrate a reconnect.
         final TcpServer server2 = new TcpServer(port);
         Assert.assertEquals(server2.start(), port);
 
         // Wait for reconnect.
-        Thread.sleep(waitPeriod.toMillis());
+        Thread.sleep(reportingPeriod.toMillis());
 
         Assert.assertFalse(server2.contains("foo.bar.baz"));
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
@@ -115,7 +123,7 @@ public class GraphiteConnectTest {
         counter2.inc();
 
         // Wait for data relay.
-        Thread.sleep(waitPeriod.toMillis());
+        Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
 
         Assert.assertTrue(server2.getBytesRead() > 0);
         Assert.assertTrue(server2.contains("foo.bar.baz"));
