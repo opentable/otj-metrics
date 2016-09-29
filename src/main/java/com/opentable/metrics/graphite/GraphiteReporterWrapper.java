@@ -36,7 +36,7 @@ import com.opentable.service.ServiceInfo;
 
 @Component
 public class GraphiteReporterWrapper implements MetricSet {
-    private static final int CHECK_PERIOD_MULT = 3;
+    private static final int CHECK_PERIOD_MULT = 2;
 
     @Value("${ot.graphite.graphite-host:#{null}}")
     private String host;
