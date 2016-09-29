@@ -36,6 +36,8 @@ import com.opentable.service.ServiceInfo;
 
 @Component
 public class GraphiteReporterWrapper implements MetricSet {
+    private static final int CHECK_PERIOD_MULT = 3;
+
     @Value("${ot.graphite.graphite-host:#{null}}")
     private String host;
 
@@ -83,7 +85,7 @@ public class GraphiteReporterWrapper implements MetricSet {
 
         init();
         exec = Executors.newSingleThreadScheduledExecutor("graphite-checker");
-        final Duration checkPeriod = reportingPeriod.multipliedBy(3);
+        final Duration checkPeriod = reportingPeriod.multipliedBy(CHECK_PERIOD_MULT);
         exec.scheduleAtFixedRate(
                 this::checkGraphite, checkPeriod.toMillis(), checkPeriod.toMillis(), TimeUnit.MILLISECONDS);
         LOG.info("kicked off thread to check on graphite connection with period {}", checkPeriod);
