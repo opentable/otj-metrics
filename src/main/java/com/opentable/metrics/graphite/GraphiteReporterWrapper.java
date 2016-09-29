@@ -34,6 +34,13 @@ import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
 import com.opentable.service.ServiceInfo;
 
+/**
+ * Spring-ey wrapper for Dropwizard Metrics Graphite reporter.
+ *
+ * <p>
+ * Constructs metric prefix based on {@link ServiceInfo}, {@link AppInfo}, and {@link EnvInfo}. Performs automatic
+ * periodic Graphite failure detection and connection recycling.
+ */
 @Component
 public class GraphiteReporterWrapper implements MetricSet {
     private static final int CHECK_PERIOD_MULT = 2;
