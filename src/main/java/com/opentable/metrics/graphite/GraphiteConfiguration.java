@@ -11,6 +11,6 @@ import com.opentable.spring.ConversionServiceConfiguration;
          * {@link ConversionServiceConfiguration} needed for {@link java.time.Duration} config value.
          */
         ConversionServiceConfiguration.class,
-        GraphiteReporter.class,
+        GraphiteReporterWrapper.class,
 })
 public class GraphiteConfiguration {}
