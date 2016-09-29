@@ -134,9 +134,9 @@ public class GraphiteConnectTest {
     private static class TcpServer {
         private static final Logger LOG = LoggerFactory.getLogger(TcpServer.class);
         private final int desiredPort;
-        private LongAdder bytesRead = new LongAdder();
-        private AtomicBoolean running = new AtomicBoolean();
-        private StringBuilder sb = new StringBuilder();
+        private final LongAdder bytesRead = new LongAdder();
+        private final AtomicBoolean running = new AtomicBoolean();
+        private final StringBuilder sb = new StringBuilder();
         private ServerSocket sock;
         private ExecutorService exec;
 
