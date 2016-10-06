@@ -9,6 +9,9 @@ import java.util.function.Supplier;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +67,14 @@ public class NmtMetrics {
         }
         lastRefresh = Instant.now();
         refreshCategories();
+        if (registeredMetrics.isEmpty()) {
+            LOG.warn("Didn't find any NMT metrics to register!");
+        }
         registerGauges("total", () -> nmt.total);
     }
 
     private void refreshCategories() {
+        final Set<String> atStart = ImmutableSet.copyOf(registeredMetrics);
         nmt.categories.keySet().forEach(categoryName -> {
             final String metricName = categoryName.toLowerCase().replaceAll(" ", "-");
             if (registeredMetrics.contains(metricName)) {
@@ -75,6 +82,10 @@ public class NmtMetrics {
             }
             registerCategoryGauges(metricName, categoryName);
         });
+        final SetView<String> added = Sets.difference(registeredMetrics, atStart);
+        if (!added.isEmpty()) {
+            LOG.debug("Registered metrics: {}", added);
+        }
     }
 
     private void refreshNmt() {
@@ -92,7 +103,6 @@ public class NmtMetrics {
         if (!registeredMetrics.add(metricName)) {
             throw new IllegalStateException(String.format("%s already registered", metricName));
         }
-        LOG.debug("registering {}", metricName);
 
         final String fullMetricName = prefix + "." + metricName;
 
