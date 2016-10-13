@@ -9,6 +9,7 @@ import com.codahale.metrics.jetty9.InstrumentedHandler;
 import com.codahale.metrics.jetty9.InstrumentedQueuedThreadPool;
 
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +23,12 @@ import org.springframework.context.annotation.Configuration;
 public class JettyServerMetricsConfiguration {
     @Bean
     public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metrics) {
-        return () -> new InstrumentedQueuedThreadPool(metrics);
+        return () -> new InstrumentedQueuedThreadPool(metrics,
+                32, 32, // Default number of threads, overridden in otj-server EmbeddedJetty
+                30000,  // Idle timeout, irrelevant since max == min
+                new BlockingArrayQueue<>(128, // Initial queue size
+                        8, // Expand increment (irrelevant; initial == max)
+                        128)); // Upper bound on work queue
     }
 
     @Bean
