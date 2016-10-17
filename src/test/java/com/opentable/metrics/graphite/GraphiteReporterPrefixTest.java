@@ -1,11 +1,14 @@
 package com.opentable.metrics.graphite;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.inject.Inject;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.GraphiteReporter;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,7 +23,7 @@ import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
     @Inject
-    private GraphiteReporterWrapper reporter;
+    private GraphiteReporter reporter;
 
     @Test
     public void withFlavor() {
@@ -61,8 +64,16 @@ public class GraphiteReporterPrefixTest {
         }
         app.setDefaultProperties(mockEnv);
         app.run().getAutowireCapableBeanFactory().autowireBean(this);
-        Assert.assertNotNull(reporter);
-        return reporter.getPrefix();
+        if (reporter == null) {
+            return null;
+        }
+        try {
+            Field f = reporter.getClass().getDeclaredField("prefix");
+            f.setAccessible(true);
+            return Objects.toString(f.get(reporter));
+        } catch (IllegalAccessException | NoSuchFieldException | SecurityException e) {
+            throw new AssertionError(e);
+        }
     }
 
     @Configuration
