@@ -59,6 +59,10 @@ public class GraphiteConfiguration {
     private MetricRegistry metricRegistry;
     private MetricSet registeredMetrics;
 
+    public Duration getReportingPeriod() {
+        return reportingPeriod;
+    }
+
     @Bean
     public GraphiteReporter graphiteReporter(GraphiteSender sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
         if (sender == null) {
