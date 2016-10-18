@@ -3,6 +3,7 @@ package com.opentable.metrics.graphite;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
+import java.net.ConnectException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,7 @@ import javax.management.MBeanServer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.GraphiteSender;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableMap;
 import com.mogwee.executors.Executors;
@@ -60,8 +62,7 @@ public class GraphiteConnectTest {
         app.setDefaultProperties(props);
         final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
-        final GraphiteReporterWrapper reporter = factory.getBean(GraphiteReporterWrapper.class);
-        final Counter detectedConnectionFailures = (Counter) reporter.getMetrics().get("detected-connection-failures");
+        final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
         Assert.assertFalse(server.contains("foo.bar.baz"));
         final Counter counter = metricRegistry.counter("foo.bar.baz");
@@ -96,8 +97,7 @@ public class GraphiteConnectTest {
         app.setDefaultProperties(props);
         final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
-        final GraphiteReporterWrapper reporter = factory.getBean(GraphiteReporterWrapper.class);
-        final Counter detectedConnectionFailures = (Counter) reporter.getMetrics().get("detected-connection-failures");
+        final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
 
         // Wait for graphite to connect.
         Thread.sleep(reportingPeriod.toMillis());
@@ -129,6 +129,66 @@ public class GraphiteConnectTest {
         Assert.assertTrue(server2.contains("foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server2.stopClean();
+    }
+
+    @Test
+    public void senderWrapperTest() throws Exception {
+        final TcpServer server = new TcpServer(0);
+        final int port = server.start();
+
+        final Duration reportingPeriod = Duration.ofSeconds(1);
+        final Map<String, Object> props = new ImmutableMap.Builder<String, Object>()
+                .put("INSTANCE_NO", "0")
+                .put("OT_ENV_TYPE", "dev")
+                .put("OT_ENV_LOCATION", "somewhere")
+                .put("ot.graphite.graphite-host", "localhost")
+                .put("ot.graphite.graphite-port", Integer.toString(port))
+                .put("ot.graphite.reporting-period", reportingPeriod.toString())
+                .build();
+
+        final SpringApplication app = new SpringApplication(TestConfiguration.class);
+        app.setDefaultProperties(props);
+        final ApplicationContext context = app.run();
+        final BeanFactory factory = context.getAutowireCapableBeanFactory();
+        final GraphiteSender sender = factory.getBean(GraphiteSender.class);
+
+        sender.send("test1", "1", 1234);
+        sender.flush();
+        Thread.sleep(reportingPeriod.toMillis());
+        Assert.assertTrue(server.contains("test1 1 1234"));
+
+        server.stopClean();
+        // Wait for connection failure.
+        Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
+
+        try {
+            sender.send("test2", "2", 2345);
+            sender.flush();
+        } catch (IOException expected) {
+            Assert.assertTrue(expected instanceof ConnectException);
+        }
+
+        // New server on same port--wrapper should orchestrate a reconnect.
+        final TcpServer server2 = new TcpServer(port);
+        Assert.assertEquals(server2.start(), port);
+
+        Assert.assertFalse(server2.contains("test2"));
+        sender.send("test3", "3", 3456);
+        sender.flush();
+        Thread.sleep(reportingPeriod.toMillis());
+
+        Assert.assertTrue(server2.getBytesRead() > 0);
+        Assert.assertTrue(server2.contains("test3"));
+
+        MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        SpringApplication.exit(context, () -> 0);
+        server2.stopClean();
+        Assert.assertEquals(0, metricRegistry.getCounters().size());
+    }
+
+    private static Counter findConnectionFailureCounter(BeanFactory factory) {
+        return (Counter) factory.getBean(MetricRegistry.class).getMetrics()
+                .get(GraphiteConfiguration.PREFIX + GraphiteSenderWrapper.DETECTED_CONNECTION_FAILURES);
     }
 
     private static class TcpServer {
