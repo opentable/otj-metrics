@@ -39,6 +39,12 @@ detecting whether the Spring application context has been refreshed or
 closed.  There is also a framework for plugging in additional health
 checks.  The results of all of these are made available at `/health`.
 
+Health checks may be in three states: `HEALTHY`, `WARNING`, and `CRITICAL`.
+The `HEALTHY` and `CRITICAL` states correspond directly to DropWizard Metrics'
+health check infrastructure.  The `WARNING` state is an addition and is triggered
+from an `CRITICAL` result that contains the string "WARN: " at the
+beginning of the message.
+
 Annotations
 -----------
 This component provides automatic support for [the `@Timed`, etc.

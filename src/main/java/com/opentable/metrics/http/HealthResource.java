@@ -27,21 +27,17 @@ public class HealthResource {
     @GET
     @Path("/")
     public Response getHealth() {
-        final Pair<Map<String, Result>, Boolean> result = controller.runHealthChecks();
-        final Boolean succeeded = result.getRight();
-        final int status = succeeded ? 200 : 500;
-        return Response.status(status).entity(result.getLeft()).build();
+        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
+        return Response.status(result.getRight().getHttpStatus()).entity(result.getLeft()).build();
     }
 
     @GET
     @Path("/group/{group}")
     public Response getHealthGroup(@PathParam("group") String group) {
-        final Pair<Map<String, Result>, Boolean> result = controller.runHealthChecks(group);
+        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }
-        final Boolean succeeded = result.getRight();
-        final int status = succeeded ? 200 : 500;
-        return Response.status(status).entity(result.getLeft()).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(result.getLeft()).build();
     }
 }
