@@ -16,6 +16,7 @@ import com.codahale.metrics.health.HealthCheck.Result;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.Maps;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import com.opentable.spring.PropertySourceUtil;
 public class HealthController {
     private static final Logger LOG = LoggerFactory.getLogger(HealthController.class);
     private static final String CONFIG_PREFIX = "ot.metrics.health.group.";
+    private static final String WARN_PREFIX = "WARN: ";
 
     private final Map<String, Result> failingChecks = new HashMap<>();
     private final Map<String, Set<String>> groups = new HashMap<>();
@@ -47,25 +49,39 @@ public class HealthController {
         });
     }
 
-    public Pair<Map<String, Result>, Boolean> runHealthChecks() {
+    public Pair<Map<String, Result>, CheckState> runHealthChecks() {
         final SortedMap<String, Result> checkResults = getCheckResults();
-        final boolean anyFailures = checkResults.values().stream()
-                .anyMatch(result -> !result.isHealthy());
-        return Pair.of(checkResults, !anyFailures);
+        final CheckState state = checkResults.values().stream()
+                .map(HealthController::resultToState)
+                .max(CheckState.SEVERITY)
+                .orElse(CheckState.HEALTHY);
+        return Pair.of(checkResults, state);
     }
 
-    public Pair<Map<String, Result>, Boolean> runHealthChecks(String group) {
+    public Pair<Map<String, Result>, CheckState> runHealthChecks(String group) {
         final Set<String> groupItems = groups.get(group);
         if (groupItems == null) {
             return null;
         }
         final SortedMap<String, Result> checkResults = getCheckResults();
-        final boolean anyFailures = checkResults.keySet().stream()
+        final CheckState state = checkResults.keySet().stream()
                 .filter(groupItems::contains)
                 .map(checkResults::get)
-                .anyMatch(r -> !r.isHealthy());
+                .map(HealthController::resultToState)
+                .max(CheckState.SEVERITY)
+                .orElse(CheckState.HEALTHY);
         final Map<String, Result> toReturn = Maps.filterKeys(checkResults, groupItems::contains);
-        return Pair.of(toReturn, !anyFailures);
+        return Pair.of(toReturn, state);
+    }
+
+    private static CheckState resultToState(Result r) {
+        if (r.isHealthy()) {
+            return CheckState.HEALTHY;
+        }
+        if (StringUtils.startsWithIgnoreCase(r.getMessage(), WARN_PREFIX)) {
+            return CheckState.WARNING;
+        }
+        return CheckState.CRITICAL;
     }
 
     private SortedMap<String, Result> getCheckResults() {

@@ -83,6 +83,37 @@ public class HealthApiTest {
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
     }
 
+    @Test
+    public void testWarning() {
+        registry.register("a", new Healthy());
+        registry.register("b", new Warning());
+
+        Response r = resource.getHealth();
+        assertEquals(400, r.getStatus());
+        assertEquals(2, ((Map<?,?>) r.getEntity()).size());
+    }
+
+    @Test
+    public void testBadTrumpsWarn() {
+        registry.register("a", new Healthy());
+        registry.register("b", new Warning());
+        registry.register("c", new Unhealthy());
+
+        Response r = resource.getHealth();
+        assertEquals(500, r.getStatus());
+        assertEquals(3, ((Map<?,?>) r.getEntity()).size());
+    }
+
+    @Test
+    public void testMalformedWarn() {
+        registry.register("a", new Healthy());
+        registry.register("b", new OopsWarning());
+
+        Response r = resource.getHealth();
+        assertEquals(500, r.getStatus());
+        assertEquals(2, ((Map<?,?>) r.getEntity()).size());
+    }
+
     static class Healthy extends HealthCheck {
         @Override
         protected Result check() throws Exception {
@@ -94,6 +125,20 @@ public class HealthApiTest {
         @Override
         protected Result check() throws Exception {
             return Result.unhealthy("wah");
+        }
+    }
+
+    static class Warning extends HealthCheck {
+        @Override
+        protected Result check() throws Exception {
+            return Result.unhealthy("WARN: blop");
+        }
+    }
+
+    static class OopsWarning extends HealthCheck {
+        @Override
+        protected Result check() throws Exception {
+            return Result.unhealthy("I meant to put WARN: at the start");
         }
     }
 }
