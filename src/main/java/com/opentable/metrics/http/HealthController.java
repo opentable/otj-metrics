@@ -105,4 +105,9 @@ public class HealthController {
         });
         return results;
     }
+
+    /** Utility to sort Result objects by severity. */
+    public static int compare(Result r1, Result r2) {
+        return resultToState(r1).compareTo(resultToState(r2));
+    }
 }
