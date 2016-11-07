@@ -28,7 +28,7 @@ public class JettyServerMetricsConfiguration {
                 30000,  // Idle timeout, irrelevant since max == min
                 new BlockingArrayQueue<>(128, // Initial queue size
                         8, // Expand increment (irrelevant; initial == max)
-                        128)); // Upper bound on work queue
+                        5120)); // Upper bound on work queue
     }
 
     @Bean
