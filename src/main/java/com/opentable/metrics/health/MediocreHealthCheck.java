@@ -1,5 +1,6 @@
 package com.opentable.metrics.health;
 
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.inject.Named;
@@ -25,7 +26,7 @@ class MediocreHealthCheck extends HealthCheck {
     /**
      * This bean is implicitly in singleton scope, so the healthy state will persist.
      */
-    private final AtomicReference<State> state = new AtomicReference<>(new State(false, "initial state"));
+    private final AtomicReference<State> state = new AtomicReference<>(new State(false, null));
 
     @Override
     protected Result check() {
@@ -54,13 +55,19 @@ class MediocreHealthCheck extends HealthCheck {
 
     private static class State {
         private final boolean healthy;
-        private final Object cause;
-        private State(final boolean healthy, final Object cause) {
+        private final ApplicationContextEvent cause;
+        private State(final boolean healthy, final ApplicationContextEvent cause) {
             this.healthy = healthy;
             this.cause = cause;
         }
         private String formatMessage() {
-            return String.format("cause: %s", cause);
+            final String formatCause;
+            if (cause == null) {
+                formatCause = "initialized to unhealthy";
+            } else {
+                formatCause = cause.getClass().getSimpleName() + " @ " + Instant.ofEpochMilli(cause.getTimestamp());
+            }
+            return formatCause;
         }
         private Result makeResult() {
             return healthy ? Result.healthy(formatMessage()) : Result.unhealthy(formatMessage());
