@@ -1,6 +1,7 @@
 package com.opentable.metrics.graphite;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -33,8 +34,7 @@ public class MetricSets {
 
     /**
      * Create a view that is the summation of multiple {@link MetricSet}s.
-     * If more than one metric set has a given key, the value is not
-     * defined.
+     * If more than one metric set has a given key, the value is arbitrary.
      */
     public static MetricSet combine(Iterable<MetricSet> sets) {
         return new MetricSet() {
@@ -49,10 +49,12 @@ public class MetricSets {
 
     /**
      * Create a view that is the summation of multiple {@link MetricSet}s.
-     * If more than one metric set has a given key, the value is not
-     * defined.
+     * If more than one metric set has a given key, the value is arbitrary.
      */
     public static MetricSet combine(MetricSet... sets) {
+        if (sets == null || sets.length == 0) {
+            return () -> Collections.emptyMap();
+        }
         return combine(Arrays.asList(sets));
     }
 
@@ -64,6 +66,8 @@ public class MetricSets {
     }
 
     public static void removeAll(MetricRegistry metricRegistry, MetricSet metrics) {
-        metrics.getMetrics().keySet().forEach(metricRegistry::remove);
+        if (metrics != null) {
+            metrics.getMetrics().keySet().forEach(metricRegistry::remove);
+        }
     }
 }
