@@ -33,8 +33,7 @@ public class MetricSets {
 
     /**
      * Create a view that is the summation of multiple {@link MetricSet}s.
-     * If more than one metric set has a given key, the value is not
-     * defined.
+     * If more than one metric set has a given key, the value is arbitrary.
      */
     public static MetricSet combine(Iterable<MetricSet> sets) {
         return new MetricSet() {
@@ -49,8 +48,7 @@ public class MetricSets {
 
     /**
      * Create a view that is the summation of multiple {@link MetricSet}s.
-     * If more than one metric set has a given key, the value is not
-     * defined.
+     * If more than one metric set has a given key, the value is arbitrary.
      */
     public static MetricSet combine(MetricSet... sets) {
         return combine(Arrays.asList(sets));

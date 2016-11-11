@@ -89,7 +89,7 @@ public class GraphiteConfiguration {
     @Bean
     public GraphiteSender graphiteSender(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        if (Strings.isNullOrEmpty(host)) {
+        if (!hasHost()) {
             LOG.info("no graphite host; skipping sender initialization");
             return null;
         }
@@ -102,7 +102,9 @@ public class GraphiteConfiguration {
 
     @PreDestroy
     void close() {
-        MetricSets.removeAll(metricRegistry, registeredMetrics);
+        if (hasHost()) {
+            MetricSets.removeAll(metricRegistry, registeredMetrics);
+        }
     }
 
     @VisibleForTesting
@@ -116,5 +118,9 @@ public class GraphiteConfiguration {
         final String name = env.getFlavor() == null ? applicationName : applicationName + "-" + env.getFlavor();
         final String instance = "instance-" + i;
         return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
+    }
+
+    private boolean hasHost() {
+        return !Strings.isNullOrEmpty(host);
     }
 }
