@@ -3,15 +3,19 @@ package com.opentable.metrics.http;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.junit.Test;
 import org.springframework.mock.env.MockEnvironment;
+
+import com.opentable.metrics.http.HealthResource.SortedEntry;
 
 public class HealthApiTest {
     private final HealthCheckRegistry registry = new HealthCheckRegistry();
@@ -25,7 +29,7 @@ public class HealthApiTest {
     public void testOk() {
         registry.register("a", new Healthy());
 
-        Response r = resource.getHealth();
+        Response r = resource.getHealth(false);
         assertEquals(200, r.getStatus());
         assertEquals(1, ((Map<?,?>) r.getEntity()).size());
     }
@@ -34,7 +38,7 @@ public class HealthApiTest {
     public void testOneBad() {
         registry.register("a", new Unhealthy());
 
-        Response r = resource.getHealth();
+        Response r = resource.getHealth(false);
         assertEquals(500, r.getStatus());
         assertEquals(1, ((Map<?,?>) r.getEntity()).size());
     }
@@ -45,7 +49,7 @@ public class HealthApiTest {
         registry.register("b", new Unhealthy());
         registry.register("c", new Healthy());
 
-        Response r = resource.getHealth();
+        Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(3, ((Map<?,?>) r.getEntity()).size());
     }
@@ -56,7 +60,7 @@ public class HealthApiTest {
         registry.register("b", new Unhealthy());
         registry.register("c", new Healthy());
 
-        Response r2 = resource.getHealthGroup("mygroup");
+        Response r2 = resource.getHealthGroup("mygroup", false);
         assertEquals(200, r2.getStatus());
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
     }
@@ -67,7 +71,7 @@ public class HealthApiTest {
         registry.register("b", new Unhealthy());
         registry.register("c", new Healthy());
 
-        Response r2 = resource.getHealthGroup("nogroup");
+        Response r2 = resource.getHealthGroup("nogroup", true);
         assertEquals(404, r2.getStatus());
         assertEquals(null, r2.getEntity());
     }
@@ -78,7 +82,7 @@ public class HealthApiTest {
         registry.register("b", new Healthy());
         registry.register("c", new Unhealthy());
 
-        Response r2 = resource.getHealthGroup("mygroup");
+        Response r2 = resource.getHealthGroup("mygroup", true);
         assertEquals(500, r2.getStatus());
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
     }
@@ -88,7 +92,7 @@ public class HealthApiTest {
         registry.register("a", new Healthy());
         registry.register("b", new Warning());
 
-        Response r = resource.getHealth();
+        Response r = resource.getHealth(true);
         assertEquals(400, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
     }
@@ -99,9 +103,24 @@ public class HealthApiTest {
         registry.register("b", new Warning());
         registry.register("c", new Unhealthy());
 
-        Response r = resource.getHealth();
+        Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(3, ((Map<?,?>) r.getEntity()).size());
+    }
+
+    @Test
+    public void testHideSuccesses() {
+        registry.register("a", new Healthy());
+        registry.register("b", new Warning());
+        registry.register("c", new Unhealthy());
+
+        Response r = resource.getHealth(false);
+        assertEquals(500, r.getStatus());
+        Map<?, ?> result = (Map<?,?>) r.getEntity();
+        assertEquals(ImmutableList.of("c", "b"), result.keySet().stream()
+                .map(e -> SortedEntry.class.cast(e))
+                .map(e -> e.name)
+                .collect(Collectors.toList()));
     }
 
     @Test
@@ -109,7 +128,7 @@ public class HealthApiTest {
         registry.register("a", new Healthy());
         registry.register("b", new OopsWarning());
 
-        Response r = resource.getHealth();
+        Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
     }

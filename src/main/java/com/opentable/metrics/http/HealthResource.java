@@ -4,10 +4,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.inject.Named;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -33,26 +35,34 @@ public class HealthResource {
 
     @GET
     @Path("/")
-    public Response getHealth() {
+    public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(render(result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(render(all, result.getLeft())).build();
     }
 
     @GET
     @Path("/group/{group}")
-    public Response getHealthGroup(@PathParam("group") String group) {
+    public Response getHealthGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(render(result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(render(all, result.getLeft())).build();
     }
 
-    private Map<SortedEntry, Result> render(Map<String, Result> raw) {
+    private Map<SortedEntry, Result> render(boolean all, Map<String, Result> raw) {
         Map<SortedEntry, Result> rendered = new TreeMap<>();
         raw.forEach((name, result) -> {
             rendered.put(new SortedEntry(abbreviator.abbreviate(name), result), result);
         });
+
+        if (!all && !rendered.isEmpty()) {
+            Result worstResult = rendered.keySet().iterator().next().result;
+            if (!worstResult.isHealthy()) {
+                rendered.keySet().removeIf(e -> e.result.isHealthy());
+            }
+        }
+
         return rendered;
     }
 
