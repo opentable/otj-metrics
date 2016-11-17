@@ -29,8 +29,11 @@ to generate the Graphite metric namespace prefix.
 Enabling
 --------
 As in [the demo server][1], the simplest route will probably to use the
-`RestHttpServer` from `otj-metrics`.  This will automatically set up
+`RestHttpServer` from `otj-server`.  This will automatically set up
 metric tracking for you.
+
+To bring in metrics support without using `otj-server`, import the
+`DefaultMetricsConfiguration`.
 
 Health Checking
 ---------------
@@ -39,11 +42,28 @@ detecting whether the Spring application context has been refreshed or
 closed.  There is also a framework for plugging in additional health
 checks.  The results of all of these are made available at `/health`.
 
+Health checks may be grouped.  Every health check has a registration name.
+By default, this is the Spring bean name.  Checks may be added to a group
+by configuration:
+
+```
+ot.metrics.health.group.my-house=front-door,deadbolt,spy-camera
+```
+Then, their state may be found at `/health/group/my-house`.
+
 Health checks may be in three states: `HEALTHY`, `WARNING`, and `CRITICAL`.
 The `HEALTHY` and `CRITICAL` states correspond directly to DropWizard Metrics'
 health check infrastructure.  The `WARNING` state is an addition and is triggered
 from an `CRITICAL` result that contains the string "WARN: " at the
 beginning of the message.
+
+The health endpoint returns a JSON object describing the failing health checks.
+The result code will be a 200, 400, or 500 response for `HEALTHY`, `WARNING`,
+and `CRITICAL` respectively.  By default, if any check is failing, all succeeding
+checks will be suppressed.  You may always see all checks by querying `?all=true`.
+
+The health check endpoint is included with the default metrics configuration,
+or may be enabled separately with `HealthHttpConfiguration`.
 
 Annotations
 -----------
@@ -124,11 +144,6 @@ available by providing the following configuration property.
     ot.metrics.http.path
 
 See the source code for the format.
-
-TODO
-----
-- Document how to enable metrics without using `RestHttpServer`.
-- Document the Health API (`HealthHttpConfiguration`).
 
 [1]: https://github.com/opentable/service-demo
 [2]: https://github.com/graphite-project/carbon
