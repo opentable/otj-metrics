@@ -49,10 +49,17 @@ public class MetricSets {
     }
 
     /**
+     * Return new metric set view that prefixes the names of the entries.
+     */
+    public static MetricSet prefix(String prefix, MetricSet metricSet) {
+        return transformNames(metricSet, k -> prefix + k);
+    }
+
+    /**
      * Combine multiple metric sets and prefix their names.
      */
     public static MetricSet combineAndPrefix(String prefix, MetricSet... metricSets) {
-        return transformNames(combine(metricSets), k -> prefix + k);
+        return prefix(prefix, combine(metricSets));
     }
 
     public static void removeAll(MetricRegistry metricRegistry, MetricSet metrics) {
