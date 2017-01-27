@@ -62,6 +62,9 @@ public class MetricSets {
         return prefix(prefix, combine(metricSets));
     }
 
+    /**
+     * Remove all {@param metrics} from the given {@param metricRegistry}.
+     */
     public static void removeAll(MetricRegistry metricRegistry, MetricSet metrics) {
         metrics.getMetrics().keySet().forEach(metricRegistry::remove);
     }
