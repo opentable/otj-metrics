@@ -20,14 +20,11 @@ public class MetricSets {
      * applied to each key.
      */
     public static MetricSet transformNames(MetricSet set, Function<String, String> nameTransformer) {
-        return new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                final Map<String, Metric> innerMetrics = set.getMetrics();
-                final Map<String, Metric> result = new HashMap<>(innerMetrics.size());
-                innerMetrics.forEach((k, v) -> result.put(nameTransformer.apply(k), v));
-                return result;
-            }
+        return () -> {
+            final Map<String, Metric> innerMetrics = set.getMetrics();
+            final Map<String, Metric> result = new HashMap<>(innerMetrics.size());
+            innerMetrics.forEach((k, v) -> result.put(nameTransformer.apply(k), v));
+            return result;
         };
     }
 
@@ -36,13 +33,10 @@ public class MetricSets {
      * If more than one metric set has a given key, the value is arbitrary.
      */
     public static MetricSet combine(Iterable<MetricSet> sets) {
-        return new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                final Map<String, Metric> result = new HashMap<>();
-                sets.forEach(ms -> result.putAll(ms.getMetrics()));
-                return result;
-            }
+        return () -> {
+            final Map<String, Metric> result = new HashMap<>();
+            sets.forEach(ms -> result.putAll(ms.getMetrics()));
+            return result;
         };
     }
 
@@ -55,12 +49,22 @@ public class MetricSets {
     }
 
     /**
+     * Return new metric set view that prefixes the names of the entries.
+     */
+    public static MetricSet prefix(String prefix, MetricSet metricSet) {
+        return transformNames(metricSet, k -> prefix + k);
+    }
+
+    /**
      * Combine multiple metric sets and prefix their names.
      */
     public static MetricSet combineAndPrefix(String prefix, MetricSet... metricSets) {
-        return transformNames(combine(metricSets), k -> prefix + k);
+        return prefix(prefix, combine(metricSets));
     }
 
+    /**
+     * Remove all {@param metrics} from the given {@param metricRegistry}.
+     */
     public static void removeAll(MetricRegistry metricRegistry, MetricSet metrics) {
         metrics.getMetrics().keySet().forEach(metricRegistry::remove);
     }
