@@ -20,14 +20,11 @@ public class MetricSets {
      * applied to each key.
      */
     public static MetricSet transformNames(MetricSet set, Function<String, String> nameTransformer) {
-        return new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                final Map<String, Metric> innerMetrics = set.getMetrics();
-                final Map<String, Metric> result = new HashMap<>(innerMetrics.size());
-                innerMetrics.forEach((k, v) -> result.put(nameTransformer.apply(k), v));
-                return result;
-            }
+        return () -> {
+            final Map<String, Metric> innerMetrics = set.getMetrics();
+            final Map<String, Metric> result = new HashMap<>(innerMetrics.size());
+            innerMetrics.forEach((k, v) -> result.put(nameTransformer.apply(k), v));
+            return result;
         };
     }
 
@@ -36,13 +33,10 @@ public class MetricSets {
      * If more than one metric set has a given key, the value is arbitrary.
      */
     public static MetricSet combine(Iterable<MetricSet> sets) {
-        return new MetricSet() {
-            @Override
-            public Map<String, Metric> getMetrics() {
-                final Map<String, Metric> result = new HashMap<>();
-                sets.forEach(ms -> result.putAll(ms.getMetrics()));
-                return result;
-            }
+        return () -> {
+            final Map<String, Metric> result = new HashMap<>();
+            sets.forEach(ms -> result.putAll(ms.getMetrics()));
+            return result;
         };
     }
 
