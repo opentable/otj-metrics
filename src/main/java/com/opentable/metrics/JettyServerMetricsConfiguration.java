@@ -22,13 +22,19 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JettyServerMetricsConfiguration {
     @Bean
-    public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metrics) {
-        return () -> new InstrumentedQueuedThreadPool(metrics,
+    public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry) {
+        return () -> create(metricRegistry);
+    }
+
+    private QueuedThreadPool create(final MetricRegistry metricRegistry) {
+        final InstrumentedQueuedThreadPool pool = new InstrumentedQueuedThreadPool(metricRegistry,
                 32, 32, // Default number of threads, overridden in otj-server EmbeddedJetty
                 30000,  // Idle timeout, irrelevant since max == min
                 new BlockingArrayQueue<>(128, // Initial queue size
-                        8, // Expand increment (irrelevant; initial == max)
-                        51200)); // Upper bound on work queue
+                    8, // Expand increment (irrelevant; initial == max)
+                    51200)); // Upper bound on work queue
+        pool.setName("default-pool");
+        return pool;
     }
 
     @Bean
