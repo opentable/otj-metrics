@@ -40,7 +40,7 @@ public class JettyServerMetricsConfiguration {
     @Bean
     public Function<Handler, Handler> getHandlerCustomizer(final MetricRegistry metrics) {
         return handler -> {
-            final InstrumentedHandler instrumented = new InstrumentedHandler(metrics);
+            final InstrumentedHandler instrumented = new InstrumentedHandler(metrics, "http-server");
             instrumented.setHandler(handler);
             return instrumented;
         };
