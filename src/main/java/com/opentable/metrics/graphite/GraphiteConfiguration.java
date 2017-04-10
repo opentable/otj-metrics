@@ -67,6 +67,7 @@ public class GraphiteConfiguration {
     public GraphiteReporter graphiteReporter(GraphiteSender sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
         if (sender == null) {
             LOG.warn("No sender to report to, skipping reporter initialization");
+            return null;
         }
         String prefix = getPrefix(serviceInfo, appInfo);
         if (prefix == null) {

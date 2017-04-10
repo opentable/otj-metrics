@@ -58,6 +58,7 @@ public class GraphiteReporterPrefixTest {
             mockEnv.put("OT_ENV_LOCATION", locFlavor[0]);
             mockEnv.put("OT_ENV_FLAVOR", locFlavor.length == 2 ? locFlavor[1] : "");
             mockEnv.put("OT_ENV", typeLoc[0] + "-" + locFlavor[0]);
+            mockEnv.put("ot.graphite.graphite-host", "carbon-foo-bar-baz.otenv.com");
         }
         if (instanceNo != null) {
             mockEnv.put("INSTANCE_NO", instanceNo);
