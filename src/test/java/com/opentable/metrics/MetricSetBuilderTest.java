@@ -1,0 +1,144 @@
+package com.opentable.metrics;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.lang.management.ManagementFactory;
+import java.util.Map;
+
+import javax.management.MBeanServer;
+
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.Metric;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.Timer;
+
+import org.junit.Test;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.event.ApplicationEventMulticaster;
+
+import com.opentable.service.AppInfo;
+import com.opentable.service.EnvInfo;
+import com.opentable.service.ServiceInfo;
+
+public class MetricSetBuilderTest {
+    private static final String[] EXPECTED = new String[] { "bar.timer", "bar.enum.FOO", "bar.enum.BAR" };
+
+    @Test
+    public void testNoRegistry() {
+        final MetricSetBuilder b = new MetricSetBuilder();
+        assertThatThrownBy(() -> b.build())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("No metric registry set");
+    }
+
+    @Test
+    public void testEmpty() {
+        assertThat(
+                new MetricSetBuilder(new MetricRegistry()).build().getMetrics())
+            .isEmpty();
+    }
+
+    @Test
+    public void testMeterRegisters() {
+        final MetricRegistry testRegistry = new MetricRegistry();
+        final MetricSetBuilder b = new MetricSetBuilder(testRegistry);
+        b.setPrefix("test.");
+        final Meter foo = b.meter("foo");
+
+        assertThat(testRegistry.getMetrics()).isEmpty();
+        final Map<String, Metric> builtMetrics = b.build().getMetrics();
+        assertThat(builtMetrics).containsEntry("test.foo", foo);
+        assertThat(testRegistry.getMetrics()).isEqualTo(builtMetrics);
+    }
+
+
+    @Test
+    public void testContextRegister() {
+        try (ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext(ContextRegister.class)) {
+            assertThat(ctx.getBean(MetricRegistry.class).getMetrics()).containsKeys(EXPECTED);
+        }
+    }
+
+    @Configuration
+    @Import({
+        TestBase.class,
+        DefaultMetricsConfiguration.class
+    })
+    static class ContextRegister {
+        Timer timer;
+        Map<SomeEnum, AtomicLongGauge> enumGauges;
+
+        @Bean
+        public MetricSet someMetrics(MetricSetBuilder b) {
+            b.setPrefix("bar.");
+            timer = b.timer("timer");
+            enumGauges = b.enumMetrics("enum", SomeEnum.class, AtomicLongGauge::new);
+            return b.build();
+        }
+    }
+
+
+    @Test
+    public void testEventRegister() {
+        final MetricRegistry registry;
+        try (ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext(EventRegister.class)) {
+            registry = ctx.getBean(MetricRegistry.class);
+            assertThat(registry.getMetrics())
+                .doesNotContainKeys(EXPECTED);
+            ctx.getBean(ApplicationEventMulticaster.class).multicastEvent(new ApplicationReadyEvent(new SpringApplication(), new String[0], ctx));
+            assertThat(registry.getMetrics())
+                .containsKeys(EXPECTED);
+        }
+        assertThat(registry.getMetrics()).doesNotContainKeys(EXPECTED);
+    }
+
+    @Configuration
+    @Import({
+        TestBase.class,
+        DefaultMetricsConfiguration.class
+    })
+    static class EventRegister {
+        Timer timer;
+        Map<SomeEnum, AtomicLongGauge> enumGauges;
+
+        @Bean
+        public MetricSet someMetrics(MetricSetBuilder b) {
+            b.registerOnEvent(ApplicationReadyEvent.class);
+            b.setPrefix("bar.");
+            timer = b.timer("timer");
+            enumGauges = b.enumMetrics("enum", SomeEnum.class, AtomicLongGauge::new);
+            return b.build();
+        }
+    }
+
+    enum SomeEnum {
+        FOO, BAR
+    }
+
+    @Configuration
+    @Import({AppInfo.class, EnvInfo.class})
+    static class TestBase {
+        @Bean
+        public MBeanServer mbeanServer() {
+            return ManagementFactory.getPlatformMBeanServer();
+        }
+
+        @Bean
+        public ServiceInfo serviceInfo() {
+            return new ServiceInfo() {
+                @Override
+                public String getName() {
+                    return "test";
+                }
+            };
+        }
+    }
+}

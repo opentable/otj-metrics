@@ -2,11 +2,13 @@ package com.opentable.metrics;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.codahale.metrics.Counting;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
+import com.google.common.collect.Multiset;
 
 /**
  * Utilities for dealing with {@link Metric}s.
@@ -44,6 +46,15 @@ public final class MetricUtils {
         } catch (final IllegalArgumentException e) {
             throw new IllegalArgumentException(metricName, e);
         }
+    }
+
+    /**
+     * Update a map of metrics with counts from an accumulated Multiset.
+     * @param metricMap the registered metrics to update with new values
+     * @param counts the new values to emit
+     */
+    public static <E extends Enum<E>> void updateEnumMetrics(Map<E, ? extends AtomicLong> metricMap, Multiset<E> counts) {
+        metricMap.entrySet().stream().forEach(e -> e.getValue().set(counts.count(e.getKey())));
     }
 
     /**
