@@ -10,7 +10,6 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.annotation.Timed;
-import com.codahale.metrics.health.HealthCheckRegistry;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,16 +53,6 @@ public class MetricAnnotationTest {
         @Bean
         public MBeanServer getMBeanServer() {
             return ManagementFactory.getPlatformMBeanServer();
-        }
-
-        @Bean
-        public MetricRegistry getMetricRegistry() {
-            return new MetricRegistry();
-        }
-
-        @Bean
-        public HealthCheckRegistry getHealthCheckRegistry() {
-            return new HealthCheckRegistry();
         }
 
         @Bean

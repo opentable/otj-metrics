@@ -18,7 +18,6 @@ import javax.management.MBeanServer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.GraphiteSender;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableMap;
 import com.mogwee.executors.Executors;
 
@@ -280,16 +279,6 @@ public class GraphiteConnectTest {
         @Bean
         public MBeanServer getMBeanServer() {
             return ManagementFactory.getPlatformMBeanServer();
-        }
-
-        @Bean
-        public MetricRegistry getMetricRegistry() {
-            return new MetricRegistry();
-        }
-
-        @Bean
-        public HealthCheckRegistry getHealthCheckRegistry() {
-            return new HealthCheckRegistry();
         }
 
         @Bean
