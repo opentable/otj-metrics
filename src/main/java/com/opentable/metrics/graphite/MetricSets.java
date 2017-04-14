@@ -14,7 +14,8 @@ import com.google.common.annotations.Beta;
  * Utility class for interacting with {@link MetricSet}s.
  */
 @Beta
-public class MetricSets {
+public final class MetricSets {
+    private MetricSets() { }
     /**
      * Create a MetricSet view that returns the given set's metrics, with a name transformer
      * applied to each key.

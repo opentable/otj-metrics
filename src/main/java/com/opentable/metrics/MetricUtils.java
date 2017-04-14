@@ -11,7 +11,7 @@ import com.codahale.metrics.MetricSet;
 /**
  * Utilities for dealing with {@link Metric}s.
  */
-public class MetricUtils {
+public final class MetricUtils {
     private MetricUtils() {}
 
     /**
@@ -24,7 +24,7 @@ public class MetricUtils {
             return ((Counting) m).getCount();
         }
         if (m instanceof Gauge) {
-            final Object value = ((Gauge) m).getValue();
+            final Object value = ((Gauge<?>) m).getValue();
             if (value instanceof Number) {
                 return ((Number) value).longValue();
             }

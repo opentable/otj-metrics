@@ -31,7 +31,7 @@ public class MetricsHttpConfiguration {
     private static class MetricsContextListener extends MetricsServlet.ContextListener {
         private final MetricRegistry metrics;
 
-        private MetricsContextListener(MetricRegistry metrics)
+        MetricsContextListener(MetricRegistry metrics)
         {
             this.metrics = metrics;
         }

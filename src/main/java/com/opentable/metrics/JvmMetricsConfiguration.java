@@ -25,7 +25,7 @@ public class JvmMetricsConfiguration {
     private final MBeanServer mbs;
     private final NmtMetrics nmtMetrics;
 
-    private JvmMetricsConfiguration(final MetricRegistry metrics, final MBeanServer mbs) {
+    JvmMetricsConfiguration(final MetricRegistry metrics, final MBeanServer mbs) {
         this.metrics = metrics;
         this.mbs = mbs;
         nmtMetrics = new NmtMetrics(String.format("%s.nmt", base), metrics);
@@ -41,7 +41,7 @@ public class JvmMetricsConfiguration {
     }
 
     @PostConstruct
-    private void postConstruct() {
+    void postConstruct() {
         metrics.registerAll(namespace("bufpool", new BufferPoolMetricSet(mbs)));
         metrics.register(base + ".fd.used-ratio", new FileDescriptorRatioGauge());
         metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));

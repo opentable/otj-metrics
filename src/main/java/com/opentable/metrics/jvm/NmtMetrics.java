@@ -3,6 +3,7 @@ package com.opentable.metrics.jvm;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -76,7 +77,7 @@ public class NmtMetrics {
     private void refreshCategories() {
         final Set<String> atStart = ImmutableSet.copyOf(registeredMetrics);
         nmt.categories.keySet().forEach(categoryName -> {
-            final String metricName = categoryName.toLowerCase().replaceAll(" ", "-");
+            final String metricName = categoryName.toLowerCase(Locale.ROOT).replaceAll(" ", "-");
             if (registeredMetrics.contains(metricName)) {
                 return;
             }

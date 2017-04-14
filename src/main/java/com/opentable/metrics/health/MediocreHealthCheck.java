@@ -56,7 +56,7 @@ class MediocreHealthCheck extends HealthCheck {
     private static class State {
         private final boolean healthy;
         private final ApplicationContextEvent cause;
-        private State(final boolean healthy, final ApplicationContextEvent cause) {
+        State(final boolean healthy, final ApplicationContextEvent cause) {
             this.healthy = healthy;
             this.cause = cause;
         }
