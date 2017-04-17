@@ -123,6 +123,20 @@ the following namespaces.
   - `org.eclipse.jetty`
   - `org.springframework.boot.context.embedded.jetty`
 
+### Aggregation & Retention
+Graphite performs sample aggregation as metric data moves from one
+retention window into the next. Our default aggregation rules in Puppet
+do "The Right Thing", or at least something close to it, for all of the
+metrics emitted by Dropwizard counters, meters, histograms, and timers.
+Take care to think about how you would like your Gauges to be
+aggregated.  Practically speaking, if you want the last value, have the
+name end with `.count`, and just make sure not to match any of our other
+rules' patterns if you want an average.
+
+Look for `graphite::gr_storage_aggregation_rules` and
+`graphite::gr_storage_schemas` (the `app_metrics` entry) [here][8] for
+specific Graphite configuration detail.
+
 NMT
 ---
 In order to take advantage of [NMT][5] metrics, you will need to enable
@@ -152,3 +166,4 @@ See the source code for the format.
 [5]: https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/tooldescr007.html
 [6]: http://metrics.dropwizard.io/3.1.0/manual/servlets/#adminservlet
 [7]: https://github.com/ryantenney/metrics-spring
+[8]: https://github.com/opentable/puppet-modules/blob/master/hiera/global.yaml
