@@ -117,7 +117,7 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
         return delegate;
     }
 
-    private boolean needsReconnect(Graphite graphite) {
+    private static boolean needsReconnect(Graphite graphite) {
         return graphite == null || !graphite.isConnected() || graphite.getFailures() > 0;
     }
 }
