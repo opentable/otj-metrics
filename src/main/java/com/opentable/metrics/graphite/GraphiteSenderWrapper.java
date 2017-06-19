@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -37,14 +38,14 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     static final String DETECTED_CONNECTION_FAILURES = "reporter-wrapper.detected-connection-failures";
 
     private final Counter connectionFailures;
-    private final InetSocketAddress address;
+    private final Supplier<InetSocketAddress> address;
 
     @GuardedBy("this")
     private Graphite delegate; // either connect()ed or null
     @GuardedBy("this")
     private Instant lastReconnect;
 
-    GraphiteSenderWrapper(InetSocketAddress address) {
+    GraphiteSenderWrapper(Supplier<InetSocketAddress> address) {
         this.address = address;
         this.connectionFailures = new Counter();
         connectionFailures.dec(); // initial connection isn't a failure
@@ -118,7 +119,7 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
             }
 
             // Spin up new one
-            Graphite newGraphite = new Graphite(address);
+            Graphite newGraphite = new Graphite(address.get());
             newGraphite.connect();
 
             // Close the old one

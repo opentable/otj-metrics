@@ -95,7 +95,7 @@ public class GraphiteConfiguration {
             return null;
         }
 
-        GraphiteSenderWrapper result = new GraphiteSenderWrapper(new InetSocketAddress(host, port));
+        GraphiteSenderWrapper result = new GraphiteSenderWrapper(() -> new InetSocketAddress(host, port));
         registeredMetrics = MetricSets.combineAndPrefix(PREFIX, result);
         metricRegistry.registerAll(registeredMetrics);
         return result;
