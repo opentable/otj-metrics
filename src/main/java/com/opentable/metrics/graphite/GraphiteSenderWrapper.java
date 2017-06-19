@@ -97,10 +97,11 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
             connectionFailures.inc();
             long failCount = connectionFailures.getCount();
             if (failCount > 0) {
-                LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}",
+                LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",
                         delegate == null ? "UNKNOWN" : delegate.isConnected(),
                         delegate == null ? "UNKNOWN" : delegate.getFailures(),
-                        failCount);
+                        failCount,
+                        lastReconnect);
             }
 
             // Spin up new one
