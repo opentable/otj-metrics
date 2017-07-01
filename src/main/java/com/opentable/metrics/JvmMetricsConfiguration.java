@@ -9,13 +9,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.jvm.BufferPoolMetricSet;
 import com.codahale.metrics.jvm.ClassLoadingGaugeSet;
-import com.codahale.metrics.jvm.FileDescriptorRatioGauge;
 import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.collect.ImmutableMap;
 
 import com.opentable.metrics.jvm.CpuLoadGauge;
+import com.opentable.metrics.jvm.FileDescriptorBetaRatioGauge;
 import com.opentable.metrics.jvm.NmtMetrics;
 
 @Named
@@ -43,7 +43,7 @@ public class JvmMetricsConfiguration {
     @PostConstruct
     void postConstruct() {
         metrics.registerAll(namespace("bufpool", new BufferPoolMetricSet(mbs)));
-        metrics.register(base + ".fd.used-ratio", new FileDescriptorRatioGauge());
+        metrics.register(base + ".fd.used-ratio", new FileDescriptorBetaRatioGauge());
         metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
         metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
         metrics.registerAll(namespace("class", new ClassLoadingGaugeSet()));
