@@ -3,6 +3,7 @@ package com.opentable.metrics.graphite;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
@@ -23,6 +24,16 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("resource")
 public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricSet {
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteSenderWrapper.class);
+
+    /**
+     * We implement an unconditional periodic reconnect to ameliorate ELB black hole issues and other
+     * difficult-to-trace problems related to our Graphite infrastructure seeming to intermittently lose
+     * metrics.
+     *
+     * <p>
+     * This is an unfortunate hack, and it would be nice to be able to remove it.
+     */
+    private static final Duration RECONNECT_PERIOD = Duration.ofHours(1);
 
     static final String DETECTED_CONNECTION_FAILURES = "reporter-wrapper.detected-connection-failures";
 
@@ -93,15 +104,19 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     }
 
     private synchronized Graphite delegate() throws IOException {
-        if (needsReconnect(delegate)) {
-            connectionFailures.inc();
-            long failCount = connectionFailures.getCount();
-            if (failCount > 0) {
-                LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",
-                        delegate == null ? "UNKNOWN" : delegate.isConnected(),
-                        delegate == null ? "UNKNOWN" : delegate.getFailures(),
-                        failCount,
-                        lastReconnect);
+        final boolean needsReconnectFail = needsReconnectFail(delegate);
+        final boolean needsReconnectPeriodic = needsReconnectPeriodic();
+        if (needsReconnectFail || needsReconnectPeriodic) {
+            if (needsReconnectFail) {
+                connectionFailures.inc();
+                long failCount = connectionFailures.getCount();
+                if (failCount > 0) {
+                    LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",
+                            delegate == null ? "UNKNOWN" : delegate.isConnected(),
+                            delegate == null ? "UNKNOWN" : delegate.getFailures(),
+                            failCount,
+                            lastReconnect);
+                }
             }
 
             // Spin up new one
@@ -127,7 +142,23 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     /**
      * @return Whether reconnect is merited because of erroneous state of {@code graphite}.
      */
-    private static boolean needsReconnect(Graphite graphite) {
+    private static boolean needsReconnectFail(Graphite graphite) {
         return graphite == null || !graphite.isConnected() || graphite.getFailures() > 0;
+    }
+
+    /**
+     * @return Whether reconnect is merited because of recycle period having elapsed.
+     */
+    private boolean needsReconnectPeriodic() {
+        if (lastReconnect == null) {
+            return false;
+        }
+        final Duration elapsed = Duration.between(lastReconnect, Instant.now());
+        final boolean needsReconnect = elapsed.compareTo(RECONNECT_PERIOD) > 0;
+        if (needsReconnect) {
+            LOG.info("unconditionally recycling graphite sender: elapsed {} > thresh {}",
+                    elapsed, RECONNECT_PERIOD);
+        }
+        return needsReconnect;
     }
 }
