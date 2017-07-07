@@ -66,7 +66,7 @@ public class DefaultMetricsConfiguration {
             List<MetricSet> metrics = findEventedMetricSets()
                 .filter(m -> m.getEventClass().isInstance(event))
                 .collect(Collectors.toList());
-            LOG.info("Registering metrics on event {}: {}", event, metrics);
+            LOG.debug("Registering metrics on event {}: {}", event, metrics);
             metrics.forEach(registry::registerAll);
             metrics.forEach(m -> registeredMetrics.addAll(m.getMetrics().keySet()));
         };
@@ -74,7 +74,7 @@ public class DefaultMetricsConfiguration {
 
     @PreDestroy
     public void metricUnregister() {
-        LOG.info("Unregistering metrics on close: {}", registeredMetrics);
+        LOG.debug("Unregistering metrics on close: {}", registeredMetrics);
         getMetricRegistry().removeMatching((name, metric) -> registeredMetrics.contains(name));
     }
 
