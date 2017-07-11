@@ -1,6 +1,12 @@
 otj-metrics
 ===========
 
+2.2.4
+-----
+
+* replace FileDescriptorRatioGauge with custom FileDescriptorMetricSet
+* improve MetricsSets tranformName funciton to return immutable data structure
+
 2.2.3
 -----
 
