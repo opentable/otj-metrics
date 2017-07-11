@@ -52,7 +52,7 @@ public class FileDescriptorMetricSet implements MetricSet {
 
         for (String type: FDTYPE) {
             for(String ex: EXCEPTION) {
-                gauges.put(type + ".exception." + ex, calls.get(type).get(ex));
+                gauges.put(String.format("%s.%s.%s", "exception", type, ex), calls.get(type).get(ex));
             }
         }
         return Collections.unmodifiableMap(gauges);
