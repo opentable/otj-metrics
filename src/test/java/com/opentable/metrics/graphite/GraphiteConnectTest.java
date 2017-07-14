@@ -180,9 +180,10 @@ public class GraphiteConnectTest {
         Assert.assertTrue(server2.contains("test3"));
 
         MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
         SpringApplication.exit(context, () -> 0);
         server2.stopClean();
-        Assert.assertEquals(0, metricRegistry.getCounters().size());
+        Assert.assertNotEquals(0, detectedConnectionFailures.getCount());
     }
 
     private static Counter findConnectionFailureCounter(BeanFactory factory) {

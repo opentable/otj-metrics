@@ -1,6 +1,7 @@
 package com.opentable.metrics.graphite;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -25,7 +26,7 @@ public final class MetricSets {
             final Map<String, Metric> innerMetrics = set.getMetrics();
             final Map<String, Metric> result = new HashMap<>(innerMetrics.size());
             innerMetrics.forEach((k, v) -> result.put(nameTransformer.apply(k), v));
-            return result;
+            return Collections.unmodifiableMap(result);
         };
     }
 
@@ -37,7 +38,7 @@ public final class MetricSets {
         return () -> {
             final Map<String, Metric> result = new HashMap<>();
             sets.forEach(ms -> result.putAll(ms.getMetrics()));
-            return result;
+            return Collections.unmodifiableMap(result);
         };
     }
 
