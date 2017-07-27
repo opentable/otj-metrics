@@ -122,7 +122,7 @@ public class MetricSetBuilder {
     }
 
     /**
-     * Produce the metric set, and register its metrics
+     * Produce the metric set; if registry is set, register its metrics
      * either immediately or on the configured event trigger.
      * @return the resulting metric set
      */
@@ -131,11 +131,10 @@ public class MetricSetBuilder {
             return built;
         }
         final BuiltMetricSet result = new BuiltMetricSet(this);
-        if (eventClass == null) {
-            if (registry == null) {
-                throw new IllegalStateException("No metric registry set");
-            }
+        if (registry != null && eventClass == null) {
             registry.registerAll(result);
+            // Otherwise, if there's still an event class, the machinery in DefaultMetricsConfiguration will
+            // govern registration and removal.
         }
         return built = result;
     }
