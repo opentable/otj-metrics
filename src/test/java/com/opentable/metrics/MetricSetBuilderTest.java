@@ -1,7 +1,6 @@
 package com.opentable.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
@@ -32,11 +31,9 @@ public class MetricSetBuilderTest {
     private static final String[] EXPECTED = new String[] { "bar.timer", "bar.enum.FOO", "bar.enum.BAR" };
 
     @Test
-    public void testNoRegistry() {
+    public void testTrivial() {
         final MetricSetBuilder b = new MetricSetBuilder();
-        assertThatThrownBy(() -> b.build())
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("No metric registry set");
+        assertThat(b.build().getMetrics()).isEmpty();
     }
 
     @Test
