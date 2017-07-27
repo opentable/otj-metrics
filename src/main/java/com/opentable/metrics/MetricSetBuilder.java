@@ -27,7 +27,7 @@ public class MetricSetBuilder {
 
     private MetricRegistry registry;
     private Class<? extends EventObject> eventClass;
-    private String metricPrefix;
+    private String metricPrefix = "";
 
     private MetricSet built;
 
@@ -66,7 +66,8 @@ public class MetricSetBuilder {
     }
 
     /**
-     * @param metricPrefix a prefix to prepend to name for metrics created from this call forward
+     * @param metricPrefix a prefix to prepend to name for metrics created from this call forward;
+     *                     defaults to {@code ""} if this isn't called
      * @return this
      */
     public MetricSetBuilder setPrefix(String metricPrefix) {
