@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -71,6 +72,14 @@ public class MetricSetBuilder {
     public MetricSetBuilder setPrefix(String metricPrefix) {
         this.metricPrefix = metricPrefix;
         return this;
+    }
+
+    /**
+     * @param name the name of the counter to create
+     * @return a new counter
+     */
+    public Counter counter(String name) {
+        return create(name, Counter::new);
     }
 
     /**
