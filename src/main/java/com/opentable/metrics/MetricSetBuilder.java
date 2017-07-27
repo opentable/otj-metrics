@@ -52,6 +52,10 @@ public class MetricSetBuilder {
      * Delays Metric registration until the given event type fires in the Spring
      * application context that created this builder.
      *
+     * <p>
+     * Automatic registration is implemented in the {@link DefaultMetricsConfiguration}, and thus requires
+     * instances of this class be acquired via injection from that configuration class.
+     *
      * @param eventClass the event type to await
      * @return this
      */
