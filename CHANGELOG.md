@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.3.0
+-----
+
+* improve behavior of MetricSetBuilder
+
 2.2.4
 -----
 

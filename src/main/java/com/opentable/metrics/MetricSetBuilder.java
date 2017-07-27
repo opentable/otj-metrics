@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
+import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -26,7 +27,7 @@ public class MetricSetBuilder {
 
     private MetricRegistry registry;
     private Class<? extends EventObject> eventClass;
-    private String metricPrefix;
+    private String metricPrefix = "";
 
     private MetricSet built;
 
@@ -52,6 +53,10 @@ public class MetricSetBuilder {
      * Delays Metric registration until the given event type fires in the Spring
      * application context that created this builder.
      *
+     * <p>
+     * Automatic registration is implemented in the {@link DefaultMetricsConfiguration}, and thus requires
+     * instances of this class be acquired via injection from that configuration class.
+     *
      * @param eventClass the event type to await
      * @return this
      */
@@ -61,12 +66,21 @@ public class MetricSetBuilder {
     }
 
     /**
-     * @param metricPrefix a prefix to prepend to name for metrics created from this call forward
+     * @param metricPrefix a prefix to prepend to name for metrics created from this call forward;
+     *                     defaults to {@code ""} if this isn't called
      * @return this
      */
     public MetricSetBuilder setPrefix(String metricPrefix) {
         this.metricPrefix = metricPrefix;
         return this;
+    }
+
+    /**
+     * @param name the name of the counter to create
+     * @return a new counter
+     */
+    public Counter counter(String name) {
+        return create(name, Counter::new);
     }
 
     /**
@@ -118,7 +132,7 @@ public class MetricSetBuilder {
     }
 
     /**
-     * Produce the metric set, and register its metrics
+     * Produce the metric set; if registry is set, register its metrics
      * either immediately or on the configured event trigger.
      * @return the resulting metric set
      */
@@ -127,11 +141,10 @@ public class MetricSetBuilder {
             return built;
         }
         final BuiltMetricSet result = new BuiltMetricSet(this);
-        if (eventClass == null) {
-            if (registry == null) {
-                throw new IllegalStateException("No metric registry set");
-            }
+        if (registry != null && eventClass == null) {
             registry.registerAll(result);
+            // Otherwise, if there's still an event class, the machinery in DefaultMetricsConfiguration will
+            // govern registration and removal.
         }
         return built = result;
     }
