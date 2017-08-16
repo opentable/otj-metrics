@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.opentable</groupId>
     <artifactId>otj-parent-spring</artifactId>
-    <version>104-SNAPSHOT</version>
+    <version>104</version>
   </parent>
 
   <scm>
