@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.3.1
+-----
+
+* otj-metrics exposes response count by status code
+
 2.3.0
 -----
 

@@ -1,5 +1,6 @@
 package com.opentable.metrics;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import javax.inject.Provider;
@@ -9,6 +10,7 @@ import com.codahale.metrics.jetty9.InstrumentedHandler;
 import com.codahale.metrics.jetty9.InstrumentedQueuedThreadPool;
 
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +23,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class JettyServerMetricsConfiguration {
+    private static final String PREFIX = "http-server";
+
     @Bean
     public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry) {
         return () -> create(metricRegistry);
@@ -38,9 +42,16 @@ public class JettyServerMetricsConfiguration {
     }
 
     @Bean
+    public Consumer<Server> statusReporter(MetricRegistry metrics) {
+        return server -> {
+            server.setRequestLog(new StatusCodeMetrics(server.getRequestLog(), metrics, PREFIX));
+        };
+    }
+
+    @Bean
     public Function<Handler, Handler> getHandlerCustomizer(final MetricRegistry metrics) {
         return handler -> {
-            final InstrumentedHandler instrumented = new InstrumentedHandler(metrics, "http-server");
+            final InstrumentedHandler instrumented = new InstrumentedHandler(metrics, PREFIX);
             instrumented.setHandler(handler);
             return instrumented;
         };
