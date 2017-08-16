@@ -77,6 +77,18 @@ naming (unless you use the `name`/`absolute` parameters).  Therefore, if
 you rearrange or refactor your code, your metric names may implicitly be
 changed as well.
 
+HTTP Metrics
+------------
+
+The built in metrics-jetty9 module provides metrics for e.g. '2xx-responses'
+or '5xx-responses', but sometimes you want to break it down further to
+e.g. '503-responses'.  We add support for that in the default metrics
+configuration, but with a caveat -- since we don't know the full set of
+codes that we might produce, we cannot preallocate meters for all
+HTTP codes.  So after a service starts up, but before it emits a particular
+response code, the metric will emit as null.  Therefore you likely have
+to treat nulls as zero to use these meters.
+
 Graphite
 --------
 In order to enable Graphite reporting of metrics, add the following
