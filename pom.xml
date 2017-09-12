@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.opentable</groupId>
     <artifactId>otj-parent-spring</artifactId>
-    <version>104</version>
+    <version>106-SNAPSHOT</version>
   </parent>
 
   <scm>
@@ -150,7 +150,7 @@
 
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
+      <artifactId>findbugs-annotations</artifactId>
       <optional>true</optional>
     </dependency>
 
