@@ -150,7 +150,7 @@
 
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
-      <artifactId>annotations</artifactId>
+      <artifactId>findbugs-annotations</artifactId>
       <optional>true</optional>
     </dependency>
 
