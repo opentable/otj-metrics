@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.4.0
+-----
+
+* added MetricUtils.slidingTimer utility function
+
 2.3.1
 -----
 

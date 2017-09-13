@@ -1,13 +1,17 @@
 package com.opentable.metrics;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.codahale.metrics.Counting;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.SlidingTimeWindowReservoir;
+import com.codahale.metrics.Timer;
 import com.google.common.collect.Multiset;
 
 /**
@@ -107,5 +111,15 @@ public final class MetricUtils {
                         String.format("%s assertion failed; expected %d != actual %d", name, expected, actual));
             }
         });
+    }
+
+    /**
+     * Convenience function to return a {@link Timer} using a {@link SlidingTimeWindowReservoir} with a window
+     * size specified by the {@link Duration} passed in.
+     * @param window the size of the {@link SlidingTimeWindowReservoir} window
+     * @return timer using a {@link SlidingTimeWindowReservoir} with window size as specified
+     */
+    public static Timer slidingTimer(final Duration window) {
+        return new Timer(new SlidingTimeWindowReservoir(window.toNanos(), TimeUnit.NANOSECONDS));
     }
 }
