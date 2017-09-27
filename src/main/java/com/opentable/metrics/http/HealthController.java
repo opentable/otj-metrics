@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
@@ -92,7 +93,7 @@ public class HealthController {
             if (result.isHealthy() && oldResult != null) {
                 failingChecks.remove(name);
                 LOG.info("Health check {} is now {}", name, result);
-            } else if (!result.isHealthy() && (oldResult == null || !result.getMessage().equals(oldResult.getMessage()))) {
+            } else if (!result.isHealthy() && (oldResult == null || !Objects.equals(result.getMessage(), oldResult.getMessage()))) {
                 failingChecks.put(name, result);
                 if (result.getError() == null) {
                     LOG.error("Health check {} is now {}", name, result);
