@@ -92,7 +92,7 @@ public class HealthController {
         results.forEach((name, result) -> {
             final Result oldResult = failingChecks.get(name);
             LOG.trace("oldResult vs currentResult: {} VS {}", oldResult, result);
-            LOG.trace("currentState of failingChecks: ", failingChecks);
+            LOG.trace("currentState of failingChecks: {} ", failingChecks);
             LOG.trace("result.isHealthy, result.getMessage(), oldResult != null, oldResult.getMessage {} || {} || {} || {}", result.isHealthy(),
                     result.getMessage(), oldResult != null, oldResult == null ? "I can't tell you!" : oldResult.getMessage());
             if (result.isHealthy() && oldResult != null) {
