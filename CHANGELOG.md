@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.4.3
+-----
+* ConcurrentHashMap and possible NPE fix to HealthController
+* Logging (trace level) during HealthController
+
 2.4.0
 -----
 
