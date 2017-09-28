@@ -5,9 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import javax.inject.Named;
@@ -31,7 +33,7 @@ public class HealthController {
     private static final String CONFIG_PREFIX = "ot.metrics.health.group.";
     private static final String WARN_PREFIX = "WARN: ";
 
-    private final Map<String, Result> failingChecks = new HashMap<>();
+    private final Map<String, Result> failingChecks = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> groups = new HashMap<>();
 
     private final HealthCheckRegistry registry;
@@ -86,13 +88,17 @@ public class HealthController {
 
     private SortedMap<String, Result> getCheckResults() {
         final SortedMap<String, Result> results = registry.runHealthChecks(executor);
-
+        LOG.trace("The resullts gathered {}", results);
         results.forEach((name, result) -> {
             final Result oldResult = failingChecks.get(name);
+            LOG.trace("oldResult vs currentResult: {} VS {}", oldResult, result);
+            LOG.trace("currentState of failingChecks: {} ", failingChecks);
+            LOG.trace("result.isHealthy, result.getMessage(), oldResult != null, oldResult.getMessage {} || {} || {} || {}", result.isHealthy(),
+                    result.getMessage(), oldResult != null, oldResult == null ? "I can't tell you!" : oldResult.getMessage());
             if (result.isHealthy() && oldResult != null) {
                 failingChecks.remove(name);
                 LOG.info("Health check {} is now {}", name, result);
-            } else if (!result.isHealthy() && (oldResult == null || !result.getMessage().equals(oldResult.getMessage()))) {
+            } else if (!result.isHealthy() && (oldResult == null || !Objects.equals(result.getMessage(), oldResult.getMessage()))) {
                 failingChecks.put(name, result);
                 if (result.getError() == null) {
                     LOG.error("Health check {} is now {}", name, result);

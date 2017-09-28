@@ -2,12 +2,14 @@ package com.opentable.metrics.http;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.codahale.metrics.health.HealthCheck.Result;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -131,6 +133,26 @@ public class HealthApiTest {
         Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
+    }
+
+    @Test
+    public void testTransitionToHealthy() {
+        final Iterator<Result> results = ImmutableList.of(
+                Result.healthy(),
+                Result.unhealthy("failure"),
+                Result.unhealthy((String) null),
+                Result.healthy()).iterator();
+
+        registry.register("a", new HealthCheck() {
+            @Override
+            protected Result check() throws Exception {
+                return results.next();
+            }
+        });
+
+        while (results.hasNext()) {
+            resource.getHealth(true);
+        }
     }
 
     static class Healthy extends HealthCheck {
