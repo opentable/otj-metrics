@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.4.4
+-----
+
+* metric set builder prefixes now must not end with a dot
+
 2.4.3
 -----
 * ConcurrentHashMap and possible NPE fix to HealthController
