@@ -12,6 +12,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.Timer;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -71,6 +72,11 @@ public class MetricSetBuilder {
      * @return this
      */
     public MetricSetBuilder setPrefix(String metricPrefix) {
+        Preconditions.checkArgument(!metricPrefix.endsWith("."),
+                String.format("prefix '%s' ends with '.'", metricPrefix));
+        if (!metricPrefix.isEmpty()) {
+            metricPrefix += ".";
+        }
         this.metricPrefix = metricPrefix;
         return this;
     }
@@ -127,6 +133,7 @@ public class MetricSetBuilder {
      */
     public <T extends Metric> T create(String name, Supplier<T> factory) {
         final T result = factory.get();
+        // NB: metricPrefix, if nonempty, will end with '.'.
         mapBuilder.put(metricPrefix + name, result);
         return result;
     }
