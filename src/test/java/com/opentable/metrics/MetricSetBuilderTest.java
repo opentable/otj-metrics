@@ -47,7 +47,7 @@ public class MetricSetBuilderTest {
     public void testMeterRegisters() {
         final MetricRegistry testRegistry = new MetricRegistry();
         final MetricSetBuilder b = new MetricSetBuilder(testRegistry);
-        b.setPrefix("test.");
+        b.setPrefix("test");
         final Meter foo = b.meter("foo");
 
         assertThat(testRegistry.getMetrics()).isEmpty();
@@ -56,6 +56,10 @@ public class MetricSetBuilderTest {
         assertThat(testRegistry.getMetrics()).isEqualTo(builtMetrics);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testPrefixWithDot() {
+        new MetricSetBuilder().setPrefix("foo.");
+    }
 
     @Test
     public void testContextRegister() {
@@ -75,7 +79,7 @@ public class MetricSetBuilderTest {
 
         @Bean
         public MetricSet someMetrics(MetricSetBuilder b) {
-            b.setPrefix("bar.");
+            b.setPrefix("bar");
             timer = b.timer("timer");
             enumGauges = b.enumMetrics("enum", SomeEnum.class, AtomicLongGauge::new);
             return b.build();
@@ -109,7 +113,7 @@ public class MetricSetBuilderTest {
         @Bean
         public MetricSet someMetrics(MetricSetBuilder b) {
             b.registerOnEvent(ApplicationReadyEvent.class);
-            b.setPrefix("bar.");
+            b.setPrefix("bar");
             timer = b.timer("timer");
             enumGauges = b.enumMetrics("enum", SomeEnum.class, AtomicLongGauge::new);
             return b.build();
