@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.5.0
+-----
+
+* atomic long gauge is now counting
+
 2.4.4
 -----
 

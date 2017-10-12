@@ -17,17 +17,15 @@ import com.codahale.metrics.health.HealthCheck.Result;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ComparisonChain;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.tuple.Pair;
-
-import ch.qos.logback.classic.pattern.TargetLengthBasedClassNameAbbreviator;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/health")
 public class HealthResource {
     private final HealthController controller;
-    private final TargetLengthBasedClassNameAbbreviator abbreviator = new TargetLengthBasedClassNameAbbreviator(20);
 
     HealthResource(HealthController controller) {
         this.controller = controller;
@@ -53,7 +51,7 @@ public class HealthResource {
     private Map<SortedEntry, Result> render(boolean all, Map<String, Result> raw) {
         Map<SortedEntry, Result> rendered = new TreeMap<>();
         raw.forEach((name, result) -> {
-            rendered.put(new SortedEntry(abbreviator.abbreviate(name), result), result);
+            rendered.put(new SortedEntry(ClassUtils.getAbbreviatedName(name, 20), result), result);
         });
 
         if (!all && !rendered.isEmpty()) {
