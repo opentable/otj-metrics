@@ -15,6 +15,7 @@ import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.opentable.metrics.graphite.MetricSets;
 import com.opentable.metrics.jvm.CpuLoadGauge;
 import com.opentable.metrics.jvm.FileDescriptorMetricSet;
+import com.opentable.metrics.jvm.MemoryFreeMetricSet;
 import com.opentable.metrics.jvm.NmtMetrics;
 
 @Named
@@ -40,6 +41,7 @@ public class JvmMetricsConfiguration {
         metrics.registerAll(namespace("fd", new FileDescriptorMetricSet()));
         metrics.registerAll(namespace("gc", new GarbageCollectorMetricSet()));
         metrics.registerAll(namespace("mem", new MemoryUsageGaugeSet()));
+        metrics.registerAll(namespace("mem-free", new MemoryFreeMetricSet()));
         metrics.registerAll(namespace("class", new ClassLoadingGaugeSet()));
         metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
         metrics.register(BASE + ".cpu.load", new CpuLoadGauge());
