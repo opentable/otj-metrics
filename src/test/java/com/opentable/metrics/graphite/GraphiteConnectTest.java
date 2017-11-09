@@ -69,7 +69,7 @@ public class GraphiteConnectTest {
         counter.inc();
         counter.inc();
         // Wait for data relay.
-        Thread.sleep(reportingPeriod.plusMillis(100).toMillis());
+        Thread.sleep(reportingPeriod.plusMillis(200).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
         Assert.assertTrue(server.contains("foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
