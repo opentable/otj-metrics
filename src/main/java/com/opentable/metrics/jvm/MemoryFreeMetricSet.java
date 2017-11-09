@@ -57,7 +57,7 @@ public class MemoryFreeMetricSet implements MetricSet {
     }
 
     /**
-     * If free bytes rate is ever 0, the seconds remaining methods will return {@code null}.
+     * If free bytes rate is ever 0 or positive, the seconds remaining methods will return {@code null}.
      */
     private interface MemoryFree {
         /** Return bytes free. */
