@@ -15,6 +15,7 @@ import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.opentable.metrics.graphite.MetricSets;
 import com.opentable.metrics.jvm.CpuLoadGauge;
 import com.opentable.metrics.jvm.FileDescriptorMetricSet;
+import com.opentable.metrics.jvm.GcMemoryMetrics;
 import com.opentable.metrics.jvm.MemoryFreeMetricSet;
 import com.opentable.metrics.jvm.NmtMetrics;
 
@@ -29,6 +30,7 @@ public class JvmMetricsConfiguration {
         this.metrics = metrics;
         this.mbs = mbs;
         nmtMetrics = new NmtMetrics(String.format("%s.nmt", BASE), metrics);
+        new GcMemoryMetrics(String.format("%s.gc-mem", BASE), metrics);
     }
 
     private static MetricSet namespace(String namespace, MetricSet metrics) {
