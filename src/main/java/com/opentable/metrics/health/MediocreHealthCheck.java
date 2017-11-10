@@ -42,7 +42,7 @@ class MediocreHealthCheck extends HealthCheck {
     private final AtomicReference<State> state = new AtomicReference<>(new State(false, null));
 
     @Override
-    protected Result check() {
+    protected HealthCheck.Result check() {
         return state.get().makeResult();
     }
 
@@ -82,8 +82,9 @@ class MediocreHealthCheck extends HealthCheck {
             }
             return formatCause;
         }
-        private Result makeResult() {
-            return healthy ? Result.healthy(formatMessage()) : Result.unhealthy(formatMessage());
+        private HealthCheck.Result makeResult() {
+            return healthy ? HealthCheck.Result.healthy(formatMessage()) :
+                    HealthCheck.Result.unhealthy(formatMessage());
         }
     }
 }
