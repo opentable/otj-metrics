@@ -4,7 +4,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.LongSupplier;
@@ -112,13 +111,12 @@ public class GcMemoryMetrics {
     }
 
     private String name(final String... parts) {
-        final List<String> normalized = Stream.concat(
+        return Stream.concat(
                 Stream.of(prefix),
                 Arrays
                         .stream(parts)
                         .map(GcMemoryMetrics::normalize)
-        ).collect(Collectors.toList());
-        return String.join(".", normalized);
+        ).collect(Collectors.joining("."));
     }
 
     private static String normalize(final String s) {
