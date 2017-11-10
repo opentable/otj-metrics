@@ -29,6 +29,11 @@ import com.opentable.metrics.AtomicLongGauge;
 /**
  * Thanks to Mike Bell for pointing out
  * <a href="http://www.fasterj.com/articles/gcnotifs.shtml">this reference</a>.
+ *
+ * <p>
+ * TODO Possibly get rid of {@code free} here and re-implement {@link MemoryFreeMetricSet} using this as the source of
+ * {@code max} and {@code used}.  Or maybe extract the time remaining calculation into a common library and incorporate
+ * it here too.
  */
 public class GcMemoryMetrics {
     private static final List<GarbageCollectorMXBean> GCS = ManagementFactory.getGarbageCollectorMXBeans();
