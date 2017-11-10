@@ -20,6 +20,7 @@ import javax.management.openmbean.CompositeData;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 
@@ -55,6 +56,7 @@ public class GcMemoryMetrics {
     }
 
     private synchronized void handle(final GarbageCollectionNotificationInfo info) {
+        markMeter(info.getGcName());
         putGauges(info.getGcName(), "before", info.getGcInfo().getMemoryUsageBeforeGc());
         putGauges(info.getGcName(), "after",  info.getGcInfo().getMemoryUsageAfterGc());
     }
@@ -66,6 +68,18 @@ public class GcMemoryMetrics {
         });
         putGauge(gcName, timePart, "total", "max",  sum(usages.values(), MemoryUsage::getMax));
         putGauge(gcName, timePart, "total", "used", sum(usages.values(), MemoryUsage::getUsed));
+    }
+
+    private void markMeter(final String gcName) {
+        final String meterName = name(gcName, "rate");
+        final Metric metric = metricRegistry.getMetrics().get(meterName);
+        final Meter meter;
+        if (metric == null) {
+            meter = metricRegistry.meter(meterName);
+        } else {
+            meter = (Meter) metric;
+        }
+        meter.mark();
     }
 
     private void putGauge(
