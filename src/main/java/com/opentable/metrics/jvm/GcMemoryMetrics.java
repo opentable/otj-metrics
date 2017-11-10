@@ -1,6 +1,5 @@
 package com.opentable.metrics.jvm;
 
-import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
 import java.util.Arrays;
@@ -31,7 +30,6 @@ import com.opentable.metrics.AtomicLongGauge;
  * <a href="http://www.fasterj.com/articles/gcnotifs.shtml">this reference</a>.
  */
 public class GcMemoryMetrics {
-    private static final List<GarbageCollectorMXBean> GCS = ManagementFactory.getGarbageCollectorMXBeans();
 
     private final String prefix;
     @GuardedBy("this")
@@ -40,7 +38,7 @@ public class GcMemoryMetrics {
     public GcMemoryMetrics(final String prefix, final MetricRegistry metricRegistry) {
         this.prefix = prefix;
         this.metricRegistry = metricRegistry;
-        GCS.forEach(gc -> {
+        ManagementFactory.getGarbageCollectorMXBeans().forEach(gc -> {
             final NotificationEmitter emitter = (NotificationEmitter) gc;
             emitter.addNotificationListener(this::listener, null, null);
         });
