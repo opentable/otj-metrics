@@ -46,7 +46,7 @@ public class GcMemoryMetrics {
     }
 
     private void listener(final Notification notif, final Object handback) {
-        if (!notif.getType().equals(GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION)) {
+        if (!GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION.equals(notif.getType())) {
             return;
         }
         final CompositeData data = (CompositeData) notif.getUserData();
