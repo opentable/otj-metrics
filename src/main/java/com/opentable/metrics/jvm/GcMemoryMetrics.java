@@ -65,9 +65,11 @@ public class GcMemoryMetrics {
         usages.forEach((poolName, usage) -> {
             putPoolGauge(gcName, timePart, poolName, "max",  usage::getMax);
             putPoolGauge(gcName, timePart, poolName, "used", usage::getUsed);
+            putPoolGauge(gcName, timePart, poolName, "free", () -> free(usage));
         });
         putTotalGauge(gcName, timePart, "max",  sum(usages.values(), MemoryUsage::getMax));
         putTotalGauge(gcName, timePart, "used", sum(usages.values(), MemoryUsage::getUsed));
+        putTotalGauge(gcName, timePart, "free", sum(usages.values(), GcMemoryMetrics::free));
     }
 
     private void markMeter(final String gcName) {
@@ -123,5 +125,9 @@ public class GcMemoryMetrics {
 
     private static String normalize(final String s) {
         return s.toLowerCase(Locale.ROOT).replace(' ', '-');
+    }
+
+    private static long free(final MemoryUsage usage) {
+        return usage.getMax() - usage.getUsed();
     }
 }
