@@ -63,11 +63,11 @@ public class GcMemoryMetrics {
 
     private void putGauges(final String gcName, final String timePart, final Map<String, MemoryUsage> usages) {
         usages.forEach((poolName, usage) -> {
-            putGauge(gcName, timePart, poolName, "max",  usage::getMax);
-            putGauge(gcName, timePart, poolName, "used", usage::getUsed);
+            putPoolGauge(gcName, timePart, poolName, "max",  usage::getMax);
+            putPoolGauge(gcName, timePart, poolName, "used", usage::getUsed);
         });
-        putGauge(gcName, timePart, "total", "max",  sum(usages.values(), MemoryUsage::getMax));
-        putGauge(gcName, timePart, "total", "used", sum(usages.values(), MemoryUsage::getUsed));
+        putTotalGauge(gcName, timePart, "max",  sum(usages.values(), MemoryUsage::getMax));
+        putTotalGauge(gcName, timePart, "used", sum(usages.values(), MemoryUsage::getUsed));
     }
 
     private void markMeter(final String gcName) {
@@ -82,13 +82,21 @@ public class GcMemoryMetrics {
         meter.mark();
     }
 
-    private void putGauge(
+    private void putPoolGauge(
             final String gcName,
             final String timePart,
             final String poolName,
             final String name,
             final LongSupplier s) {
-        final String gaugeName = name(gcName, timePart, poolName, name);
+        putGauge(s, gcName, timePart, "pools", poolName, name);
+    }
+
+    private void putTotalGauge(final String gcName, final String timePart, final String name, final LongSupplier s) {
+        putGauge(s, gcName, timePart, "total", name);
+    }
+
+    private void putGauge(final LongSupplier s, final String... nameParts) {
+        final String gaugeName = name(nameParts);
         final Metric metric = metricRegistry.getMetrics().get(gaugeName);
         final AtomicLongGauge gauge;
         if (metric == null) {
