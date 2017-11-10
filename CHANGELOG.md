@@ -1,6 +1,12 @@
 otj-metrics
 ===========
 
+2.6.0
+-----
+
+* added mem free metrics, gc-mem metrics
+* OSS
+
 2.5.0
 -----
 
