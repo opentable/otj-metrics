@@ -1,11 +1,17 @@
 otj-metrics
 ===========
 
+2.6.1
+-----
+
+* fixed bug omitting javadocs for OSS release
+
 2.6.0
 -----
 
 * added mem free metrics, gc-mem metrics
 * OSS
+* BOTCHED RELEASE; SEE 2.6.1
 
 2.5.0
 -----
