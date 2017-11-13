@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.6.2
+-----
+
+* dramatically shorten default work queue
+
 2.6.1
 -----
 

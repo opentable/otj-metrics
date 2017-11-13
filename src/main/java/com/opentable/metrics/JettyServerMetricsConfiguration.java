@@ -49,7 +49,7 @@ public class JettyServerMetricsConfiguration {
                 30000,  // Idle timeout, irrelevant since max == min
                 new BlockingArrayQueue<>(128, // Initial queue size
                     8, // Expand increment (irrelevant; initial == max)
-                    51200)); // Upper bound on work queue
+                    100)); // Upper bound on work queue
         pool.setName("default-pool");
         return pool;
     }
