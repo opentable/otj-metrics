@@ -15,10 +15,12 @@ package com.opentable.metrics.jvm;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
@@ -30,10 +32,12 @@ import javax.management.NotificationEmitter;
 import javax.management.openmbean.CompositeData;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
+import com.sun.management.GcInfo;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
 import com.opentable.metrics.AtomicLongGauge;
 
@@ -68,6 +72,7 @@ public class GcMemoryMetrics {
         final String name = info.getGcName();
         final GcInfo gcInfo = info.getGcInfo();
         markMeter(name);
+        updateTimer(name, Duration.ofMillis(gcInfo.getDuration()));
         putGauges(name, "before", gcInfo.getMemoryUsageBeforeGc());
         putGauges(name, "after",  gcInfo.getMemoryUsageAfterGc());
     }
@@ -83,6 +88,8 @@ public class GcMemoryMetrics {
         putTotalGauge(gcName, timePart, "free", sum(usages.values(), GcMemoryMetrics::free));
     }
 
+    /** Deprecated since the timer now tracks the rate. */
+    @Deprecated
     private void markMeter(final String gcName) {
         final String meterName = name(gcName, "rate");
         final Metric metric = metricRegistry.getMetrics().get(meterName);
@@ -93,6 +100,18 @@ public class GcMemoryMetrics {
             meter = (Meter) metric;
         }
         meter.mark();
+    }
+
+    private void updateTimer(final String gcName, final Duration duration) {
+        final String timerName = name(gcName, "timer");
+        final Metric metric = metricRegistry.getMetrics().get(timerName);
+        final Timer timer;
+        if (metric == null) {
+            timer = metricRegistry.timer(timerName);
+        } else {
+            timer = (Timer) metric;
+        }
+        timer.update(duration.toNanos(), TimeUnit.NANOSECONDS);
     }
 
     private void putPoolGauge(
