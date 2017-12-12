@@ -5,6 +5,7 @@ otj-metrics
 -----
 
 * dramatically shorten default work queue
+* added gc timing metrics
 
 2.6.1
 -----
