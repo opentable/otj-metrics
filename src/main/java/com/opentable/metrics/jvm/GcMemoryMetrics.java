@@ -42,7 +42,6 @@ import com.opentable.metrics.AtomicLongGauge;
  * <a href="http://www.fasterj.com/articles/gcnotifs.shtml">this reference</a>.
  */
 public class GcMemoryMetrics {
-
     private final String prefix;
     @GuardedBy("this")
     private final MetricRegistry metricRegistry;
