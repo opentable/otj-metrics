@@ -40,6 +40,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
+import com.opentable.metrics.AtomicDoubleGauge;
 import com.opentable.metrics.AtomicLongGauge;
 
 /**
@@ -109,8 +110,10 @@ public class GcMemoryMetrics {
     }
 
     /**
-     * Update timer metric for individual GC runs as well as gauge indicating proportion of time spent on GC.
-     * End time is the duration since JVM startup to the end of this particular GC run.
+     * Update timer metric for individual GC runs as well as gauge indicating percent ([0, 100]) time spent in GC.
+     * End time is the duration since JVM startup to the end of this particular GC run.  We instrument a percent
+     * instead of a proportion because the {@link com.codahale.metrics.graphite.GraphiteReporter#format(double)}
+     * provides only two fractional digits.
      */
     private void updateTime(final String gcName, final Duration duration, final Duration endTime) {
         Metric metric;
@@ -126,22 +129,22 @@ public class GcMemoryMetrics {
         }
         timer.update(duration.toNanos(), TimeUnit.NANOSECONDS);
 
-        // Proportion of time spent in GC.
+        // Percent time spent in GC.
 
         final Duration oldTotal = totalGcTime.getOrDefault(gcName, Duration.ZERO);
         final Duration newTotal = oldTotal.plus(duration);
         totalGcTime.put(gcName, newTotal);
 
-        final String ratioName = name(gcName, "proportion-time-in-gc");
-        metric = metricRegistry.getMetrics().get(ratioName);
-        final GcTimeRatioGauge ratioGauge;
+        final String percentName = name(gcName, "pct-time-in-gc");
+        metric = metricRegistry.getMetrics().get(percentName);
+        final AtomicDoubleGauge percentGauge;
         if (metric == null) {
-            ratioGauge = new GcTimeRatioGauge();
-            metricRegistry.register(ratioName, ratioGauge);
+            percentGauge = metricRegistry.register(percentName, new AtomicDoubleGauge());
         } else {
-            ratioGauge = (GcTimeRatioGauge) metric;
+            percentGauge = (AtomicDoubleGauge) metric;
         }
-        ratioGauge.set(newTotal, endTime);
+        final double percent = 100. * ((double) newTotal.toMillis()) / ((double)endTime.toMillis());
+        percentGauge.set(percent);
     }
 
     private void putPoolGauge(
