@@ -18,6 +18,7 @@ import java.lang.management.MemoryUsage;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +50,9 @@ public class GcMemoryMetrics {
     private final String prefix;
     @GuardedBy("this")
     private final MetricRegistry metricRegistry;
+    /** {@link GarbageCollectionNotificationInfo#getGcName()} &rarr; summed {@link Duration}. */
+    @GuardedBy("this")
+    private final Map<String, Duration> totalGcTime = new HashMap<>();
 
     public GcMemoryMetrics(final String prefix, final MetricRegistry metricRegistry) {
         this.prefix = prefix;
@@ -72,7 +76,9 @@ public class GcMemoryMetrics {
         final String name = info.getGcName();
         final GcInfo gcInfo = info.getGcInfo();
         markMeter(name);
-        updateTimer(name, Duration.ofMillis(gcInfo.getDuration()));
+        final Duration duration = Duration.ofMillis(gcInfo.getDuration());
+        final Duration endTime = Duration.ofMillis(gcInfo.getEndTime());
+        updateTime(name, duration, endTime);
         putGauges(name, "before", gcInfo.getMemoryUsageBeforeGc());
         putGauges(name, "after",  gcInfo.getMemoryUsageAfterGc());
     }
@@ -102,9 +108,16 @@ public class GcMemoryMetrics {
         meter.mark();
     }
 
-    private void updateTimer(final String gcName, final Duration duration) {
+    /**
+     * Update timer metric for individual GC runs as well as gauge indicating proportion of time spent on GC.
+     * End time is the duration since JVM startup to the end of this particular GC run.
+     */
+    private void updateTime(final String gcName, final Duration duration, final Duration endTime) {
+        Metric metric;
+
+        // Timer metric for individual GC run.
         final String timerName = name(gcName, "timer");
-        final Metric metric = metricRegistry.getMetrics().get(timerName);
+        metric = metricRegistry.getMetrics().get(timerName);
         final Timer timer;
         if (metric == null) {
             timer = metricRegistry.timer(timerName);
@@ -112,6 +125,23 @@ public class GcMemoryMetrics {
             timer = (Timer) metric;
         }
         timer.update(duration.toNanos(), TimeUnit.NANOSECONDS);
+
+        // Proportion of time spent in GC.
+
+        final Duration oldTotal = totalGcTime.getOrDefault(gcName, Duration.ZERO);
+        final Duration newTotal = oldTotal.plus(duration);
+        totalGcTime.put(gcName, newTotal);
+
+        final String ratioName = name(gcName, "proportion-time-in-gc");
+        metric = metricRegistry.getMetrics().get(ratioName);
+        final GcTimeRatioGauge ratioGauge;
+        if (metric == null) {
+            ratioGauge = new GcTimeRatioGauge();
+            metricRegistry.register(ratioName, ratioGauge);
+        } else {
+            ratioGauge = (GcTimeRatioGauge) metric;
+        }
+        ratioGauge.set(newTotal, endTime);
     }
 
     private void putPoolGauge(
