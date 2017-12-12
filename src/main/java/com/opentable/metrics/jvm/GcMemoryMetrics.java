@@ -65,9 +65,11 @@ public class GcMemoryMetrics {
     }
 
     private synchronized void handle(final GarbageCollectionNotificationInfo info) {
-        markMeter(info.getGcName());
-        putGauges(info.getGcName(), "before", info.getGcInfo().getMemoryUsageBeforeGc());
-        putGauges(info.getGcName(), "after",  info.getGcInfo().getMemoryUsageAfterGc());
+        final String name = info.getGcName();
+        final GcInfo gcInfo = info.getGcInfo();
+        markMeter(name);
+        putGauges(name, "before", gcInfo.getMemoryUsageBeforeGc());
+        putGauges(name, "after",  gcInfo.getMemoryUsageAfterGc());
     }
 
     private void putGauges(final String gcName, final String timePart, final Map<String, MemoryUsage> usages) {
