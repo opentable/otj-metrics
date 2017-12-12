@@ -15,10 +15,13 @@ package com.opentable.metrics.jvm;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryUsage;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
@@ -30,11 +33,14 @@ import javax.management.NotificationEmitter;
 import javax.management.openmbean.CompositeData;
 
 import com.sun.management.GarbageCollectionNotificationInfo;
+import com.sun.management.GcInfo;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 
+import com.opentable.metrics.AtomicDoubleGauge;
 import com.opentable.metrics.AtomicLongGauge;
 
 /**
@@ -42,10 +48,12 @@ import com.opentable.metrics.AtomicLongGauge;
  * <a href="http://www.fasterj.com/articles/gcnotifs.shtml">this reference</a>.
  */
 public class GcMemoryMetrics {
-
     private final String prefix;
     @GuardedBy("this")
     private final MetricRegistry metricRegistry;
+    /** {@link GarbageCollectionNotificationInfo#getGcName()} &rarr; summed {@link Duration}. */
+    @GuardedBy("this")
+    private final Map<String, Duration> totalGcTime = new HashMap<>();
 
     public GcMemoryMetrics(final String prefix, final MetricRegistry metricRegistry) {
         this.prefix = prefix;
@@ -66,9 +74,14 @@ public class GcMemoryMetrics {
     }
 
     private synchronized void handle(final GarbageCollectionNotificationInfo info) {
-        markMeter(info.getGcName());
-        putGauges(info.getGcName(), "before", info.getGcInfo().getMemoryUsageBeforeGc());
-        putGauges(info.getGcName(), "after",  info.getGcInfo().getMemoryUsageAfterGc());
+        final String name = info.getGcName();
+        final GcInfo gcInfo = info.getGcInfo();
+        markMeter(name);
+        final Duration duration = Duration.ofMillis(gcInfo.getDuration());
+        final Duration endTime = Duration.ofMillis(gcInfo.getEndTime());
+        updateTime(name, duration, endTime);
+        putGauges(name, "before", gcInfo.getMemoryUsageBeforeGc());
+        putGauges(name, "after",  gcInfo.getMemoryUsageAfterGc());
     }
 
     private void putGauges(final String gcName, final String timePart, final Map<String, MemoryUsage> usages) {
@@ -82,6 +95,8 @@ public class GcMemoryMetrics {
         putTotalGauge(gcName, timePart, "free", sum(usages.values(), GcMemoryMetrics::free));
     }
 
+    /** Deprecated since the timer now tracks the rate. */
+    @Deprecated
     private void markMeter(final String gcName) {
         final String meterName = name(gcName, "rate");
         final Metric metric = metricRegistry.getMetrics().get(meterName);
@@ -92,6 +107,44 @@ public class GcMemoryMetrics {
             meter = (Meter) metric;
         }
         meter.mark();
+    }
+
+    /**
+     * Update timer metric for individual GC runs as well as gauge indicating percent ([0, 100]) time spent in GC.
+     * End time is the duration since JVM startup to the end of this particular GC run.  We instrument a percent
+     * instead of a proportion because the {@link com.codahale.metrics.graphite.GraphiteReporter#format(double)}
+     * provides only two fractional digits.
+     */
+    private void updateTime(final String gcName, final Duration duration, final Duration endTime) {
+        Metric metric;
+
+        // Timer metric for individual GC run.
+        final String timerName = name(gcName, "timer");
+        metric = metricRegistry.getMetrics().get(timerName);
+        final Timer timer;
+        if (metric == null) {
+            timer = metricRegistry.timer(timerName);
+        } else {
+            timer = (Timer) metric;
+        }
+        timer.update(duration.toNanos(), TimeUnit.NANOSECONDS);
+
+        // Percent time spent in GC.
+
+        final Duration oldTotal = totalGcTime.getOrDefault(gcName, Duration.ZERO);
+        final Duration newTotal = oldTotal.plus(duration);
+        totalGcTime.put(gcName, newTotal);
+
+        final String percentName = name(gcName, "pct-time-in-gc");
+        metric = metricRegistry.getMetrics().get(percentName);
+        final AtomicDoubleGauge percentGauge;
+        if (metric == null) {
+            percentGauge = metricRegistry.register(percentName, new AtomicDoubleGauge());
+        } else {
+            percentGauge = (AtomicDoubleGauge) metric;
+        }
+        final double percent = 100. * ((double) newTotal.toMillis()) / ((double)endTime.toMillis());
+        percentGauge.set(percent);
     }
 
     private void putPoolGauge(
