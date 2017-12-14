@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.6.4
+-----
+
+* makes time in gc a histogram (OTPL-1967)
+
 2.6.3
 -----
 
