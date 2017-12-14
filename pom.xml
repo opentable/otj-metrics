@@ -49,6 +49,11 @@
 
     <dependency>
       <groupId>com.opentable.components</groupId>
+      <artifactId>otj-conservedheaders</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.opentable.components</groupId>
       <artifactId>otj-jvm</artifactId>
     </dependency>
 

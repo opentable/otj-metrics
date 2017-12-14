@@ -26,8 +26,12 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.BlockingArrayQueue;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.opentable.conservedheaders.ConservedHeader;
 
 /**
  * Provides two Beans&mdash;one for a provider of instrumented queued thread pools,
@@ -39,19 +43,12 @@ public class JettyServerMetricsConfiguration {
     private static final String PREFIX = "http-server";
 
     @Bean
-    public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry) {
-        return () -> create(metricRegistry);
-    }
-
-    private QueuedThreadPool create(final MetricRegistry metricRegistry) {
-        final InstrumentedQueuedThreadPool pool = new InstrumentedQueuedThreadPool(metricRegistry,
-                32, 32, // Default number of threads, overridden in otj-server EmbeddedJetty
-                30000,  // Idle timeout, irrelevant since max == min
-                new BlockingArrayQueue<>(128, // Initial queue size
-                    8, // Expand increment (irrelevant; initial == max)
-                    128)); // Upper bound on work queue
-        pool.setName("default-pool");
-        return pool;
+    public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry, @Value("${ot.httpserver.queue-size:128}") int qSize) {
+        return () -> {
+            final InstrumentedQueuedThreadPool pool = new OTQueuedThreadPool(metricRegistry, qSize);
+            pool.setName("default-pool");
+            return pool;
+        };
     }
 
     @Bean
@@ -68,5 +65,25 @@ public class JettyServerMetricsConfiguration {
             instrumented.setHandler(handler);
             return instrumented;
         };
+    }
+
+    static class OTQueuedThreadPool extends InstrumentedQueuedThreadPool {
+        OTQueuedThreadPool(MetricRegistry metricRegistry, int qSize) {
+            super(metricRegistry,
+                32, 32, // Default number of threads, overridden in otj-server EmbeddedJetty
+                30000,  // Idle timeout, irrelevant since max == min
+                new BlockingArrayQueue<>(qSize, // Initial queue size
+                    8, // Expand increment (irrelevant; initial == max)
+                    qSize)); // Upper bound on work queue
+        }
+
+        @Override
+        protected void runJob(Runnable job) {
+            try {
+                job.run();
+            } finally {
+                MDC.remove(ConservedHeader.REQUEST_ID.getLogName());
+            }
+        }
     }
 }
