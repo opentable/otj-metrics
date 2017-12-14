@@ -35,13 +35,14 @@ import javax.management.openmbean.CompositeData;
 import com.sun.management.GarbageCollectionNotificationInfo;
 import com.sun.management.GcInfo;
 
+import com.codahale.metrics.ExponentiallyDecayingReservoir;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
-import com.opentable.metrics.AtomicDoubleGauge;
 import com.opentable.metrics.AtomicLongGauge;
+import com.opentable.metrics.FloatingPointHistogram;
 
 /**
  * Thanks to Mike Bell for pointing out
@@ -51,9 +52,9 @@ public class GcMemoryMetrics {
     private final String prefix;
     @GuardedBy("this")
     private final MetricRegistry metricRegistry;
-    /** {@link GarbageCollectionNotificationInfo#getGcName()} &rarr; summed {@link Duration}. */
+    /** {@link GarbageCollectionNotificationInfo#getGcName()} &rarr; {@link GcInfo#endTime} of last GC */
     @GuardedBy("this")
-    private final Map<String, Duration> totalGcTime = new HashMap<>();
+    private final Map<String, Duration> lastEndTimes = new HashMap<>();
 
     public GcMemoryMetrics(final String prefix, final MetricRegistry metricRegistry) {
         this.prefix = prefix;
@@ -110,8 +111,8 @@ public class GcMemoryMetrics {
     }
 
     /**
-     * Update timer metric for individual GC runs as well as gauge indicating percent ([0, 100]) time spent in GC.
-     * End time is the duration since JVM startup to the end of this particular GC run.  We instrument a percent
+     * Update timer metric for individual GC runs as well as histogram indicating a percent ([0, 100]) time spent in
+     * GC. End time is the duration since JVM startup to the end of this particular GC run. We instrument a percent
      * instead of a proportion because the {@link com.codahale.metrics.graphite.GraphiteReporter#format(double)}
      * provides only two fractional digits.
      */
@@ -131,20 +132,21 @@ public class GcMemoryMetrics {
 
         // Percent time spent in GC.
 
-        final Duration oldTotal = totalGcTime.getOrDefault(gcName, Duration.ZERO);
-        final Duration newTotal = oldTotal.plus(duration);
-        totalGcTime.put(gcName, newTotal);
+        final Duration lastEndTime = lastEndTimes.getOrDefault(gcName, Duration.ZERO);
+        final Duration vmTimeSinceLastGC = endTime.minus(lastEndTime);
+        final double percent = 100. * ((double) duration.toMillis()) / ((double) vmTimeSinceLastGC.toMillis());
+        lastEndTimes.put(gcName, endTime);
 
         final String percentName = name(gcName, "pct-time-in-gc");
         metric = metricRegistry.getMetrics().get(percentName);
-        final AtomicDoubleGauge percentGauge;
+        final FloatingPointHistogram percentHist;
         if (metric == null) {
-            percentGauge = metricRegistry.register(percentName, new AtomicDoubleGauge());
+            percentHist = metricRegistry.register(percentName,
+                    new FloatingPointHistogram(new ExponentiallyDecayingReservoir(), 1e9));
         } else {
-            percentGauge = (AtomicDoubleGauge) metric;
+            percentHist = (FloatingPointHistogram) metric;
         }
-        final double percent = 100. * ((double) newTotal.toMillis()) / ((double)endTime.toMillis());
-        percentGauge.set(percent);
+        percentHist.update(percent);
     }
 
     private void putPoolGauge(
