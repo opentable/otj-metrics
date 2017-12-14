@@ -70,7 +70,7 @@ public class FloatingPointHistogram extends Histogram {
     private class ScaledSnapshot extends Snapshot {
         private final Snapshot snap;
 
-        private ScaledSnapshot(final Snapshot snap) {
+        ScaledSnapshot(final Snapshot snap) {
             this.snap = snap;
         }
 
