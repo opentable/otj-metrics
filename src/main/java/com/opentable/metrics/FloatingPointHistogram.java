@@ -10,6 +10,25 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Reservoir;
 import com.codahale.metrics.Snapshot;
 
+/**
+ * This class extends {@link Histogram} to include floating-point {@link #update} functions. Because the underlying
+ * {@link Reservoir}s store only {@code long}s, this class also takes a {@link #scale} by which floating-point
+ * values are <em>multiplied</em> before being rounded and stored as {@code long}s. The {@link Snapshot} returned
+ * wraps the underlying {@link Histogram#getSnapshot()} return value with an implementation that
+ * &ldquo;un-scales&rdquo; the returned values by <em>dividing</em> by the {@link #scale}.
+ *
+ * <p>
+ * This is essentially just the ol' &ldquo;convert to cents&rdquo; trick, but you may choose the magnitude of the
+ * {@link #scale} based on the expected range of floating-point values stored as well as the desired precision you
+ * wish to preserve.
+ *
+ * <p>
+ * You may still of course still call {@link #update(int)} or {@link #update(long)}; behavior in this case is
+ * undefined.
+ *
+ * <p>
+ * cf. <a href="https://github.com/dropwizard/metrics/issues/863">this issue</a>
+ */
 public class FloatingPointHistogram extends Histogram {
     private final double scale;
 
