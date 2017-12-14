@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.6.3
+-----
+
+* fixes work queue sizing
+
 2.6.2
 -----
 
