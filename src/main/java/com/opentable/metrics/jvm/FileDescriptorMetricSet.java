@@ -16,7 +16,6 @@ package com.opentable.metrics.jvm;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.Map;
-import java.util.function.LongSupplier;
 
 import com.sun.management.UnixOperatingSystemMXBean;
 
@@ -35,8 +34,8 @@ public class FileDescriptorMetricSet implements MetricSet {
         if (osBean instanceof UnixOperatingSystemMXBean) {
             final UnixOperatingSystemMXBean bean = (UnixOperatingSystemMXBean) osBean;
             metricMap = ImmutableMap.of(
-                    "open", caller(bean::getOpenFileDescriptorCount),
-                    "max", caller(bean::getMaxFileDescriptorCount)
+                    "open", (Gauge<Long>) bean::getOpenFileDescriptorCount,
+                    "max", (Gauge<Long>) bean::getMaxFileDescriptorCount
             );
         } else {
             metricMap = ImmutableMap.of(
@@ -49,17 +48,5 @@ public class FileDescriptorMetricSet implements MetricSet {
     @Override
     public Map<String, Metric> getMetrics() {
         return metricMap;
-    }
-
-    /**
-     * It's unclear whether or not {@link com.sun.management.UnixOperatingSystemMXBean} methods are re-entrant,
-     * so we play it safe and wrap calls with a lock.
-     */
-    private synchronized long call(final LongSupplier f) {
-        return f.getAsLong();
-    }
-
-    private Gauge<Long> caller(final LongSupplier f) {
-        return () -> call(f);
     }
 }
