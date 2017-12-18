@@ -1,6 +1,16 @@
 otj-metrics
 ===========
 
+2.6.6
+-----
+
+* simplifies file descriptor instrumentation
+
+2.6.5
+-----
+
+* more qtp adjustment
+
 2.6.4
 -----
 
