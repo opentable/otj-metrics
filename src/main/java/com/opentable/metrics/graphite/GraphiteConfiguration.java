@@ -16,6 +16,7 @@ package com.opentable.metrics.graphite;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
@@ -77,8 +78,8 @@ public class GraphiteConfiguration {
     }
 
     @Bean
-    public GraphiteReporter graphiteReporter(GraphiteSender sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
-        if (sender == null) {
+    public GraphiteReporter graphiteReporter(Optional<GraphiteSender> sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
+        if (!sender.isPresent()) {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
         }
@@ -95,7 +96,7 @@ public class GraphiteConfiguration {
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .filter(MetricFilter.ALL)
-                .build(sender);
+                .build(sender.get());
         reporter.start(reportingPeriod.toMillis(), TimeUnit.MILLISECONDS);
         return reporter;
     }
