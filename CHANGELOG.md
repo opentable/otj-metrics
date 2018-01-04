@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.6.7
+-----
+
+* spring 5 support
+
 2.6.6
 -----
 
