@@ -43,7 +43,7 @@ public class JettyServerMetricsConfiguration {
     private static final String PREFIX = "http-server";
 
     @Bean
-    public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry, @Value("${ot.httpserver.queue-size:128}") int qSize) {
+    public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry, @Value("${ot.httpserver.queue-size:32768}") int qSize) {
         return () -> {
             final InstrumentedQueuedThreadPool pool = new OTQueuedThreadPool(metricRegistry, qSize);
             pool.setName("default-pool");
