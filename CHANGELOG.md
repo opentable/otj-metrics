@@ -1,6 +1,14 @@
 otj-metrics
 ===========
 
+2.6.9
+-----
+* Spring Boot 2 / Spring 5.0.4
+
+2.6.8
+-----
+* Reimplemented file descriptor metric set
+
 2.6.7
 -----
 
