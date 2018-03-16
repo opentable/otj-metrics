@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.6.10
+------
+
+* Remove Jetty work queue limits
+
 2.6.9
 -----
 * Spring Boot 2 / Spring 5.0.4

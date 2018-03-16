@@ -72,9 +72,10 @@ public class JettyServerMetricsConfiguration {
             super(metricRegistry,
                 32, 32, // Default number of threads, overridden in otj-server EmbeddedJetty
                 30000,  // Idle timeout, irrelevant since max == min
-                new BlockingArrayQueue<>(qSize, // Initial queue size
-                    8, // Expand increment (irrelevant; initial == max)
-                    qSize)); // Upper bound on work queue
+                // NB: we originally wished to size this queue, but unfortunately Jetty leaks resources
+                // when you throw RejectedExecutionException due to a full work queue.
+                // So we leave it unbounded since even an OOME is preferable.
+                new BlockingArrayQueue<>());
         }
 
         @Override
