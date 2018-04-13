@@ -110,15 +110,17 @@ public class GraphiteConnectTest {
         final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
+        final Counter connectionCloses = findConnectionCloseCounter(factory);
 
         // Wait for graphite to connect.
-        Thread.sleep(reportingPeriod.toMillis());
+        Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
+        Assert.assertEquals(0, detectedConnectionFailures.getCount());
 
         server.stopClean();
         // Wait for connection failure.
         Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
-        Assert.assertTrue(detectedConnectionFailures.getCount() > 0);
+        Assert.assertTrue(connectionCloses.getCount() > 0 || detectedConnectionFailures.getCount() > 0);
 
         // New server on same port--wrapper should orchestrate a reconnect.
         final TcpServer server2 = new TcpServer(port);
@@ -129,10 +131,10 @@ public class GraphiteConnectTest {
 
         Assert.assertFalse(server2.contains("foo.bar.baz"));
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
-        final Counter counter2 = metricRegistry.counter("foo.bar.baz");
-        counter2.inc();
-        counter2.inc();
-        counter2.inc();
+        final Counter counter = metricRegistry.counter("foo.bar.baz");
+        counter.inc();
+        counter.inc();
+        counter.inc();
 
         // Wait for data relay.
         Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
@@ -192,16 +194,20 @@ public class GraphiteConnectTest {
         Assert.assertTrue(server2.getBytesRead() > 0);
         Assert.assertTrue(server2.contains("test3"));
 
-        MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
-        final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
+        final Counter connectionCloses = findConnectionCloseCounter(factory);
         SpringApplication.exit(context, () -> 0);
         server2.stopClean();
-        Assert.assertNotEquals(0, detectedConnectionFailures.getCount());
+        Assert.assertNotEquals(0, connectionCloses.getCount());
     }
 
-    private static Counter findConnectionFailureCounter(BeanFactory factory) {
+    private static Counter findConnectionFailureCounter(final BeanFactory factory) {
         return (Counter) factory.getBean(MetricRegistry.class).getMetrics()
                 .get(GraphiteConfiguration.PREFIX + GraphiteSenderWrapper.DETECTED_CONNECTION_FAILURES);
+    }
+
+    private static Counter findConnectionCloseCounter(final BeanFactory factory) {
+        return (Counter) factory.getBean(MetricRegistry.class).getMetrics()
+                .get(GraphiteConfiguration.PREFIX + GraphiteSenderWrapper.CONNECTION_CLOSE);
     }
 
     private static class TcpServer {
