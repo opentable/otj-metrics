@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -29,6 +28,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteSender;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
 
 import org.slf4j.Logger;
@@ -49,8 +49,10 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     private static final Duration RECONNECT_PERIOD = Duration.ofHours(1);
 
     static final String DETECTED_CONNECTION_FAILURES = "reporter-wrapper.detected-connection-failures";
+    static final String CONNECTION_CLOSE = "reporter-wrapper.connection-close";
 
-    private final Counter connectionFailures;
+    private final Counter connectionFailures = new Counter();
+    private final Counter connectionCloses = new Counter();
     private final Supplier<InetSocketAddress> address;
 
     @GuardedBy("this")
@@ -60,13 +62,14 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
 
     GraphiteSenderWrapper(Supplier<InetSocketAddress> address) {
         this.address = address;
-        this.connectionFailures = new Counter();
-        connectionFailures.dec(); // initial connection isn't a failure
     }
 
     @Override
     public Map<String, Metric> getMetrics() {
-        return Collections.singletonMap(DETECTED_CONNECTION_FAILURES, connectionFailures);
+        return ImmutableMap.of(
+                DETECTED_CONNECTION_FAILURES, connectionFailures,
+                CONNECTION_CLOSE, connectionCloses
+        );
     }
 
     @Override
@@ -75,6 +78,7 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
             delegate.close();
         }
         delegate = null;
+        connectionCloses.inc();
     }
 
     @Override
@@ -117,19 +121,16 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     }
 
     private synchronized Graphite delegate() throws IOException {
-        final boolean needsReconnectFail = needsReconnectFail(delegate);
-        final boolean needsReconnectPeriodic = needsReconnectPeriodic();
-        if (needsReconnectFail || needsReconnectPeriodic) {
+        final boolean explicitlyClosed = delegate == null;
+        boolean needsReconnectFail = false;
+        if (explicitlyClosed || (needsReconnectFail = needsReconnectFail(delegate)) || needsReconnectPeriodic()) {
             if (needsReconnectFail) {
                 connectionFailures.inc();
-                long failCount = connectionFailures.getCount();
-                if (failCount > 0) {
-                    LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",
-                            delegate == null ? "UNKNOWN" : delegate.isConnected(),
-                            delegate == null ? "UNKNOWN" : delegate.getFailures(),
-                            failCount,
-                            lastReconnect);
-                }
+                LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",
+                        delegate == null ? "UNKNOWN" : delegate.isConnected(),
+                        delegate == null ? "UNKNOWN" : delegate.getFailures(),
+                        connectionFailures.getCount(),
+                        lastReconnect);
             }
 
             // Spin up new one
@@ -156,7 +157,7 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
      * @return Whether reconnect is merited because of erroneous state of {@code graphite}.
      */
     private static boolean needsReconnectFail(Graphite graphite) {
-        return graphite == null || !graphite.isConnected() || graphite.getFailures() > 0;
+        return !graphite.isConnected() || graphite.getFailures() > 0;
     }
 
     /**
