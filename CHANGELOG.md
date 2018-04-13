@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+2.6.11
+------
+
+* Improves compatibility with Dropwizard Metrics 3.2.3
+
 2.6.10
 ------
 
