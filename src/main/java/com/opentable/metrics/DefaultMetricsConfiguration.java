@@ -16,6 +16,7 @@ package com.opentable.metrics;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,7 +26,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.health.HealthCheckRegistry;
 
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -53,7 +53,7 @@ public class DefaultMetricsConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultMetricsConfiguration.class);
 
     private final List<MetricSetBuilder> builders = new ArrayList<>();
-    private final Set<String> registeredMetrics = new ConcurrentHashSet<>();
+    private final Set<String> registeredMetrics = ConcurrentHashMap.newKeySet();
 
     @Bean
     public MetricRegistry getMetricRegistry() {
