@@ -1,8 +1,8 @@
 otj-metrics
 ===========
 
-2.6.12-SNAPSHOT
---
+2.6.12
+------
 * Use non deprecated concurrent HashSet.
 
 2.6.11
