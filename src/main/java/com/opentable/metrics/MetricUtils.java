@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.codahale.metrics.Counting;
 import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.SlidingTimeWindowReservoir;
@@ -35,7 +37,9 @@ public final class MetricUtils {
 
     /**
      * Attempts to extract a long value from the given metric.
-     *
+     * @param m the metric to extract the long value from if possible,
+     * must be of a relevant type (e.g. {@link Gauge}, {@link Counter}, {@link Histogram}, {@link Meter}, {@link Timer}, ...)
+     * @return the extracted long value/count
      * @throws IllegalArgumentException if a long value could not be extracted.
      */
     public static long extractLong(final Metric m) {
@@ -53,7 +57,9 @@ public final class MetricUtils {
 
     /**
      * Using {@link #extractLong(Metric)}, extracts long from named metric in metric set.
-     *
+     * @param metricSet the metric set to extract the metric's long value from
+     * @param metricName the name of the metric
+     * @return the extracted long value
      * @throws IllegalArgumentException if the named long value could not be extracted.
      */
     public static long extractLong(final MetricSet metricSet, final String metricName) {
@@ -76,7 +82,8 @@ public final class MetricUtils {
 
     /**
      * String formatting of extracted long value of metric.
-     *
+     * @param m the metric to extract the long value from
+     * @return a string version of the metric's long value
      * @throws IllegalArgumentException if a long value could not be extracted.
      */
     public static String toString(final Metric m) {
@@ -85,6 +92,8 @@ public final class MetricUtils {
 
     /**
      * Like {@link #toString(Metric)}, but defaults to {@link Metric#toString()} if a long can't be extracted.
+     * @param m the metric to extract the value from
+     * @return the value (either string version of the long value, or just the {@link Metric#toString()})
      */
     public static String toStringSafe(final Metric m) {
         try {
@@ -98,6 +107,8 @@ public final class MetricUtils {
      * Produce sorted map-style {@link #toString()} of metric set, extracting long values from values that support it
      * using {@link #extractLong(Metric)}.  If a long can't be extracted, falls back to using
      * {@link Metric#toString()}.
+     * @param metricSet the metric set to get all the values from
+     * @return string representation of a sorted map of metrics to their values
      */
     public static String toString(final MetricSet metricSet) {
         final Map<String, String> sorted = new TreeMap<>();

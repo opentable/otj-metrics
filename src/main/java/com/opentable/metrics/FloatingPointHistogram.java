@@ -36,7 +36,7 @@ import com.codahale.metrics.Snapshot;
  * wish to preserve.
  *
  * <p>
- * You may still of course still call {@link #update(int)} or {@link #update(long)}; behavior in this case is
+ * You may, of course, still call {@link #update(int)} or {@link #update(long)}; behavior in this case is
  * undefined.
  *
  * <p>
@@ -45,19 +45,42 @@ import com.codahale.metrics.Snapshot;
 public class FloatingPointHistogram extends Histogram {
     private final double scale;
 
+    /**
+     * Create a histogram that stores floating point numbers
+     *
+     * @param reservoir a metrics reservoir
+     * @param scale a number by which all floating point numbers will be multiplied by and rounded before being stored internally as a long
+     */
     public FloatingPointHistogram(final Reservoir reservoir, final double scale) {
         super(reservoir);
         this.scale = scale;
     }
 
+    /**
+     * Create a histogram that stores floating point numbers
+     * Uses a scale of 1, so all floating point numbers will just be rounded to the nearest long
+     * @param reservoir
+     */
     public FloatingPointHistogram(final Reservoir reservoir) {
         this(reservoir, 1);
     }
 
+    /**
+     * Adds a recorded value.
+     * Note that the float will by multiplied by scale when stored internally and rounded. Precision beyond scale will be lost.
+     *
+     * @param value the length of the value
+     */
     public void update(final float value) {
         update((double) value);
     }
 
+    /**
+     * Adds a recorded value.
+     * Note that the float will by multiplied by scale when stored internally and rounded. Precision beyond scale will be lost.
+     *
+     * @param value the length of the value
+     */
     public void update(final double value) {
         update(Math.round(scale * value));
     }
@@ -67,6 +90,9 @@ public class FloatingPointHistogram extends Histogram {
         return new ScaledSnapshot(super.getSnapshot());
     }
 
+    /**
+     * A statistical snapshot of a Snapshot. Scaled based on the histogram's scale.
+     */
     private class ScaledSnapshot extends Snapshot {
         private final Snapshot snap;
 

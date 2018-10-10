@@ -42,6 +42,12 @@ import com.opentable.conservedheaders.ConservedHeader;
 public class JettyServerMetricsConfiguration {
     private static final String PREFIX = "http-server";
 
+    /**
+     * Create/expose a queued thread pool to use for the Jetty request pool
+     * @param metricRegistry the metric registry to use for recording thread pool metrics
+     * @param qSize the size of the the thread pool. Configured by "ot.httpserver.queue-size", defaults to 32,768 - THIS IS IGNORED
+     * @return the queued thread pool to use for requests
+     */
     @Bean
     public Provider<QueuedThreadPool> getIQTPProvider(final MetricRegistry metricRegistry, @Value("${ot.httpserver.queue-size:32768}") int qSize) {
         return () -> {
@@ -51,6 +57,11 @@ public class JettyServerMetricsConfiguration {
         };
     }
 
+    /**
+     * Create a consumer that wraps the servers request log with a wrapper that reports metrics for each HTTP status code returned
+     * @param metrics registry to register metrics with
+     * @return the consumer to add the status code metrics wrapper
+     */
     @Bean
     public Consumer<Server> statusReporter(MetricRegistry metrics) {
         return server -> {
@@ -58,6 +69,11 @@ public class JettyServerMetricsConfiguration {
         };
     }
 
+    /**
+     * Create a {@link Handler} customizer that wraps the handler in an {@link InstrumentedHandler} which report metrics for the handler
+     * @param metrics metric registry to register the metrics on
+     * @return a Handler customizer to add metrics to the Handler
+     */
     @Bean
     public Function<Handler, Handler> getHandlerCustomizer(final MetricRegistry metrics) {
         return handler -> {
@@ -67,7 +83,17 @@ public class JettyServerMetricsConfiguration {
         };
     }
 
+    /**
+     * Instrumented Queued Thread Pool that removes request ID from the MDC after the job is run
+     */
     static class OTQueuedThreadPool extends InstrumentedQueuedThreadPool {
+
+        /**
+         * Create a queued thread pool. Handles request Id in MDC.
+         *
+         * @param metricRegistry the metric registry used to record metrics on pool utilization
+         * @param qSize the size of the request queue (used if there are no available threads) - THIS IS NOT USED, the queue is unbounded to avoid memory leaks
+         */
         OTQueuedThreadPool(MetricRegistry metricRegistry, int qSize) {
             super(metricRegistry,
                 32, 32, // Default number of threads, overridden in otj-server EmbeddedJetty

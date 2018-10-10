@@ -30,6 +30,13 @@ class StatusCodeMetrics implements RequestLog {
     private final MetricRegistry registry;
     private final String prefix;
 
+    /**
+     * Create a StatusCodeMetrics wrapper of the given RequestLog to report metric for each HTTP response status
+     *
+     * @param wrapped the request log to wrap
+     * @param registry the metric registry
+     * @param prefix the prefix to add to each metric name, the metric name will be "(prefix).(status code)-responses"
+     */
     StatusCodeMetrics(RequestLog wrapped, MetricRegistry registry, String prefix) {
         this.wrapped = wrapped;
         this.registry = registry;
