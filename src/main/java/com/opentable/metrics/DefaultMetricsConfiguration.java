@@ -55,16 +55,30 @@ public class DefaultMetricsConfiguration {
     private final List<MetricSetBuilder> builders = new ArrayList<>();
     private final Set<String> registeredMetrics = ConcurrentHashMap.newKeySet();
 
+    /**
+     * Create a metric registry to register metrics on
+     * @return the metric registry
+     */
     @Bean
     public MetricRegistry getMetricRegistry() {
         return new MetricRegistry();
     }
 
+    /**
+     * Create a health check registry to register health checks with
+     * @return health check registry
+     */
     @Bean
     public HealthCheckRegistry getHealthCheckRegistry() {
         return new HealthCheckRegistry();
     }
 
+    /**
+     * Create a metric set builder. This is a prototype bean, a new one will be create whenever it is injetced.
+     *
+     * @param registry the registry to register this metric set with when ready
+     * @return a new metric set builder
+     */
     @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
     @Bean
     public MetricSetBuilder metricSetBuilder(MetricRegistry registry) {
@@ -73,6 +87,14 @@ public class DefaultMetricsConfiguration {
         return builder;
     }
 
+    /**
+     * Create an application event listener that listens to every application event.
+     * If there is a metric set builder that is waiting for an event to be registered,
+     * we'll build and register it when that event happens.
+     *
+     * @param registry metric registry to register the metrics on
+     * @return the event listener
+     */
     @Bean
     public ApplicationListener<ApplicationEvent> metricRegistrar(MetricRegistry registry) {
         return event -> {
@@ -85,6 +107,9 @@ public class DefaultMetricsConfiguration {
         };
     }
 
+    /**
+     * Unregister all metrics on destruction
+     */
     @PreDestroy
     public void metricUnregister() {
         LOG.debug("Unregistering metrics on close: {}", registeredMetrics);

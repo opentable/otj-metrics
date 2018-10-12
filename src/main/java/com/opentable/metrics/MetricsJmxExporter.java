@@ -24,18 +24,29 @@ import com.codahale.metrics.MetricRegistry;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * Exposes metric via JMX
+ */
 @Component
 public class MetricsJmxExporter {
     private final MBeanServer mbs;
     private final MetricRegistry metrics;
     private JmxReporter reporter;
 
+    /**
+     * Create a Metrics JMX Exporter. Invoked by Spring.
+     * @param mbs the mBean server to expose the metrics on
+     * @param metrics the mtrics to expose
+     */
     @Inject
     public MetricsJmxExporter(MBeanServer mbs, MetricRegistry metrics) {
         this.mbs = mbs;
         this.metrics = metrics;
     }
 
+    /**
+     * Create a {@link JmxReporter} to expose metrics via JMX
+     */
     @PostConstruct
     public void start() {
         reporter = JmxReporter.forRegistry(metrics).registerWith(mbs).build();
@@ -43,6 +54,9 @@ public class MetricsJmxExporter {
         LoggerFactory.getLogger(MetricsJmxExporter.class).info("Exported metrics to JMX");
     }
 
+    /**
+     * Stop the {@link JmxReporter}
+     */
     @PreDestroy
     public void close() {
         reporter.close();

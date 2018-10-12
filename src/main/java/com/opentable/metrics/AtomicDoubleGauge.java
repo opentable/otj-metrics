@@ -17,6 +17,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.codahale.metrics.Gauge;
 
+/**
+ * A gauge that holds a double value in an atomic reference
+ */
 public class AtomicDoubleGauge extends AtomicReference<Double> implements Gauge<Double> {
     @Override
     public Double getValue() {

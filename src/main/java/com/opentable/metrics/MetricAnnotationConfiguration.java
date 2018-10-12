@@ -53,6 +53,11 @@ public class MetricAnnotationConfiguration extends MetricsConfigurationSupport {
     private final MetricRegistry metricRegistry;
     private final HealthCheckRegistry healthCheckRegistry;
 
+    /**
+     * Create MetricAnnotationConfiguration based on {@link MetricsConfigurationSupport}, but with a custom metric and health check registry
+     * @param metricRegistry our metric registry to use for metric annotations
+     * @param healthCheckRegistry our health check registry to use for metric annotations
+     */
     public MetricAnnotationConfiguration(
             final MetricRegistry metricRegistry,
             final HealthCheckRegistry healthCheckRegistry) {

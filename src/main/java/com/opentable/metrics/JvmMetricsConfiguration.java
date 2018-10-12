@@ -32,6 +32,9 @@ import com.opentable.metrics.jvm.GcMemoryMetrics;
 import com.opentable.metrics.jvm.MemoryFreeMetricSet;
 import com.opentable.metrics.jvm.NmtMetrics;
 
+/**
+ * Configure metrics about JVM internals
+ */
 @Named
 public class JvmMetricsConfiguration {
     private static final String BASE = "jvm";
@@ -39,6 +42,12 @@ public class JvmMetricsConfiguration {
     private final MBeanServer mbs;
     private final NmtMetrics nmtMetrics;
 
+    /**
+     * Create JVM Metrics configuration
+     *
+     * @param metrics the metrics registry to register metrics on
+     * @param mbs mBean server used to get metrics on buffer pools
+     */
     JvmMetricsConfiguration(final MetricRegistry metrics, final MBeanServer mbs) {
         this.metrics = metrics;
         this.mbs = mbs;
@@ -46,10 +55,20 @@ public class JvmMetricsConfiguration {
         new GcMemoryMetrics(String.format("%s.gc-mem", BASE), metrics);
     }
 
+    /**
+     * Return new metric set view that prefixes the names of the entries.
+     * The prefix will be "jvm." followed by the namespace.
+     * @param namespace the part of the prefix to use before the metric name and after "jvm."
+     * @param metrics the metrics to prefix
+     * @return a metric set with prefixed metric names
+     */
     private static MetricSet namespace(String namespace, MetricSet metrics) {
         return MetricSets.prefix(String.format("%s.%s.", BASE, namespace), metrics);
     }
 
+    /**
+     * Register JVM metrics
+     */
     @PostConstruct
     void postConstruct() {
         metrics.registerAll(namespace("bufpool", new BufferPoolMetricSet(mbs)));

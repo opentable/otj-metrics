@@ -45,9 +45,13 @@ public class MetricSetBuilder {
 
     private MetricSet built;
 
+    /**
+     * Create a Metric Set Builder
+     */
     public MetricSetBuilder() { }
 
     /**
+     * Create a Metric Set Builder
      * @param registry the registry to register metrics on
      */
     public MetricSetBuilder(MetricRegistry registry) {
@@ -55,6 +59,8 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Set the metric registry. If set, the metric set will be registered on this metric set when built,
+     * or if an eventClassSet class is set once the event is fired
      * @param registry the registry to register metrics on
      * @return this
      */
@@ -80,6 +86,8 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Set a metric prefix to prepend to all metrics created once the prefix is set
+     *
      * @param metricPrefix a prefix to prepend to name for metrics created from this call forward;
      *                     defaults to {@code ""} if this isn't called
      * @return this
@@ -95,6 +103,7 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Create a counter
      * @param name the name of the counter to create
      * @return a new counter
      */
@@ -103,6 +112,7 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Create a meter
      * @param name the name of the meter to create
      * @return a new meter
      */
@@ -111,6 +121,7 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Create a timer
      * @param name the name of the timer to create
      * @return a new timer
      */
@@ -119,6 +130,7 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Create a long gauge
      * @param name the name of the gauge to create
      * @return a new {@link AtomicLongGauge}
      */
@@ -127,6 +139,10 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Create a metric for every value of the gives enum.
+     * For each enum value a metric will be created with the name of (given name).(enum name).
+     * The metric will be created by the provided factory.
+     *
      * @param name the base name for created metrics
      * @param enumClass the enum type to key by
      * @param factory a factory to create metrics
@@ -140,6 +156,7 @@ public class MetricSetBuilder {
     }
 
     /**
+     * Create a metric
      * @param name the name of the metric to create
      * @param factory the factory for instances
      * @return the created metric
@@ -169,10 +186,17 @@ public class MetricSetBuilder {
         return built = result;
     }
 
+    /**
+     * A Metric Set built by the Metric Set Builder
+     */
     public static class BuiltMetricSet implements MetricSet {
         private final ImmutableMap<String, Metric> map;
         private final Class<? extends EventObject> eventClass;
 
+        /**
+         * Create a built metric set
+         * @param builder the metric set builder
+         */
         BuiltMetricSet(MetricSetBuilder builder) {
             map = builder.mapBuilder.build();
             eventClass = builder.eventClass;
@@ -183,6 +207,10 @@ public class MetricSetBuilder {
             return map;
         }
 
+        /**
+         * Get the class of event that triggers the registration of this metric
+         * @return the event class
+         */
         public Class<? extends EventObject> getEventClass() {
             return eventClass;
         }
