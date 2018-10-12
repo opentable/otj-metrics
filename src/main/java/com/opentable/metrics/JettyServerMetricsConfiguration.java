@@ -92,7 +92,7 @@ public class JettyServerMetricsConfiguration {
          * Create a queued thread pool. Handles request Id in MDC.
          *
          * @param metricRegistry the metric registry used to record metrics on pool utilization
-         * @param qSize the size of the request queue (used if there are no available threads) - THIS IS NOT USED, the queue is unbounded to avoid memory leaks
+         * @param qSize the size of the request queue (used if there are no available threads) - THIS IS NOT USED, the queue is unbounded to avoid Jetty memory leaks after a full queue
          */
         OTQueuedThreadPool(MetricRegistry metricRegistry, int qSize) {
             super(metricRegistry,

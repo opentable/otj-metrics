@@ -88,11 +88,11 @@ public class DefaultMetricsConfiguration {
     }
 
     /**
-     * Create an application event listener that listens to every application event
-     * if there is a metric set builder that is waiting for an event to be registered,
-     * we'll build and register it when that event happens
+     * Create an application event listener that listens to every application event.
+     * If there is a metric set builder that is waiting for an event to be registered,
+     * we'll build and register it when that event happens.
      *
-     * @param registry metric register to register the metrics
+     * @param registry metric registry to register the metrics on
      * @return the event listener
      */
     @Bean
