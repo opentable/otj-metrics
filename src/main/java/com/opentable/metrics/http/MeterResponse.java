@@ -19,12 +19,12 @@ import com.codahale.metrics.Metered;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-class MeterResponse implements MonitorResponse
+public class MeterResponse implements MonitorResponse
 {
     private final String name;
     private final Metered metric;
 
-    MeterResponse(String name, Metered metric)
+    public MeterResponse(String name, Metered metric)
     {
         this.name = name;
         this.metric = metric;

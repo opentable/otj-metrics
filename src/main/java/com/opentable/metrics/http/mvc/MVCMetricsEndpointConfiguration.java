@@ -11,17 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http;
+package com.opentable.metrics.http.mvc;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Map;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-public interface MonitorResponse
-{
-    String getName();
-    default Instant getTime() {
-        return Clock.systemUTC().instant();
-    }
-    Map<String, Object> getMonitors();
+@Configuration
+@Import({
+    HealthEndpoint.class,
+    MetricsHttpEndpoint.class
+})
+public class MVCMetricsEndpointConfiguration {
+
 }
+

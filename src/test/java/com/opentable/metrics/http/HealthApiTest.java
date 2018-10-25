@@ -47,6 +47,7 @@ public class HealthApiTest {
         Response r = resource.getHealth(false);
         assertEquals(200, r.getStatus());
         assertEquals(1, ((Map<?,?>) r.getEntity()).size());
+        r.close();
     }
 
     @Test
@@ -56,6 +57,7 @@ public class HealthApiTest {
         Response r = resource.getHealth(false);
         assertEquals(500, r.getStatus());
         assertEquals(1, ((Map<?,?>) r.getEntity()).size());
+        r.close();
     }
 
     @Test
@@ -67,6 +69,7 @@ public class HealthApiTest {
         Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(3, ((Map<?,?>) r.getEntity()).size());
+        r.close();
     }
 
     @Test
@@ -78,6 +81,7 @@ public class HealthApiTest {
         Response r2 = resource.getHealthGroup("mygroup", false);
         assertEquals(200, r2.getStatus());
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
+        r2.close();
     }
 
     @Test
@@ -89,6 +93,7 @@ public class HealthApiTest {
         Response r2 = resource.getHealthGroup("nogroup", true);
         assertEquals(404, r2.getStatus());
         assertEquals(null, r2.getEntity());
+        r2.close();
     }
 
     @Test
@@ -100,6 +105,7 @@ public class HealthApiTest {
         Response r2 = resource.getHealthGroup("mygroup", true);
         assertEquals(500, r2.getStatus());
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
+        r2.close();
     }
 
     @Test
@@ -110,6 +116,7 @@ public class HealthApiTest {
         Response r = resource.getHealth(true);
         assertEquals(400, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
+        r.close();
     }
 
     @Test
@@ -121,6 +128,7 @@ public class HealthApiTest {
         Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(3, ((Map<?,?>) r.getEntity()).size());
+        r.close();
     }
 
     @Test
@@ -136,6 +144,7 @@ public class HealthApiTest {
                 .map(e -> SortedEntry.class.cast(e))
                 .map(e -> e.name)
                 .collect(Collectors.toList()));
+        r.close();
     }
 
     @Test
@@ -146,6 +155,7 @@ public class HealthApiTest {
         Response r = resource.getHealth(true);
         assertEquals(500, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
+        r.close();
     }
 
     @Test

@@ -23,6 +23,7 @@ import com.codahale.metrics.Gauge;
  * @author Jeremy Schiff (originally)
  * TODO Re-implement with {@link com.codahale.metrics.EWMA} instead?
  */
+@SuppressWarnings("restriction")
 public class CpuLoadGauge implements Gauge<Double> {
     final int cores = Runtime.getRuntime().availableProcessors();
     final OperatingSystemMXBean bean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);

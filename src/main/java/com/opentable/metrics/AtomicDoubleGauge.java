@@ -21,6 +21,9 @@ import com.codahale.metrics.Gauge;
  * A gauge that holds a double value in an atomic reference
  */
 public class AtomicDoubleGauge extends AtomicReference<Double> implements Gauge<Double> {
+
+    private static final long serialVersionUID = 8682874660670154270L;
+
     @Override
     public Double getValue() {
         return get();

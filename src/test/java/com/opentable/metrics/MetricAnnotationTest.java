@@ -27,7 +27,6 @@ import com.codahale.metrics.annotation.Timed;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.BeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,7 +39,7 @@ import com.opentable.service.ServiceInfo;
 public class MetricAnnotationTest {
     @Test
     public void test() {
-        final ApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
+        final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(TestConfiguration.class);
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final String key = "com.opentable.metrics.MetricAnnotationTest.TestConfiguration.Annotated.timed";
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
@@ -53,6 +52,7 @@ public class MetricAnnotationTest {
         factory.getBean(TestConfiguration.Annotated.class).timed();
         factory.getBean(TestConfiguration.Annotated.class).timed();
         Assert.assertEquals(timer.getCount(), 2);
+        context.close();
     }
 
     @Configuration

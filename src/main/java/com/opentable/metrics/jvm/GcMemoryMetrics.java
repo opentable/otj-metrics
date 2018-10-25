@@ -48,6 +48,7 @@ import com.opentable.metrics.FloatingPointHistogram;
  * Thanks to Mike Bell for pointing out
  * <a href="http://www.fasterj.com/articles/gcnotifs.shtml">this reference</a>.
  */
+@SuppressWarnings("restriction")
 public class GcMemoryMetrics {
     private final String prefix;
     @GuardedBy("this")
@@ -65,7 +66,7 @@ public class GcMemoryMetrics {
         });
     }
 
-    private void listener(final Notification notif, final Object handback) {
+    private void listener(final Notification notif, @SuppressWarnings("unused") final Object handback) { // parameter needed to match NotificationListener signature
         if (!GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION.equals(notif.getType())) {
             return;
         }
@@ -134,7 +135,7 @@ public class GcMemoryMetrics {
 
         final Duration lastEndTime = lastEndTimes.getOrDefault(gcName, Duration.ZERO);
         final Duration vmTimeSinceLastGC = endTime.minus(lastEndTime);
-        final double percent = 100. * ((double) duration.toMillis()) / ((double) vmTimeSinceLastGC.toMillis());
+        final double percent = 100. * (duration.toMillis()) / (vmTimeSinceLastGC.toMillis());
         lastEndTimes.put(gcName, endTime);
 
         final String percentName = name(gcName, "pct-time-in-gc");

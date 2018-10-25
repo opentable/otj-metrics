@@ -34,7 +34,6 @@ import com.google.common.primitives.Ints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("resource")
 public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricSet {
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteSenderWrapper.class);
 
@@ -123,7 +122,10 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     private synchronized Graphite delegate() throws IOException {
         final boolean explicitlyClosed = delegate == null;
         boolean needsReconnectFail = false;
-        if (explicitlyClosed || (needsReconnectFail = needsReconnectFail(delegate)) || needsReconnectPeriodic()) {
+        if(!explicitlyClosed) {
+            needsReconnectFail = needsReconnectFail(delegate);
+        }
+        if (explicitlyClosed || needsReconnectFail || needsReconnectPeriodic()) {
             if (needsReconnectFail) {
                 connectionFailures.inc();
                 LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",

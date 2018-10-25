@@ -16,8 +16,6 @@ package com.opentable.metrics.jvm;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -60,8 +58,7 @@ public class MemoryFreeMetricSet implements MetricSet {
         };
     }
 
-    private static Gauge<Long> sum(final Gauge<Long>... gauges) {
-        final List<Gauge<Long>> list = Arrays.asList(gauges);
-        return () -> list.stream().mapToLong(Gauge::getValue).sum();
+    private static Gauge<Long> sum(final Gauge<Long> gauge1, final Gauge<Long> gauge2) {
+        return () -> gauge1.getValue() + gauge2.getValue();
     }
 }

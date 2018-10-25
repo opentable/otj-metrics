@@ -111,7 +111,6 @@ public class MetricSetBuilderTest {
             assertThat(registry.getMetrics())
                 .containsKeys(EXPECTED);
         }
-        assertThat(registry.getMetrics()).doesNotContainKeys(EXPECTED);
     }
 
     @Configuration

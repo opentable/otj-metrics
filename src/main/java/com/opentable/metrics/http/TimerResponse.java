@@ -18,11 +18,11 @@ import java.util.Map;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableMap;
 
-class TimerResponse extends MeterResponse
+public class TimerResponse extends MeterResponse
 {
     private final Timer metric;
 
-    TimerResponse(String name, Timer metric)
+    public TimerResponse(String name, Timer metric)
     {
         super(name, metric);
         this.metric = metric;

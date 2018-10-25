@@ -24,6 +24,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import com.google.common.collect.ImmutableMap;
 
+@SuppressWarnings("restriction")
 public class FileDescriptorMetricSet implements MetricSet {
     private static final Gauge<Long> NULL = () -> null;
 

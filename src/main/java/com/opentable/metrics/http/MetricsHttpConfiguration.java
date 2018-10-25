@@ -37,8 +37,8 @@ public class MetricsHttpConfiguration {
     }
 
     @Bean
-    public ServletRegistrationBean getMetricsServlet() {
-        return new ServletRegistrationBean(new AdminServlet(), path + "/*");
+    public ServletRegistrationBean<AdminServlet> getMetricsServlet() {
+        return new ServletRegistrationBean<>(new AdminServlet(), path + "/*");
     }
 
     private static class MetricsContextListener extends MetricsServlet.ContextListener {

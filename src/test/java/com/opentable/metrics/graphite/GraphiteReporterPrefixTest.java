@@ -26,6 +26,7 @@ import com.codahale.metrics.graphite.GraphiteReporter;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -77,6 +78,7 @@ public class GraphiteReporterPrefixTest {
             mockEnv.put("INSTANCE_NO", instanceNo);
         }
         app.setDefaultProperties(mockEnv);
+        app.setWebApplicationType(WebApplicationType.NONE);
         app.run().getAutowireCapableBeanFactory().autowireBean(this);
         if (reporter == null) {
             return null;

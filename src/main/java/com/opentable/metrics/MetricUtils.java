@@ -98,7 +98,7 @@ public final class MetricUtils {
     public static String toStringSafe(final Metric m) {
         try {
             return toString(m);
-        } catch (final IllegalArgumentException e) {
+        } catch (@SuppressWarnings("unused") final IllegalArgumentException e) {
             return m.toString();
         }
     }

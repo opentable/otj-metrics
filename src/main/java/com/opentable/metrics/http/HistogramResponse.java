@@ -20,12 +20,12 @@ import com.codahale.metrics.Snapshot;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-class HistogramResponse implements MonitorResponse
+public class HistogramResponse implements MonitorResponse
 {
     private final String name;
     private final Histogram metric;
 
-    HistogramResponse(String name, Histogram metric)
+    public HistogramResponse(String name, Histogram metric)
     {
         this.name = name;
         this.metric = metric;

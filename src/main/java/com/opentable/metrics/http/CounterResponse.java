@@ -18,12 +18,12 @@ import java.util.Map;
 
 import com.codahale.metrics.Counter;
 
-class CounterResponse implements MonitorResponse
+public class CounterResponse implements MonitorResponse
 {
     private final String name;
     private final Counter counter;
 
-    CounterResponse(String name, Counter counter)
+    public CounterResponse(String name, Counter counter)
     {
         this.name = name;
         this.counter = counter;

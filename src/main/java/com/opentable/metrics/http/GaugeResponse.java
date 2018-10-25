@@ -23,7 +23,7 @@ public class GaugeResponse implements MonitorResponse
     private final String name;
     private final Gauge<?> metric;
 
-    GaugeResponse(String name, Gauge<?> metric)
+    public GaugeResponse(String name, Gauge<?> metric)
     {
         this.name = name;
         this.metric = metric;

@@ -33,11 +33,12 @@ public class GcMemoryMetricsDemo {
             try {
                 System.gc();
                 Thread.sleep(Duration.ofSeconds(1).toMillis());
-            } catch (final InterruptedException e) {
+            } catch (@SuppressWarnings("unused") final InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
         }
         reporter.stop();
+        reporter.close();
     }
 }
