@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Configuration;
 import com.opentable.conservedheaders.ConservedHeader;
 
 /**
- * Provides two Beans&mdash;one for a provider of instrumented queued thread pools,
+ * Provides two Beans &mdash; one for a provider of instrumented queued thread pools,
  * and the other for a metrics-instrumented handler customizer.  These are both picked up by {@code EmbeddedJetty}
  * in {@code otj-server}.
  */

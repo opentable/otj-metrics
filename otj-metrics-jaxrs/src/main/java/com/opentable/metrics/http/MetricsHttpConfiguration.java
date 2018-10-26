@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import(MetricsHttpResource.class)
 public class MetricsHttpConfiguration {
+
     @Value("${ot.metrics.http.path:/metrics}")
     private String path;
 

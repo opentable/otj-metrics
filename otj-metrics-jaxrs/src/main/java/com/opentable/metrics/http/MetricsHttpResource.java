@@ -1,3 +1,4 @@
+package com.opentable.metrics.http;
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,10 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http.mvc;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.inject.Named;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -26,35 +34,21 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.opentable.metrics.http.CounterResponse;
-import com.opentable.metrics.http.GaugeResponse;
-import com.opentable.metrics.http.HealthCheckResponse;
-import com.opentable.metrics.http.HistogramResponse;
-import com.opentable.metrics.http.MeterResponse;
-import com.opentable.metrics.http.MonitorResponse;
-import com.opentable.metrics.http.TimerResponse;
-
-@RestController
-@RequestMapping("/service-status")
-public class MetricsHttpEndpoint
+@Named
+@Path("/service-status")
+@Produces(MediaType.APPLICATION_JSON)
+public class MetricsHttpResource
 {
     private final MetricRegistry metrics;
     private final HealthCheckRegistry health;
 
-    @Autowired
-    MetricsHttpEndpoint(MetricRegistry metrics, HealthCheckRegistry health)
+    MetricsHttpResource(MetricRegistry metrics, HealthCheckRegistry health)
     {
         this.metrics = metrics;
         this.health = health;
     }
 
-    @GetMapping
+    @GET
     public List<MonitorResponse> get()
     {
         final List<MonitorResponse> responses = new ArrayList<>();
@@ -63,8 +57,9 @@ public class MetricsHttpEndpoint
         return responses;
     }
 
-    @GetMapping("/{metric-name}")
-    public MonitorResponse get(@PathVariable("metric-name") String metricName)
+    @GET
+    @Path("/{metric-name}")
+    public MonitorResponse get(@PathParam("metric-name") String metricName)
     {
         final Metric metric = metrics.getMetrics().get(metricName);
         if (metric != null) {

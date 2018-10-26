@@ -16,13 +16,6 @@ package com.opentable.metrics.http;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Named;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
@@ -33,21 +26,27 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 
-@Named
-@Path("/service-status")
-@Produces(MediaType.APPLICATION_JSON)
-public class MetricsHttpResource
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/service-status")
+public class MetricsHttpEndpoint
 {
     private final MetricRegistry metrics;
     private final HealthCheckRegistry health;
 
-    MetricsHttpResource(MetricRegistry metrics, HealthCheckRegistry health)
+    @Autowired
+    MetricsHttpEndpoint(MetricRegistry metrics, HealthCheckRegistry health)
     {
         this.metrics = metrics;
         this.health = health;
     }
 
-    @GET
+    @GetMapping
     public List<MonitorResponse> get()
     {
         final List<MonitorResponse> responses = new ArrayList<>();
@@ -56,9 +55,8 @@ public class MetricsHttpResource
         return responses;
     }
 
-    @GET
-    @Path("/{metric-name}")
-    public MonitorResponse get(@PathParam("metric-name") String metricName)
+    @GetMapping("/{metric-name}")
+    public MonitorResponse get(@PathVariable("metric-name") String metricName)
     {
         final Metric metric = metrics.getMetrics().get(metricName);
         if (metric != null) {

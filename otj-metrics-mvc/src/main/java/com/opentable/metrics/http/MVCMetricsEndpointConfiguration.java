@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http.mvc;
+package com.opentable.metrics.http;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -24,4 +24,3 @@ import org.springframework.context.annotation.Import;
 public class MVCMetricsEndpointConfiguration {
 
 }
-

@@ -16,16 +16,6 @@ package com.opentable.metrics.http;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.inject.Named;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
 import com.codahale.metrics.health.HealthCheck.Result;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ComparisonChain;
@@ -33,32 +23,34 @@ import com.google.common.collect.ComparisonChain;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Named
-@Produces(MediaType.APPLICATION_JSON)
-@Path("/health")
-public class HealthResource {
-    private final HealthController controller;
+@RestController
+@RequestMapping("/health")
+public class HealthEndpoint {
 
-    HealthResource(HealthController controller) {
-        this.controller = controller;
-    }
+    @Autowired
+    private HealthController controller;
 
-    @GET
-    @Path("/")
-    public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
+    @GetMapping
+    public ResponseEntity<Map<SortedEntry, Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(render(all, result.getLeft())).build();
+        return ResponseEntity.status(result.getRight().getHttpStatus()).body(render(all, result.getLeft()));
     }
 
-    @GET
-    @Path("/group/{group}")
-    public Response getHealthGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
+    @GetMapping("/group/{group}")
+    public ResponseEntity<?> getHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks(group);
         if (result == null) {
-            return Response.status(404).build();
+            return ResponseEntity.notFound().build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(render(all, result.getLeft())).build();
+        return ResponseEntity.status(result.getRight().getHttpStatus()).body(render(all, result.getLeft()));
     }
 
     private Map<SortedEntry, Result> render(boolean all, Map<String, Result> raw) {
