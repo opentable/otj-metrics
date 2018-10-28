@@ -55,6 +55,9 @@ import com.opentable.service.ServiceInfo;
  * Tests for Graphite connection failures, reconnection, etc.
  */
 public class GraphiteConnectTest {
+
+    private static final int DEBUG_PAUSE_TEST_SLEEP_MILLIS = 0;
+
     @Test
     public void sendTest() throws IOException, InterruptedException {
         final TcpServer server = new TcpServer(0);
@@ -76,7 +79,7 @@ public class GraphiteConnectTest {
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
-        Assert.assertFalse(server.contains("foo.bar.baz"));
+        Assert.assertFalse(server.contains("pre adding counter","foo.bar.baz"));
         final Counter counter = metricRegistry.counter("foo.bar.baz");
         counter.inc();
         counter.inc();
@@ -84,7 +87,7 @@ public class GraphiteConnectTest {
         // Wait for data relay.
         Thread.sleep(reportingPeriod.plusMillis(400).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
-        Assert.assertTrue(server.contains("foo.bar.baz"));
+        Assert.assertTrue(server.contains("post adding counter", "foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server.stopClean();
         Assert.assertEquals(0, detectedConnectionFailures.getCount());
@@ -111,12 +114,18 @@ public class GraphiteConnectTest {
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
         final Counter connectionCloses = findConnectionCloseCounter(factory);
+        final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        final Counter counterBoo = metricRegistry.counter("wolf.nipple.chips");
+        counterBoo.inc();
+        counterBoo.inc();
+        counterBoo.inc();
+
 
         // Wait for graphite to connect.
         Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
         Assert.assertEquals(0, detectedConnectionFailures.getCount());
-
+        server.contains("wolf created but otherwise default", "foo");
         server.stopClean();
         // Wait for connection failure.
         Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
@@ -129,18 +138,19 @@ public class GraphiteConnectTest {
         // Wait for reconnect.
         Thread.sleep(reportingPeriod.toMillis());
 
-        Assert.assertFalse(server2.contains("foo.bar.baz"));
-        final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        Assert.assertFalse(server2.contains("second server","foo.bar.baz"));
+
         final Counter counter = metricRegistry.counter("foo.bar.baz");
         counter.inc();
         counter.inc();
         counter.inc();
+        metricRegistry.counter("fluffy").inc();
 
         // Wait for data relay.
-        Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
+        Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
 
         Assert.assertTrue(server2.getBytesRead() > 0);
-        Assert.assertTrue(server2.contains("foo.bar.baz"));
+        Assert.assertTrue(server2.contains("foobar where are you??","foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server2.stopClean();
     }
@@ -169,7 +179,7 @@ public class GraphiteConnectTest {
         sender.send("test1", "1", 1234);
         sender.flush();
         Thread.sleep(reportingPeriod.toMillis());
-        Assert.assertTrue(server.contains("test1 1 1234"));
+        Assert.assertTrue(server.contains("sending raw bytes","test1 1 1234"));
 
         server.stopClean();
         // Wait for connection failure.
@@ -186,13 +196,13 @@ public class GraphiteConnectTest {
         final TcpServer server2 = new TcpServer(port);
         Assert.assertEquals(server2.start(), port);
 
-        Assert.assertFalse(server2.contains("test2"));
+        Assert.assertFalse(server2.contains("Now we've restarted, test2 should be there","test2"));
         sender.send("test3", "3", 3456);
         sender.flush();
         Thread.sleep(reportingPeriod.toMillis());
 
         Assert.assertTrue(server2.getBytesRead() > 0);
-        Assert.assertTrue(server2.contains("test3"));
+        Assert.assertTrue(server2.contains("and postconnect continues to run smooth","test3"));
 
         final Counter connectionCloses = findConnectionCloseCounter(factory);
         SpringApplication.exit(context, () -> 0);
@@ -252,9 +262,16 @@ public class GraphiteConnectTest {
             return bytesRead.longValue();
         }
 
-        private boolean contains(final String s) {
+        private boolean contains(final String scenario, final String s) {
+            LOG.error(scenario + " :: " + "CONTAINS " + s +  "=" + sb.toString().contains(s) + "\r\n\r\n" + sb.toString());
+            try {
+                Thread.sleep(DEBUG_PAUSE_TEST_SLEEP_MILLIS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
             return sb.toString().contains(s);
         }
+
 
         private void run() {
             LOG.info("starting");
