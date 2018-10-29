@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Import;
 
 @Configuration
 @Import({
+    HealthController.class,
     HealthEndpoint.class,
     MetricsHttpEndpoint.class
 })
