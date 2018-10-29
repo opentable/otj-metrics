@@ -101,6 +101,7 @@ public class MetricSetBuilderTest {
 
 
     @Test
+    // For some reason, this has started failing from the command line only.
     public void testEventRegister() {
         final MetricRegistry registry;
         try (ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext(EventRegister.class)) {
@@ -110,6 +111,8 @@ public class MetricSetBuilderTest {
             ctx.getBean(ApplicationEventMulticaster.class).multicastEvent(new ApplicationReadyEvent(new SpringApplication(), new String[0], ctx));
             assertThat(registry.getMetrics())
                 .containsKeys(EXPECTED);
+            // Not sure why, but this fixes - seems like the event doesn't get propagated properly otherwise.
+            ctx.close();
         }
         assertThat(registry.getMetrics()).doesNotContainKeys(EXPECTED);
     }

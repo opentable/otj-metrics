@@ -32,15 +32,18 @@
   <groupId>com.opentable.components</groupId>
   <artifactId>otj-metrics</artifactId>
   <name>otj-metrics</name>
-  <version>2.6.13-SNAPSHOT</version>
+  <!-- Reflect the new version -->
+  <version>4.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <description>Expose Codahale Metrics over HTTP in OpenTable format</description>
 
   <properties>
+    <!-- Upgrade DropWizard Metrics -->
     <dep.metrics.version>4.0.2</dep.metrics.version>
   </properties>
   <dependencyManagement>
     <dependencies>
+      <!-- In addition, we need to add this module, since JMXReporter and friends were moved -->
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-jmx</artifactId>
@@ -145,6 +148,7 @@
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-annotation</artifactId>
     </dependency>
+    <!-- TODO: This probably needs to be forked thanks to the JMX Changes -->
     <dependency>
       <groupId>com.ryantenney.metrics</groupId>
       <artifactId>metrics-spring</artifactId>

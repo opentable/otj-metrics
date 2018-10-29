@@ -55,7 +55,7 @@ import com.opentable.service.ServiceInfo;
  * Tests for Graphite connection failures, reconnection, etc.
  */
 public class GraphiteConnectTest {
-
+    private static final Logger LOG = LoggerFactory.getLogger(GraphiteConnectTest.class);
     private static final int DEBUG_PAUSE_TEST_SLEEP_MILLIS = 0;
 
     @Test
@@ -176,8 +176,8 @@ public class GraphiteConnectTest {
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final GraphiteSender sender = factory.getBean(GraphiteSender.class);
 
-        sender.send("test1", "1", 1234);
-        sender.flush();
+        // Emulate internal logic of GraphiteReporter
+        emulateGraphiteReporterSend(sender,"test1", "1", 1234);
         Thread.sleep(reportingPeriod.toMillis());
         Assert.assertTrue(server.contains("sending raw bytes","test1 1 1234"));
 
@@ -186,7 +186,7 @@ public class GraphiteConnectTest {
         Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
 
         try {
-            sender.send("test2", "2", 2345);
+            emulateGraphiteReporterSend(sender,"test2", "2", 2345);
             sender.flush();
         } catch (IOException expected) {
             Assert.assertTrue(expected instanceof ConnectException);
@@ -197,7 +197,7 @@ public class GraphiteConnectTest {
         Assert.assertEquals(server2.start(), port);
 
         Assert.assertFalse(server2.contains("Now we've restarted, test2 should be there","test2"));
-        sender.send("test3", "3", 3456);
+        emulateGraphiteReporterSend(sender,"test3", "3", 3456);
         sender.flush();
         Thread.sleep(reportingPeriod.toMillis());
 
@@ -218,6 +218,24 @@ public class GraphiteConnectTest {
     private static Counter findConnectionCloseCounter(final BeanFactory factory) {
         return (Counter) factory.getBean(MetricRegistry.class).getMetrics()
                 .get(GraphiteConfiguration.PREFIX + GraphiteSenderWrapper.CONNECTION_CLOSE);
+    }
+
+    private void emulateGraphiteReporterSend(GraphiteSender graphite, String name, String value, long timestamp)  {
+        // STRIPPED DOWN VERSION OF GRAPHITEREPORT.REPORT METHOD
+        try {
+            graphite.connect();
+            graphite.send(name, value, timestamp);
+            graphite.flush();
+        } catch (IOException e) {
+            LOG.warn("Unable to report to Graphite", graphite, e);
+        } finally {
+            try {
+                graphite.close();
+            } catch (IOException e1) {
+                LOG.warn("Error closing Graphite", graphite, e1);
+            }
+        }
+
     }
 
     private static class TcpServer {
@@ -276,25 +294,36 @@ public class GraphiteConnectTest {
         private void run() {
             LOG.info("starting");
             try {
-                final Socket client = sock.accept();
-                final InputStream input = client.getInputStream();
-                final byte[] buf = new byte[4096];
+                // The original test code exited after
+                // client disconnected, but this ignores the fact
+                // that DW now includes a reconnect internally after each send.
+                // Now we only exit completely if the server is shutdown,
+                // by adding this extra outer loop
                 while (running.get()) {
-                    final int n = input.read(buf);
-                    if (n == -1) {
-                        LOG.info("client disconnected");
-                        break;
-                    } else {
-                        bytesRead.add(n);
-                        final String asString = new String(buf, 0, n, StandardCharsets.US_ASCII);
-                        sb.append(asString);
-                        //LOG.info("read {} bytes\n{}", n, asString);
+                    final Socket client = sock.accept();
+                    LOG.info("client Connected!");
+                    final InputStream input = client.getInputStream();
+                    final byte[] buf = new byte[16384];
+
+                    while (running.get()) {
+                        final int n = input.read(buf);
+                        if (n == -1) {
+                            LOG.info("client disconnected");
+                            break;
+                        } else {
+                            bytesRead.add(n);
+                            final String asString = new String(buf, 0, n, StandardCharsets.US_ASCII);
+                            sb.append(asString);
+                            //LOG.info("read {} bytes\n{}", n, asString);
+                        }
+                        Thread.sleep(Duration.ofMillis(100).toMillis());
                     }
-                    Thread.sleep(Duration.ofMillis(100).toMillis());
+
+                    client.shutdownOutput();
+                    client.shutdownInput();
+                    client.close();
                 }
-                client.shutdownOutput();
-                client.shutdownInput();
-                client.close();
+
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             } catch (final InterruptedException e) {

@@ -1,6 +1,15 @@
 otj-metrics
 ===========
 
+4.0.0
+-----
+* Uses DropWizard 4.0.2
+
+This is an incompatible binary/source change, which will require users to import new versions, and a new 
+module (metrics-jmx)
+
+In addition, a fork of metrics-spring will probably be needed
+
 2.6.12
 ------
 * Use non deprecated concurrent HashSet.

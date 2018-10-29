@@ -29,7 +29,6 @@ import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.primitives.Ints;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,12 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
      * metrics.
      *
      * <p>
-     * This is an unfortunate hack, and it would be nice to be able to remove it.
+     * As of DropWizard 3.1.3+, this is PROBABLY not needed anymore, but the wrapper is maintained for providing delegation purposes
+     * and for tracking connectionFailures and closes for diagnostics.
+     * (In DropWizard 3.1.3+, each reporting period, a new socket (including DNS resolution) is created, metrics are sent, and
+     * the socket is closed. All the previous issues occurred because of atttempts to reuse a socket)
+     * Hence, this class is now mostly a "dumb" delegator, with little extra logic other than
+     * metrics wrapping, and a restart per hour.
      */
     private static final Duration RECONNECT_PERIOD = Duration.ofHours(1);
 
@@ -60,8 +64,9 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     @GuardedBy("this")
     private Instant lastReconnect;
 
-    GraphiteSenderWrapper(Supplier<InetSocketAddress> address) {
+    GraphiteSenderWrapper(Supplier<InetSocketAddress> address, Graphite delegate) {
         this.address = address;
+        this.delegate = delegate;
     }
 
     @Override
@@ -74,77 +79,52 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
 
     @Override
     public synchronized void close() throws IOException {
-        if (delegate != null) {
+        try {
             delegate.close();
+        } finally {
+            connectionCloses.inc();
         }
-        delegate = null;
-        connectionCloses.inc();
     }
 
     @Override
     public synchronized void connect() throws IllegalStateException, IOException {
-        delegate(); // either we are connected or we throw
+        try {
+            maybeRecycle().connect(); // either we are connected or we throw
+        } catch (IllegalStateException | IOException e){
+            connectionFailures.inc();
+            throw e;
+        }
     }
 
     @Override
     public synchronized void send(String name, String value, long timestamp) throws IOException {
-        delegate().send(name, value, timestamp);
+        delegate.send(name, value, timestamp);
     }
 
     @Override
     public synchronized void flush() throws IOException {
-        delegate().flush();
+        delegate.flush();
     }
 
     @Override
     public synchronized boolean isConnected() {
         // If it's not already connected, don't accidentally cause a connection attempt
-        if (delegate == null) {
-            return false;
-        }
-        try {
-            return delegate().isConnected();
-        } catch (IOException e) {
-            LOG.debug("While testing Graphite connectivity", e);
-            return false;
-        }
+       return delegate.isConnected();
     }
 
     @Override
     public synchronized int getFailures() {
-        try {
-            return delegate().getFailures();
-        } catch (IOException e) {
-            LOG.debug("While counting Graphite failures", e);
-            return Ints.saturatedCast(connectionFailures.getCount());
-        }
+        return delegate.getFailures();
     }
 
-    private synchronized Graphite delegate() throws IOException {
-        final boolean explicitlyClosed = delegate == null;
-        boolean needsReconnectFail = false;
-        if (explicitlyClosed || (needsReconnectFail = needsReconnectFail(delegate)) || needsReconnectPeriodic()) { //NOPMD
-            if (needsReconnectFail) {
-                connectionFailures.inc();
-                LOG.warn("bad graphite state; recycling; connected {}, failures {}; counter {}; last @ {}",
-                        delegate == null ? "UNKNOWN" : delegate.isConnected(),
-                        delegate == null ? "UNKNOWN" : delegate.getFailures(),
-                        connectionFailures.getCount(),
-                        lastReconnect);
-            }
-
+    private synchronized Graphite maybeRecycle() throws IOException {
+        if (needsReconnectPeriodic()) { //NOPMD
             // Spin up new one
             Graphite newGraphite = new Graphite(address.get());
-            newGraphite.connect();
+            //newGraphite.connect();
 
             // Close the old one
-            if (delegate != null) {
-                try {
-                    delegate.close();
-                } catch (Exception e) {
-                    LOG.error("Failed to close old graphite", e);
-                }
-            }
+            closeOldGraphite();
 
             // Publish it
             delegate = newGraphite;
@@ -153,12 +133,16 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
         return delegate;
     }
 
-    /**
-     * @return Whether reconnect is merited because of erroneous state of {@code graphite}.
-     */
-    private static boolean needsReconnectFail(Graphite graphite) {
-        return !graphite.isConnected() || graphite.getFailures() > 0;
+    private void closeOldGraphite() {
+        if (delegate != null) {
+            try {
+                delegate.close();
+            } catch (Exception e) {
+                LOG.error("Failed to close old graphite", e);
+            }
+        }
     }
+
 
     /**
      * @return Whether reconnect is merited because of recycle period having elapsed.
