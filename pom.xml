@@ -39,7 +39,7 @@
 
   <properties>
     <!-- Upgrade DropWizard Metrics -->
-    <dep.metrics.version>4.0.2</dep.metrics.version>
+    <dep.metrics.version>4.0.3</dep.metrics.version>
   </properties>
   <dependencyManagement>
     <dependencies>
