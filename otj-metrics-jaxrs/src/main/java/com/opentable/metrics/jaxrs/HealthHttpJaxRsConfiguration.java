@@ -11,17 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http;
+package com.opentable.metrics.jaxrs;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import com.opentable.metrics.http.HealthController;
+
 @Configuration
 @Import({
-    HealthController.class,
-    HealthEndpoint.class,
-    MetricsHttpEndpoint.class
+        HealthController.class,
+        HealthResource.class,
 })
-public class MVCMetricsEndpointConfiguration {
-
-}
+public class HealthHttpJaxRsConfiguration {}

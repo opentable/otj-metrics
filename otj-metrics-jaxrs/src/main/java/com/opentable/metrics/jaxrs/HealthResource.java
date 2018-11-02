@@ -1,4 +1,4 @@
-package com.opentable.metrics.http;
+package com.opentable.metrics.jaxrs;
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,16 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.opentable.metrics.http.CheckState;
+import com.opentable.metrics.http.HealthController;
+
 @Named
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/health")
 public class HealthResource {
     private final HealthController controller;
 
-    HealthResource(HealthController controller) {
+    public HealthResource(HealthController controller) {
         this.controller = controller;
     }
 
@@ -78,13 +81,17 @@ public class HealthResource {
         return rendered;
     }
 
-    static class SortedEntry implements Comparable<SortedEntry> {
-        final String name;
+    public static class SortedEntry implements Comparable<SortedEntry> {
+        private final String name;
         final Result result;
 
         SortedEntry(String name, Result result) {
             this.name = name;
             this.result = result;
+        }
+
+        public String getName() {
+            return name;
         }
 
         @Override
@@ -93,13 +100,13 @@ public class HealthResource {
                     // severity descending
                     .compare(o.result, result, HealthController::compare)
                     // name ascending
-                    .compare(name, o.name)
+                    .compare(getName(), o.getName())
                     .result();
         }
 
         @Override
         public int hashCode() {
-            return name.hashCode();
+            return getName().hashCode();
         }
 
         @Override
@@ -110,7 +117,7 @@ public class HealthResource {
         @Override
         @JsonValue
         public String toString() {
-            return name;
+            return getName();
         }
     }
 }

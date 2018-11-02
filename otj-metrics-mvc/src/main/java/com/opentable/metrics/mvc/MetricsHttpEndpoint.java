@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http;
+package com.opentable.metrics.mvc;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +31,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.opentable.metrics.http.CounterResponse;
+import com.opentable.metrics.http.GaugeResponse;
+import com.opentable.metrics.http.HealthCheckResponse;
+import com.opentable.metrics.http.HistogramResponse;
+import com.opentable.metrics.http.MeterResponse;
+import com.opentable.metrics.http.MonitorResponse;
+import com.opentable.metrics.http.TimerResponse;
 
 @RestController
 @RequestMapping("/service-status")

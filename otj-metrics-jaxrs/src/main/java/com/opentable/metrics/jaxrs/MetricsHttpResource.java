@@ -1,4 +1,4 @@
-package com.opentable.metrics.http;
+package com.opentable.metrics.jaxrs;
 /*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,14 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+
+import com.opentable.metrics.http.CounterResponse;
+import com.opentable.metrics.http.GaugeResponse;
+import com.opentable.metrics.http.HealthCheckResponse;
+import com.opentable.metrics.http.HistogramResponse;
+import com.opentable.metrics.http.MeterResponse;
+import com.opentable.metrics.http.MonitorResponse;
+import com.opentable.metrics.http.TimerResponse;
 
 @Named
 @Path("/service-status")

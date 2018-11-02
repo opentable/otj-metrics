@@ -52,7 +52,7 @@ public class HealthController {
     private final HealthCheckRegistry registry;
     private final ExecutorService executor;
 
-    HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
+    public HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
             ConfigurableEnvironment env) {
         this.registry = registry;
         this.executor = executor;

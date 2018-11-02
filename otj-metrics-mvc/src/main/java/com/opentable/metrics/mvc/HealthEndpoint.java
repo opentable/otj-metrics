@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http;
+package com.opentable.metrics.mvc;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,6 +30,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.opentable.metrics.http.CheckState;
+import com.opentable.metrics.http.HealthController;
 
 @RestController
 @RequestMapping("/health")
