@@ -43,7 +43,8 @@
     <!-- This will be the new property in future pom, and old one will be ignored, deliberately forcing a break -->
     <dep.metrics4.version>4.0.3</dep.metrics4.version>
     <!-- This wasn't managed before but should have been -->
-    <dep.metrics-spring.version>3.1.3</dep.metrics-spring.version>
+    <!-- Last non forked release was 3.1.3, we now start at 3.9.9, the next release being 3.9.9.1, etc -->
+    <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
   </properties>
   <dependencyManagement>
     <dependencies>
