@@ -40,6 +40,8 @@
   <properties>
     <!-- Upgrade DropWizard Metrics -->
     <dep.metrics.version>4.0.3</dep.metrics.version>
+    <!-- This will be the new property in future pom, and old one will be ignored, deliberately forcing a break -->
+    <dep.metrics4.version>4.0.3</dep.metrics4.version>
   </properties>
   <dependencyManagement>
     <dependencies>
