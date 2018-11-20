@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+3.0.0
+-----
+* Split into multiple modules: a core module and then 2 separate modules for JAX-RS and MVC
+
 2.6.12
 ------
 * Use non deprecated concurrent HashSet.
