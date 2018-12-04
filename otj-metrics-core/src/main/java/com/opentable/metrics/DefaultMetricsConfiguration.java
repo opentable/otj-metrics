@@ -101,9 +101,11 @@ public class DefaultMetricsConfiguration {
             List<MetricSet> metrics = findEventedMetricSets()
                 .filter(m -> m.getEventClass().isInstance(event))
                 .collect(Collectors.toList());
-            LOG.debug("Registering metrics on event {}: {}", event, metrics);
-            metrics.forEach(registry::registerAll);
-            metrics.forEach(m -> registeredMetrics.addAll(m.getMetrics().keySet()));
+            if (!metrics.isEmpty()) {
+                LOG.debug("Registering metrics on event {}: {}", event, metrics);
+                metrics.forEach(registry::registerAll);
+                metrics.forEach(m -> registeredMetrics.addAll(m.getMetrics().keySet()));
+            }
         };
     }
 
