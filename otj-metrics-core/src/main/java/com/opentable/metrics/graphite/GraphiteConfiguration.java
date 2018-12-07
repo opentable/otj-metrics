@@ -21,10 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
 
-import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
-import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -78,7 +77,7 @@ public class GraphiteConfiguration {
     }
 
     @Bean
-    public GraphiteReporter graphiteReporter(Optional<GraphiteSender> sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
+    public ScheduledReporter graphiteReporter(Optional<GraphiteSender> sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
         if (!sender.isPresent()) {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
@@ -91,12 +90,7 @@ public class GraphiteConfiguration {
 
         LOG.info("initializing: host {}, port {}, prefix {}, refresh period {}", host, port, prefix, reportingPeriod);
 
-        GraphiteReporter reporter = GraphiteReporter.forRegistry(metricRegistry)
-                .prefixedWith(prefix)
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(TimeUnit.MILLISECONDS)
-                .filter(MetricFilter.ALL)
-                .build(sender.get());
+        ScheduledReporter reporter = new OtGraphiteReporter(metricRegistry, sender.get(), prefix);
         reporter.start(reportingPeriod.toMillis(), TimeUnit.MILLISECONDS);
         return reporter;
     }
