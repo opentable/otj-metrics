@@ -13,5 +13,5 @@ import com.opentable.metrics.actuate.micrometer.OtMicrometerToDropWizardExportCo
     CodahaleHealthIndicatorConfiguration.class,
     HealthIndicatorCodahaleConfiguration.class
 })
-public class ActuatorConfiguration {
+public class ActuatorAutoConfiguration {
 }

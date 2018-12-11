@@ -70,7 +70,7 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
             if (factory == null) {
                 return false;
             }
-            return Arrays.asList(factory.getBeanNamesForType(HealthIndicator.class))
+            return !Arrays.asList(factory.getBeanNamesForType(HealthIndicator.class))
                 .contains("dropWizardHealthIndicator");
         }
     }
