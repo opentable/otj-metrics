@@ -45,11 +45,9 @@
             <artifactId>otj-spring</artifactId>
         </dependency>
 
-        <!-- TODO: REMOVE ONCE UPDATES VERSION -->
         <dependency>
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-conservedheaders-core</artifactId>
-            <version>3.0.0</version>
         </dependency>
 
         <dependency>

@@ -35,7 +35,6 @@
         <dependency>
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-metrics-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>
