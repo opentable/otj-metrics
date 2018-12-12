@@ -13,6 +13,9 @@ import com.opentable.metrics.actuate.AbstractTest;
 
 public class HealthIndicatorCodahaleConfigurationTest extends AbstractTest {
 
+    /**
+     * Tests presence of the diskSpaceHealthIndicator in the standard health endpoint
+     */
     @Test
     public void codahaleHealthEndpoint() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/health"))

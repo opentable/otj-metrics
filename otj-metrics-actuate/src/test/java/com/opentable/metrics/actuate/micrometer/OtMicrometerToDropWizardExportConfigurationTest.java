@@ -19,6 +19,9 @@ public class OtMicrometerToDropWizardExportConfigurationTest extends AbstractTes
     @Autowired
     private MetricRegistry metricRegistry;
 
+    /**
+     * Tests metric mapping between {@link MeterRegistry} and {@link MetricRegistry}
+     */
     @Test
     public void newDropWizardMeterRegistry() {
         assertNotNull(meterRegistry);

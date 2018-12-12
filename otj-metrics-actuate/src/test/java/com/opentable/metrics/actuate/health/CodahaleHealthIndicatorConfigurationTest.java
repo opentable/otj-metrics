@@ -12,6 +12,9 @@ import com.opentable.metrics.actuate.AbstractTest;
 
 public class CodahaleHealthIndicatorConfigurationTest extends AbstractTest {
 
+    /**
+     * Tests presence of the dropWizard health beans in the actuator's health endpoint
+     */
     @Test
     public void actuatorHealthEndpoint() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/actuator/health"))

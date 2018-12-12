@@ -22,6 +22,10 @@ import io.micrometer.core.instrument.util.HierarchicalNameMapper;
 import io.micrometer.core.lang.NonNull;
 import io.micrometer.core.lang.Nullable;
 
+/**
+ * Configures  {@link DropwizardMeterRegistry} with custom {@link HierarchicalNameMapper} and
+ * {@link HierarchicalNameMapper} to report micrometer metrics in the DropWizard infrastructure
+ */
 @Configuration
 public class OtMicrometerToDropWizardExportConfiguration {
 

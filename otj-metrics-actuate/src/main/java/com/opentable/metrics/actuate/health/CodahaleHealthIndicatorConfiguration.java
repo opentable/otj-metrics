@@ -24,7 +24,10 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import io.micrometer.core.lang.NonNull;
 
-
+/**
+ * Presents {@link HealthCheck} beans as a composite {@link HealthIndicator}.
+ *
+ */
 @Configuration
 @ConditionalOnEnabledHealthIndicator("drop-wizard")
 public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndicatorConfiguration<CodahaleHealthIndicatorConfiguration.Adapter, HealthCheck> {

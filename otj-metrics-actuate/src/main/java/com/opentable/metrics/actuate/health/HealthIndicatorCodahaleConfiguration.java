@@ -14,6 +14,10 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Registers {@link HealthIndicator} beans in the {@link HealthCheckRegistry}.
+ *
+ */
 @Configuration
 public class HealthIndicatorCodahaleConfiguration {
 
