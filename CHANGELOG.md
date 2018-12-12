@@ -1,6 +1,16 @@
 otj-metrics
 ===========
 
+4.0.0
+-----
+* Uses DropWizard 4.0.3
+
+This is an incompatible binary/source change, 
+which will require users to import new versions, and a new 
+module (metrics-jmx)
+
+In addition, a fork of metrics-spring is used (version 3.99 instead of the old 3.12)
+
 3.0.0
 -----
 * Split into multiple modules: a core module and then 2 separate modules for JAX-RS and MVC

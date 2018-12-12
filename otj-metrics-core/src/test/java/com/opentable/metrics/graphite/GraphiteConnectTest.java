@@ -40,8 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -56,6 +55,9 @@ import com.opentable.service.ServiceInfo;
  * Tests for Graphite connection failures, reconnection, etc.
  */
 public class GraphiteConnectTest {
+    private static final Logger LOG = LoggerFactory.getLogger(GraphiteConnectTest.class);
+    private static final int DEBUG_PAUSE_TEST_SLEEP_MILLIS = 0;
+
     @Test
     public void sendTest() throws IOException, InterruptedException {
         final TcpServer server = new TcpServer(0);
@@ -72,13 +74,12 @@ public class GraphiteConnectTest {
                 .build();
 
         final SpringApplication app = new SpringApplication(TestConfiguration.class);
-        app.setWebApplicationType(WebApplicationType.NONE);
         app.setDefaultProperties(props);
-        final ConfigurableApplicationContext context = app.run();
+        final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
         final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
-        Assert.assertFalse(server.contains("foo.bar.baz"));
+        Assert.assertFalse(server.contains("pre adding counter","foo.bar.baz"));
         final Counter counter = metricRegistry.counter("foo.bar.baz");
         counter.inc();
         counter.inc();
@@ -86,11 +87,10 @@ public class GraphiteConnectTest {
         // Wait for data relay.
         Thread.sleep(reportingPeriod.plusMillis(400).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
-        Assert.assertTrue(server.contains("foo.bar.baz"));
+        Assert.assertTrue(server.contains("post adding counter", "foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server.stopClean();
         Assert.assertEquals(0, detectedConnectionFailures.getCount());
-        context.close();
     }
 
     @Test
@@ -110,17 +110,22 @@ public class GraphiteConnectTest {
 
         final SpringApplication app = new SpringApplication(TestConfiguration.class);
         app.setDefaultProperties(props);
-        app.setWebApplicationType(WebApplicationType.NONE);
-        final ConfigurableApplicationContext context = app.run();
+        final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final Counter detectedConnectionFailures = findConnectionFailureCounter(factory);
         final Counter connectionCloses = findConnectionCloseCounter(factory);
+        final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        final Counter counterBoo = metricRegistry.counter("wolf.nipple.chips");
+        counterBoo.inc();
+        counterBoo.inc();
+        counterBoo.inc();
+
 
         // Wait for graphite to connect.
         Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
         Assert.assertTrue(server.getBytesRead() > 0);
         Assert.assertEquals(0, detectedConnectionFailures.getCount());
-
+        server.contains("wolf created but otherwise default", "foo");
         server.stopClean();
         // Wait for connection failure.
         Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
@@ -133,21 +138,21 @@ public class GraphiteConnectTest {
         // Wait for reconnect.
         Thread.sleep(reportingPeriod.toMillis());
 
-        Assert.assertFalse(server2.contains("foo.bar.baz"));
-        final MetricRegistry metricRegistry = factory.getBean(MetricRegistry.class);
+        Assert.assertFalse(server2.contains("second server","foo.bar.baz"));
+
         final Counter counter = metricRegistry.counter("foo.bar.baz");
         counter.inc();
         counter.inc();
         counter.inc();
+        metricRegistry.counter("fluffy").inc();
 
         // Wait for data relay.
-        Thread.sleep(reportingPeriod.multipliedBy(2).toMillis());
+        Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
 
         Assert.assertTrue(server2.getBytesRead() > 0);
-        Assert.assertTrue(server2.contains("foo.bar.baz"));
+        Assert.assertTrue(server2.contains("foobar where are you??","foo.bar.baz"));
         SpringApplication.exit(context, () -> 0);
         server2.stopClean();
-        context.close();
     }
 
     @Test
@@ -166,23 +171,22 @@ public class GraphiteConnectTest {
                 .build();
 
         final SpringApplication app = new SpringApplication(TestConfiguration.class);
-        app.setWebApplicationType(WebApplicationType.NONE);
         app.setDefaultProperties(props);
-        final ConfigurableApplicationContext context = app.run();
+        final ApplicationContext context = app.run();
         final BeanFactory factory = context.getAutowireCapableBeanFactory();
         final GraphiteSender sender = factory.getBean(GraphiteSender.class);
 
-        sender.send("test1", "1", 1234);
-        sender.flush();
+        // Emulate internal logic of GraphiteReporter
+        emulateGraphiteReporterSend(sender,"test1", "1", 1234);
         Thread.sleep(reportingPeriod.toMillis());
-        Assert.assertTrue(server.contains("test1 1 1234"));
+        Assert.assertTrue(server.contains("sending raw bytes","test1 1 1234"));
 
         server.stopClean();
         // Wait for connection failure.
         Thread.sleep(reportingPeriod.multipliedBy(3).toMillis());
 
         try {
-            sender.send("test2", "2", 2345);
+            emulateGraphiteReporterSend(sender,"test2", "2", 2345);
             sender.flush();
         } catch (IOException expected) {
             Assert.assertTrue(expected instanceof ConnectException);
@@ -192,20 +196,18 @@ public class GraphiteConnectTest {
         final TcpServer server2 = new TcpServer(port);
         Assert.assertEquals(server2.start(), port);
 
-        Assert.assertFalse(server2.contains("test2"));
-        sender.send("test3", "3", 3456);
+        Assert.assertFalse(server2.contains("Now we've restarted, test2 should be there","test2"));
+        emulateGraphiteReporterSend(sender,"test3", "3", 3456);
         sender.flush();
         Thread.sleep(reportingPeriod.toMillis());
 
         Assert.assertTrue(server2.getBytesRead() > 0);
-        Assert.assertTrue(server2.contains("test3"));
+        Assert.assertTrue(server2.contains("and postconnect continues to run smooth","test3"));
 
         final Counter connectionCloses = findConnectionCloseCounter(factory);
         SpringApplication.exit(context, () -> 0);
         server2.stopClean();
         Assert.assertNotEquals(0, connectionCloses.getCount());
-        context.close();
-        sender.close();
     }
 
     private static Counter findConnectionFailureCounter(final BeanFactory factory) {
@@ -216,6 +218,24 @@ public class GraphiteConnectTest {
     private static Counter findConnectionCloseCounter(final BeanFactory factory) {
         return (Counter) factory.getBean(MetricRegistry.class).getMetrics()
                 .get(GraphiteConfiguration.PREFIX + GraphiteSenderWrapper.CONNECTION_CLOSE);
+    }
+
+    private void emulateGraphiteReporterSend(GraphiteSender graphite, String name, String value, long timestamp)  {
+        // STRIPPED DOWN VERSION OF GRAPHITEREPORT.REPORT METHOD
+        try {
+            graphite.connect();
+            graphite.send(name, value, timestamp);
+            graphite.flush();
+        } catch (IOException e) {
+            LOG.warn("Unable to report to Graphite", graphite, e);
+        } finally {
+            try {
+                graphite.close();
+            } catch (IOException e1) {
+                LOG.warn("Error closing Graphite", graphite, e1);
+            }
+        }
+
     }
 
     private static class TcpServer {
@@ -252,40 +272,62 @@ public class GraphiteConnectTest {
             sock.close();
         }
 
+        private void stopDirty() throws InterruptedException {
+            killClientHandler();
+        }
+
         private long getBytesRead() {
             return bytesRead.longValue();
         }
 
-        private boolean contains(final String s) {
+        private boolean contains(final String scenario, final String s) {
+            LOG.error(scenario + " :: " + "CONTAINS " + s +  "=" + sb.toString().contains(s) + "\r\n\r\n" + sb.toString());
+            try {
+                Thread.sleep(DEBUG_PAUSE_TEST_SLEEP_MILLIS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
             return sb.toString().contains(s);
         }
+
 
         private void run() {
             LOG.info("starting");
             try {
-                final Socket client = sock.accept();
-                final InputStream input = client.getInputStream();
-                final byte[] buf = new byte[4096];
+                // The original test code exited after
+                // client disconnected, but this ignores the fact
+                // that DW now includes a reconnect internally after each send.
+                // Now we only exit completely if the server is shutdown,
+                // by adding this extra outer loop
                 while (running.get()) {
-                    final int n = input.read(buf);
-                    if (n == -1) {
-                        LOG.info("client disconnected");
-                        break;
+                    final Socket client = sock.accept();
+                    LOG.info("client Connected!");
+                    final InputStream input = client.getInputStream();
+                    final byte[] buf = new byte[16384];
+
+                    while (running.get()) {
+                        final int n = input.read(buf);
+                        if (n == -1) {
+                            LOG.info("client disconnected");
+                            break;
+                        } else {
+                            bytesRead.add(n);
+                            final String asString = new String(buf, 0, n, StandardCharsets.US_ASCII);
+                            sb.append(asString);
+                            //LOG.info("read {} bytes\n{}", n, asString);
+                        }
+                        Thread.sleep(Duration.ofMillis(100).toMillis());
                     }
-                    bytesRead.add(n);
-                    final String asString = new String(buf, 0, n, StandardCharsets.US_ASCII);
-                    sb.append(asString);
-                    //LOG.info("read {} bytes\n{}", n, asString);
-                    Thread.sleep(Duration.ofMillis(100).toMillis());
+
+                    client.shutdownOutput();
+                    client.shutdownInput();
+                    client.close();
                 }
-                client.shutdownOutput();
-                client.shutdownInput();
-                client.close();
-                input.close();
+
             } catch (final IOException e) {
                 throw new RuntimeException(e);
             } catch (final InterruptedException e) {
-                LOG.info("interrupted, bailing {}", e);
+                LOG.info("interrupted, bailing");
                 Thread.currentThread().interrupt();
             } finally {
                 LOG.info("exiting");
