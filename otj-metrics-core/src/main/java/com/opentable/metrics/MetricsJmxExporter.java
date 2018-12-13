@@ -18,8 +18,8 @@ import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.management.MBeanServer;
 
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jmx.JmxReporter;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

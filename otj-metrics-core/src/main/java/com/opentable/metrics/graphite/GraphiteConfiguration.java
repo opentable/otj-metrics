@@ -24,9 +24,11 @@ import javax.annotation.PreDestroy;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.ScheduledReporter;
+import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +105,9 @@ public class GraphiteConfiguration {
             return null;
         }
 
-        GraphiteSenderWrapper result = new GraphiteSenderWrapper(() -> new InetSocketAddress(host, port));
+        final Supplier<InetSocketAddress> address = () -> new InetSocketAddress(host, port);
+        final Graphite graphite = new Graphite(address.get());
+        GraphiteSenderWrapper result = new GraphiteSenderWrapper(address, graphite);
         registeredMetrics = MetricSets.combineAndPrefix(PREFIX, result);
         metricRegistry.registerAll(registeredMetrics);
         return result;

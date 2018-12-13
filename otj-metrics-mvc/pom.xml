@@ -18,7 +18,7 @@
     <parent>
         <groupId>com.opentable.components</groupId>
         <artifactId>otj-metrics-parent</artifactId>
-        <version>3.0.2-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>otj-metrics-mvc</artifactId>
     <name>OpenTable Metrics MVC</name>
@@ -29,7 +29,6 @@
         <dependency>
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-metrics-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <dependency>

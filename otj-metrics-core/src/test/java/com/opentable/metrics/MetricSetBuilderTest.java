@@ -110,6 +110,7 @@ public class MetricSetBuilderTest {
             ctx.getBean(ApplicationEventMulticaster.class).multicastEvent(new ApplicationReadyEvent(new SpringApplication(), new String[0], ctx));
             assertThat(registry.getMetrics())
                 .containsKeys(EXPECTED);
+            ctx.close();
         }
     }
 
