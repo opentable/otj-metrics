@@ -181,10 +181,10 @@ public class OtGraphiteReporter extends ScheduledReporter {
 
     @Override
     public void report(SortedMap<String, Gauge> gauges,
-                       SortedMap<String, Counter> counters,
-                       SortedMap<String, Histogram> histograms,
-                       SortedMap<String, Meter> meters,
-                       SortedMap<String, Timer> timers) {
+        SortedMap<String, Counter> counters,
+        SortedMap<String, Histogram> histograms,
+        SortedMap<String, Meter> meters,
+        SortedMap<String, Timer> timers) {
         try {
             if (!graphite.isConnected()) {
                 graphite.connect();
@@ -193,6 +193,12 @@ public class OtGraphiteReporter extends ScheduledReporter {
             graphite.flush();
         } catch (IOException e) {
             log.warn("Unable to report to Graphite", graphite, e);
+            try {
+                graphite.close();
+            } catch (IOException e1) {
+                log.warn("Error closing Graphite", graphite, e1);
+            }
+        } finally {
             try {
                 graphite.close();
             } catch (IOException e1) {
