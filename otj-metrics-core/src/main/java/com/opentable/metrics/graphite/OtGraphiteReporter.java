@@ -186,9 +186,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
         SortedMap<String, Meter> meters,
         SortedMap<String, Timer> timers) {
         try {
-            if (!graphite.isConnected()) {
-                graphite.connect();
-            }
+            graphite.connect();
             this.internalReport(gauges, counters, histograms, meters, timers);
             graphite.flush();
         } catch (IOException e) {
