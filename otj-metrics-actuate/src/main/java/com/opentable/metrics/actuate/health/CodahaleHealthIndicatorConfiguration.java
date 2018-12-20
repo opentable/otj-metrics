@@ -26,25 +26,34 @@ import io.micrometer.core.lang.NonNull;
 
 /**
  * Presents {@link HealthCheck} beans as a composite {@link HealthIndicator}.
+ * The purpose of this is to allow Actuator to see DropWizard health checks
  *
  */
 @Configuration
+// Only wires if drop-wizard is enabled? Can you elucidate further dmitry?
 @ConditionalOnEnabledHealthIndicator("drop-wizard")
 public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndicatorConfiguration<CodahaleHealthIndicatorConfiguration.Adapter, HealthCheck> {
 
     private final Map<String, HealthCheck> dropWizardChecks;
 
+    // How does this inject work - what's the key?
+    // Should it be Optional<Map> ?
     @Inject
     CodahaleHealthIndicatorConfiguration(final Map<String, HealthCheck> checks) {
         dropWizardChecks = checks;
     }
 
     @Bean
+    // Only wires if it hasn't been wired before?
     @Conditional(MissingBeanCondition.class)
     public HealthIndicator dropWizardHealthIndicator() {
         return createHealthIndicator(this.dropWizardChecks);
     }
 
+    /**
+     * Take a DropWizard HealthCheck and convert to an Actuator HealthIndicator
+     * DMITRY: I am somewhat surprised such an adaptor isn't built into Spring
+     */
     public static class Adapter implements HealthIndicator {
 
         private final HealthCheck healthCheck;

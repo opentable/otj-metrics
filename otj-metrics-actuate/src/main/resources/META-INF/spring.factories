@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.opentable.metrics.actuate.ActuatorAutoConfiguration
+com.opentable.metrics.actuate.MetricsActuatorBridgeConfiguration

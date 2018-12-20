@@ -29,9 +29,16 @@ import io.micrometer.core.lang.Nullable;
 @Configuration
 public class OtMicrometerToDropWizardExportConfiguration {
 
-    private static final Logger log = LoggerFactory.getLogger(OtMicrometerToDropWizardExportConfiguration.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OtMicrometerToDropWizardExportConfiguration.class);
+    // Comment here please? I assume these are characters that would be back to export to graphite? I thought - was bad
+    // too or was it  single qutote https://github.com/dropwizard/metrics/issues/1322
+    // There's a GraphiteSanitize class probably should use that too
     private static final Pattern blacklistedChars = Pattern.compile("[{}(),=\\[\\]/]");
 
+    /**
+     * I have no idea what this does. I thought the new micrometer stuff went under new. Thhis appears
+     * to move the DropWizard stuff there
+     */
     private DropwizardConfig dropwizardConfig() {
         return new DropwizardConfig() {
             @Override
@@ -42,29 +49,38 @@ public class OtMicrometerToDropWizardExportConfiguration {
 
             @Override
             @Nullable
+            // Why is this returning null?
             public String get(String s) {
                 return null;
             }
         };
     }
 
-
+    /**
+     * Converts from dimensional tags (eg prometheus, micrometer) to graphite (flat)
+     * DMITRY: Please comment and explain. Also what's wrong with HierarchicalNameMapper.default
+     */
     private HierarchicalNameMapper hierarchicalNameMapper() {
         return (id, convention) -> {
-            StringBuilder tags = new StringBuilder();
+            final StringBuilder tags = new StringBuilder();
             if (!"true".equals(id.getTag("absolute"))) {
                 for (Tag tag : id.getTags()) {
+                    // Whhy was this commented out, explain what we are trying to achieve
                     tags.append(("." + /*convention.tagKey(tag.getKey()) + "."  + */ convention.tagValue(tag.getValue()))
                         .replace(" ", "_"));
                 }
                 final String res = "v2." + id.getConventionName(convention) + tags;
-                log.trace("Hierarchical mapping: {} -> {}", id, res);
+                LOG.trace("Hierarchical mapping: {} -> {}", id, res);
                 return res;
             }
             return id.getName();
         };
     }
 
+    /**
+     * Fixes illegal characters (from graphite's perspective)
+     * DMITRY: Why is this named spring2xNamingConvention?
+     */
     private NamingConvention spring2xNamingConvention() {
         return new NamingConvention() {
 
@@ -88,8 +104,11 @@ public class OtMicrometerToDropWizardExportConfiguration {
              * Unicode is not OK. Some special chars are not OK.
              */
             private String format(String name) {
+                // Normalize Unicode
                 String sanitized = Normalizer.normalize(name, Normalizer.Form.NFKD);
+                // Then using standard camelcase.
                 sanitized = NamingConvention.camelCase.tagKey(sanitized);
+                // Then remove some other bad characters
                 return blacklistedChars.matcher(sanitized).replaceAll("_");
             }
 
@@ -98,15 +117,19 @@ public class OtMicrometerToDropWizardExportConfiguration {
 
     @Bean
     public MeterRegistry newDropWizardMeterRegistry(MetricRegistry registry, Clock clock) {
-        DropwizardMeterRegistry res =  new DropwizardMeterRegistry(dropwizardConfig(), registry, hierarchicalNameMapper(), clock) {
+        final DropwizardMeterRegistry res =  new DropwizardMeterRegistry(
+                dropwizardConfig(), registry,
+                hierarchicalNameMapper(), clock) {
             @Override
             @Nullable
+            // DMITRY: is this correct?
             protected Double nullGaugeValue() {
                 return null;
             }
         };
         res.config()
             .namingConvention(spring2xNamingConvention())
+                // Explain or comment this dmitry.
             .meterFilter(MeterFilter.denyNameStartsWith("jvm"));
         return res;
     }

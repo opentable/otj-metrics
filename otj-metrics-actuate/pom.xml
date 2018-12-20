@@ -50,9 +50,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator</artifactId>
         </dependency>
+        <!-- This will make the dependency checker scream - check it out -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+        </dependency>
+        <!-- Can we avoid this? -->
+        <dependency>
+            <groupId> org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -74,10 +80,7 @@
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-metrics-mvc</artifactId>
         </dependency>
-        <dependency>
-            <groupId> org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
