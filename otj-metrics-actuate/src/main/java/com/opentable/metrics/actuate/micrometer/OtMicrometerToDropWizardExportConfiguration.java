@@ -110,7 +110,7 @@ public class OtMicrometerToDropWizardExportConfiguration {
         res.config()
             .namingConvention(spring2xNamingConvention())
             .meterFilter(MeterFilter.denyNameStartsWith("jvm"));
-        filters.ifPresent(L -> L.forEach(f -> res.config().meterFilter(f)));
+        filters.ifPresent(l -> l.forEach(f -> res.config().meterFilter(f)));
         return res;
     }
 
