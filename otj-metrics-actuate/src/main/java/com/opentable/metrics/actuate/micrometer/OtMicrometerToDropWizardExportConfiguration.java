@@ -1,6 +1,8 @@
 package com.opentable.metrics.actuate.micrometer;
 
 import java.text.Normalizer;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import com.codahale.metrics.MetricRegistry;
@@ -97,7 +99,7 @@ public class OtMicrometerToDropWizardExportConfiguration {
     }
 
     @Bean
-    public MeterRegistry newDropWizardMeterRegistry(MetricRegistry registry, Clock clock) {
+    public MeterRegistry newDropWizardMeterRegistry(MetricRegistry registry, Clock clock, Optional<List<MeterFilter>> filters) {
         DropwizardMeterRegistry res =  new DropwizardMeterRegistry(dropwizardConfig(), registry, hierarchicalNameMapper(), clock) {
             @Override
             @Nullable
@@ -108,6 +110,7 @@ public class OtMicrometerToDropWizardExportConfiguration {
         res.config()
             .namingConvention(spring2xNamingConvention())
             .meterFilter(MeterFilter.denyNameStartsWith("jvm"));
+        filters.ifPresent(L -> L.forEach(f -> res.config().meterFilter(f)));
         return res;
     }
 
