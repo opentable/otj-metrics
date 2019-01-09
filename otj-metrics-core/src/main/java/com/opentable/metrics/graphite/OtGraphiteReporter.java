@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see <a href="http://graphite.wikidot.com/">Graphite - Scalable Realtime Graphing</a>
  */
-public class OTGraphiteReporter extends ScheduledReporter {
+public class OtGraphiteReporter extends ScheduledReporter {
     /*
         CHANGE:
             - reportedCounter, countFactor added - see reportCounter
@@ -65,17 +65,17 @@ public class OTGraphiteReporter extends ScheduledReporter {
     private volatile double countFactor = 1.0;
 
     /**
-     * Returns a new {@link Builder} for {@link OTGraphiteReporter}.
+     * Returns a new {@link Builder} for {@link OtGraphiteReporter}.
      *
      * @param registry the registry to report
-     * @return a {@link Builder} instance for a {@link OTGraphiteReporter}
+     * @return a {@link Builder} instance for a {@link OtGraphiteReporter}
      */
     public static Builder forRegistry(MetricRegistry registry) {
         return new Builder(registry);
     }
 
     /**
-     * A builder for {@link OTGraphiteReporter} instances. Defaults to not using a prefix, using the
+     * A builder for {@link OtGraphiteReporter} instances. Defaults to not using a prefix, using the
      * default clock, converting rates to events/second, converting durations to milliseconds, and
      * not filtering metrics.
      */
@@ -90,7 +90,7 @@ public class OTGraphiteReporter extends ScheduledReporter {
         private boolean shutdownExecutorOnStop;
         private Set<MetricAttribute> disabledMetricAttributes;
 
-        private Builder(MetricRegistry registry) {
+        Builder(MetricRegistry registry) {
             this.registry = registry;
             this.clock = Clock.defaultClock();
             this.prefix = null;
@@ -196,27 +196,27 @@ public class OTGraphiteReporter extends ScheduledReporter {
         }
 
         /**
-         * Builds a {@link OTGraphiteReporter} with the given properties, sending metrics using the
+         * Builds a {@link OtGraphiteReporter} with the given properties, sending metrics using the
          * given {@link GraphiteSender}.
          * <p>
          * Present for binary compatibility
          *
          * @param graphite a {@link com.codahale.metrics.graphite.Graphite}
-         * @return a {@link OTGraphiteReporter}
+         * @return a {@link OtGraphiteReporter}
          */
-        public OTGraphiteReporter build(Graphite graphite) {
+        public OtGraphiteReporter build(Graphite graphite) {
             return build((GraphiteSender) graphite);
         }
 
         /**
-         * Builds a {@link OTGraphiteReporter} with the given properties, sending metrics using the
+         * Builds a {@link OtGraphiteReporter} with the given properties, sending metrics using the
          * given {@link GraphiteSender}.
          *
          * @param graphite a {@link GraphiteSender}
-         * @return a {@link OTGraphiteReporter}
+         * @return a {@link OtGraphiteReporter}
          */
-        public OTGraphiteReporter build(GraphiteSender graphite) {
-            return new OTGraphiteReporter(registry,
+        public OtGraphiteReporter build(GraphiteSender graphite) {
+            return new OtGraphiteReporter(registry,
                     graphite,
                     clock,
                     prefix,
@@ -229,14 +229,14 @@ public class OTGraphiteReporter extends ScheduledReporter {
         }
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OTGraphiteReporter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OtGraphiteReporter.class);
 
     private final GraphiteSender graphite;
     private final Clock clock;
     private final String prefix;
 
     /**
-     * Creates a new {@link OTGraphiteReporter} instance.
+     * Creates a new {@link OtGraphiteReporter} instance.
      *
      * @param registry               the {@link MetricRegistry} containing the metrics this
      *                               reporter will report
@@ -250,7 +250,7 @@ public class OTGraphiteReporter extends ScheduledReporter {
      * @param executor               the executor to use while scheduling reporting of metrics (may be null).
      * @param shutdownExecutorOnStop if true, then executor will be stopped in same time with this reporter
      */
-    protected OTGraphiteReporter(MetricRegistry registry,
+    protected OtGraphiteReporter(MetricRegistry registry,
                                  GraphiteSender graphite,
                                  Clock clock,
                                  String prefix,

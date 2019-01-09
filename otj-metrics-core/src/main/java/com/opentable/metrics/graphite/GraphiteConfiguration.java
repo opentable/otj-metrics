@@ -107,7 +107,7 @@ public class GraphiteConfiguration {
                     .build(sender.get());
         } else {
             LOG.debug("Using new graphite reporter");
-            reporter = OTGraphiteReporter.forRegistry(metricRegistry)
+            reporter = OtGraphiteReporter.forRegistry(metricRegistry)
                     .prefixedWith(prefix)
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
