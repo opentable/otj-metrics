@@ -21,10 +21,12 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PreDestroy;
 
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
@@ -79,7 +82,8 @@ public class GraphiteConfiguration {
     }
 
     @Bean
-    public ScheduledReporter graphiteReporter(Optional<GraphiteSender> sender, MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo) {
+    public ScheduledReporter graphiteReporter(Optional<GraphiteSender> sender,
+                                              MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo, Environment environment) {
         if (!sender.isPresent()) {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
@@ -92,7 +96,25 @@ public class GraphiteConfiguration {
 
         LOG.info("initializing: host {}, port {}, prefix {}, refresh period {}", host, port, prefix, reportingPeriod);
 
-        ScheduledReporter reporter = new OtGraphiteReporter(metricRegistry, sender.get(), prefix);
+        ScheduledReporter reporter = null;
+        if (Boolean.parseBoolean(environment.getProperty("ot.graphite.reporter.legacy", "false"))) {
+            LOG.debug("Using legacy graphite reporter");
+            reporter = GraphiteReporter.forRegistry(metricRegistry)
+                    .prefixedWith(prefix)
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(TimeUnit.MILLISECONDS)
+                    .filter(MetricFilter.ALL)
+                    .build(sender.get());
+        } else {
+            LOG.debug("Using new graphite reporter");
+            reporter = OTGraphiteReporter.forRegistry(metricRegistry)
+                    .prefixedWith(prefix)
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(TimeUnit.MILLISECONDS)
+                    .filter(MetricFilter.ALL)
+                    .build(sender.get());
+        }
+
         reporter.start(reportingPeriod.toMillis(), TimeUnit.MILLISECONDS);
         return reporter;
     }
