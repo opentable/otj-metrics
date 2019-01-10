@@ -58,7 +58,7 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
     }
 
     /**
-     * Delegating adapter {@link HealthCheck} -> {@link HealthIndicator}
+     * Delegating adapter to convert {@link HealthCheck} to {@link HealthIndicator}
      */
     public static class Adapter implements HealthIndicator {
 

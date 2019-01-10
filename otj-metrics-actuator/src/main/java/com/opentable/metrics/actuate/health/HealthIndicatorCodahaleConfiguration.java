@@ -60,9 +60,9 @@ public class HealthIndicatorCodahaleConfiguration {
     }
 
     /**
-     * Delegating adapter {@link HealthIndicator} -> {@link HealthCheck}
+     * Delegating adapter to convert {@link HealthIndicator} to {@link HealthCheck}
      */
-    static class Adapter extends HealthCheck {
+    public static class Adapter extends HealthCheck {
 
         private final HealthIndicator indicator;
 
