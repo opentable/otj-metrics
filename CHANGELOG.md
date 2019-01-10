@@ -6,7 +6,7 @@ otj-metrics
 * OtGraphiteReporter - extends standard reporter with additional metrics for counters
   * <name>.hits - counter derivative
   * <name>.cps - count per second
-* New module "otj-metrics-actuate" adds additional support for the Spring Boot actuator
+* New module "otj-metrics-actuator" adds additional support for the Spring Boot actuator
   * Configuration for Micrometer to report metrics through DropWizard (needs to be explicitly enabled by property: management.metrics.export.dw-new.enabled=true)
   * 2-way bridge between DropWizard's HealthCheck(s) and Actuator's HealthIndicator(s)  
 

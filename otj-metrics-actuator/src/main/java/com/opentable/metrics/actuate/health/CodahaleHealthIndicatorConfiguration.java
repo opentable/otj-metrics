@@ -27,6 +27,12 @@ import io.micrometer.core.lang.NonNull;
 /**
  * Presents {@link HealthCheck} beans as a composite {@link HealthIndicator}.
  *
+ * You can enable/disable export using property:
+ *   <ul>
+ *     <li>{@code management.health.drop-wizard.enabled}</li>
+ *   </ul>
+ * <br>
+ * @see <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-endpoints.html">Documentation</a>
  */
 @Configuration
 @ConditionalOnEnabledHealthIndicator("drop-wizard")

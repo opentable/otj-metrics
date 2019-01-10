@@ -41,7 +41,7 @@
         <module>otj-metrics-jaxrs</module>
         <module>otj-metrics-mvc</module>
         <module>otj-metrics</module>
-        <module>otj-metrics-actuate</module>
+        <module>otj-metrics-actuator</module>
     </modules>
 
     <properties>

@@ -17,7 +17,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>otj-metrics-actuate</artifactId>
+    <artifactId>otj-metrics-actuator</artifactId>
+    <name>OpenTable Metrics Actuator</name>
+    <description>Spring Boot Actuator support</description>
 
     <parent>
         <artifactId>otj-metrics-parent</artifactId>
