@@ -34,6 +34,10 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
 
     private final Map<String, HealthCheck> dropWizardChecks;
 
+    /**
+     *
+     * @param checks - Map of HealthCheck beans. Bean names as the key (Spring collections autowiring feature)
+     */
     @Inject
     CodahaleHealthIndicatorConfiguration(final Map<String, HealthCheck> checks) {
         dropWizardChecks = checks;
