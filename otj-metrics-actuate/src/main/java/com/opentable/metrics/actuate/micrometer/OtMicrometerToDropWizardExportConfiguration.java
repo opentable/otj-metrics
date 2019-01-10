@@ -9,6 +9,8 @@ import com.codahale.metrics.MetricRegistry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,13 +28,28 @@ import io.micrometer.core.lang.Nullable;
 
 /**
  * Configures  {@link DropwizardMeterRegistry} with custom {@link HierarchicalNameMapper} and
- * {@link HierarchicalNameMapper} to report micrometer metrics in the DropWizard infrastructure
+ * {@link HierarchicalNameMapper} to report micrometer metrics in the DropWizard infrastructure.
+ * <br><br>
+ * Configuration properties:
+ * <ul>
+ *   <li>{@code management.metrics.export.dw-new.enabled} - To enable/disable export. Disabled by default.</li>
+ *   <li>{@code management.metrics.export.dw-new.prefix} - Prefix to add to the reported metrics. Default is "v2".</li>
+ * </ul>
+ *<br>
+ * All user supplied {@link MeterFilter} beans are wired up to the resulting bean.
+ *<br>
+ * NOTE: {@code MeterFilter.denyNameStartsWith("jvm")} automatically added to the filter list.
+ *
  */
 @Configuration
+@ConditionalOnProperty(prefix = "management.metrics.export.dw-new", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class OtMicrometerToDropWizardExportConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(OtMicrometerToDropWizardExportConfiguration.class);
     private static final Pattern blacklistedChars = Pattern.compile("[{}(),=\\[\\]/]");
+
+    @Value("${management.metrics.export.dw-new.prefix:v2}")
+    private String dwMetricsPrefix;
 
     private DropwizardConfig dropwizardConfig() {
         return new DropwizardConfig() {
@@ -50,7 +67,6 @@ public class OtMicrometerToDropWizardExportConfiguration {
         };
     }
 
-
     private HierarchicalNameMapper hierarchicalNameMapper() {
         return (id, convention) -> {
             StringBuilder tags = new StringBuilder();
@@ -59,7 +75,8 @@ public class OtMicrometerToDropWizardExportConfiguration {
                     tags.append(("." + /*convention.tagKey(tag.getKey()) + "."  + */ convention.tagValue(tag.getValue()))
                         .replace(" ", "_"));
                 }
-                final String res = "v2." + id.getConventionName(convention) + tags;
+                final String prefix = ((dwMetricsPrefix != null) && (!"".equals(dwMetricsPrefix))) ? dwMetricsPrefix + "." : "";
+                final String res = prefix + id.getConventionName(convention) + tags;
                 log.trace("Hierarchical mapping: {} -> {}", id, res);
                 return res;
             }
@@ -113,6 +130,5 @@ public class OtMicrometerToDropWizardExportConfiguration {
         filters.ifPresent(l -> l.forEach(f -> res.config().meterFilter(f)));
         return res;
     }
-
 
 }

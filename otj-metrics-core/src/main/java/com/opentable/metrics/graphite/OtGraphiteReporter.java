@@ -49,7 +49,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * NOTE: This is a fork of metrics-graphite's GraphiteReporter.
- * NOTE: All changes carefully documented - look for CHANGE
+ * NOTE: All changes carefully documented here:
+ *  <ul>
+ *    <li>{@link OtGraphiteReporter#reportedCounters}</li>
+ *    <li>{@link OtGraphiteReporter#countFactor}</li>
+ *    <li>{@link OtGraphiteReporter#reportCounter(String, Counter, long)}</li>
+ *    <li>{@link OtGraphiteReporter#start(long, TimeUnit)}</li>
+ *  <ul/>
  * NOTE: When Dropwizard versions change, be careful to painstakingly report the changes
  *
  * A reporter which publishes metric values to a Graphite server.
@@ -57,11 +63,17 @@ import org.slf4j.LoggerFactory;
  * @see <a href="http://graphite.wikidot.com/">Graphite - Scalable Realtime Graphing</a>
  */
 public class OtGraphiteReporter extends ScheduledReporter {
-    /*
-        CHANGE:
-            - reportedCounter, countFactor added - see reportCounter
+
+    /**
+     * State of the counters from the last report. Used to calculate derivative
+     * See {@link #reportCounter(String, Counter, long)}
      */
-    private final Map<String, Long> reportedCounters = new ConcurrentHashMap<String, Long>();
+    private final Map<String, Long> reportedCounters = new ConcurrentHashMap<>();
+
+    /**
+     * 1 / (Report period in seconds) to calculate cps.
+     * See {@link #reportCounter(String, Counter, long)}
+     */
     private volatile double countFactor = 1.0;
 
     /**
@@ -377,14 +389,22 @@ public class OtGraphiteReporter extends ScheduledReporter {
         graphite.send(prefix(name, type.getCode()), format(value), timestamp);
     }
 
-    /*
-        CHANGE: This used to just call graphite.send and ext.
-        It now performs some extra calculations and adds the hits and cps values for smoothing
-        over "dips"
+    /**
+     * For each counter reports additional metrics:
+     * <ul>
+     *   <li>{@code <name>.hits} - counter derivative</li>
+     *   <li>{@code <name>.cps}  - count per second</li>
+     *</ul>
+     * Updates {@link #reportedCounters} with new value.
+     *
+     * @param name  name of the counter
+     * @param counter counter
+     * @param timestamp report timestamp
+     * @throws IOException
      */
     private void reportCounter(String name, Counter counter, long timestamp) throws IOException {
-        graphite.send(prefix(name, COUNT.getCode()), format(counter.getCount()), timestamp);
-        long value = counter.getCount();
+        final long value = counter.getCount();
+        graphite.send(prefix(name, COUNT.getCode()), format(value), timestamp);
         final long diff = value - Optional.ofNullable(reportedCounters.put(name, value)).orElse(0L);
         if (diff != 0L) {
             graphite.send(prefix(name, "hits"), format(diff), timestamp);
@@ -435,4 +455,11 @@ public class OtGraphiteReporter extends ScheduledReporter {
         // US-formatted digits
         return String.format(Locale.US, "%2.2f", v);
     }
+
+    @Override
+    public void start(long period, TimeUnit unit) {
+        this.countFactor = 1.0 / (double)unit.toMillis(period) * 1000.0;
+        super.start(period, unit);
+    }
+
 }

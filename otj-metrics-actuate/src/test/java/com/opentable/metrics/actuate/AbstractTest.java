@@ -19,7 +19,8 @@ import org.springframework.web.context.WebApplicationContext;
 @TestPropertySource(properties = {
     "spring.jmx.enabled=true",
     "management.endpoints.web.exposure.include=*",
-    "management.endpoint.health.show-details=always"
+    "management.endpoint.health.show-details=always",
+    "management.metrics.export.dw-new.enabled=true"
 })
 public abstract class AbstractTest {
 

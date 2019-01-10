@@ -12,6 +12,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
  *
  */
 @Configuration
+@ConditionalOnProperty(prefix = "management.health.export-dw", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class HealthIndicatorCodahaleConfiguration {
 
     final HealthCheckRegistry registry;
