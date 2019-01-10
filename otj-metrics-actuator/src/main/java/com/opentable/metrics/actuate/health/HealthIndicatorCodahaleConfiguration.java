@@ -28,9 +28,10 @@ public class HealthIndicatorCodahaleConfiguration {
 
 
     /**
+     *Dependencies:
      *
-     * @param registry - HealthCheckRegistry bean
-     * @param checks - Map of HealthIndicator beans. Bean names as the key (Spring collections autowiring feature)
+     * @param registry HealthCheckRegistry bean
+     * @param checks Map of HealthIndicator beans. Bean names as the key (Spring collections autowiring feature)
      */
     @Inject
     public HealthIndicatorCodahaleConfiguration(HealthCheckRegistry registry,   Map<String, HealthIndicator> checks) {

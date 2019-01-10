@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
+
 import com.codahale.metrics.MetricRegistry;
 
 import org.slf4j.Logger;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Meter;
@@ -28,7 +31,7 @@ import io.micrometer.core.lang.Nullable;
 
 /**
  * Configures  {@link DropwizardMeterRegistry} with custom {@link HierarchicalNameMapper} and
- * {@link HierarchicalNameMapper} to report micrometer metrics in the DropWizard infrastructure.
+ * {@link NamingConvention} to report micrometer metrics in the DropWizard infrastructure.
  * <br><br>
  * Configuration properties:
  * <ul>
@@ -42,34 +45,50 @@ import io.micrometer.core.lang.Nullable;
  *
  */
 @Configuration
-@ConditionalOnProperty(prefix = "management.metrics.export.dw-new", name = "enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(prefix = OtMicrometerToDropWizardExportConfiguration.CONFIGURATION_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = false)
 public class OtMicrometerToDropWizardExportConfiguration {
 
+    static final String CONFIGURATION_PREFIX = "management.metrics.export.dw-new";
     private static final Logger log = LoggerFactory.getLogger(OtMicrometerToDropWizardExportConfiguration.class);
     private static final Pattern blacklistedChars = Pattern.compile("[{}(),=\\[\\]/]");
 
     @Value("${management.metrics.export.dw-new.prefix:v2}")
     private String dwMetricsPrefix;
 
+    @Inject
+    private Environment env;
+
+    /**
+     *
+     * Implementation of the {@link DropwizardConfig} interface, which reads from {@link Environment}
+     *
+     */
     private DropwizardConfig dropwizardConfig() {
         return new DropwizardConfig() {
             @Override
             @NonNull
             public String prefix() {
-                return "management.metrics.dw-new";
+                return CONFIGURATION_PREFIX;
             }
 
             @Override
             @Nullable
             public String get(String s) {
-                return null;
+                return env.getProperty(s);
             }
         };
     }
 
+    /**
+     *
+     * Defines the mapping between a combination of name + dimensional tags and a hierarchical name:
+     * <br>
+     *   {@code <id>_<tag[0].value>_<tag[1].value>_..._<tag[n].value>}
+     *
+     */
     private HierarchicalNameMapper hierarchicalNameMapper() {
         return (id, convention) -> {
-            StringBuilder tags = new StringBuilder();
+            final StringBuilder tags = new StringBuilder();
             if (!"true".equals(id.getTag("absolute"))) {
                 for (Tag tag : id.getTags()) {
                     tags.append(("." + /*convention.tagKey(tag.getKey()) + "."  + */ convention.tagValue(tag.getValue()))
@@ -84,6 +103,11 @@ public class OtMicrometerToDropWizardExportConfiguration {
         };
     }
 
+    /**
+     *
+     * Provides naming convention suitable for Graphite
+     *
+     */
     private NamingConvention spring2xNamingConvention() {
         return new NamingConvention() {
 
