@@ -1,6 +1,8 @@
 package com.opentable.metrics.actuate.health;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -34,9 +36,9 @@ public class HealthIndicatorCodahaleConfiguration {
      * @param checks Map of HealthIndicator beans. Bean names as the key (Spring collections autowiring feature)
      */
     @Inject
-    public HealthIndicatorCodahaleConfiguration(HealthCheckRegistry registry,   Map<String, HealthIndicator> checks) {
+    public HealthIndicatorCodahaleConfiguration(final HealthCheckRegistry registry,   final Optional<Map<String, HealthIndicator>> checks) {
         this.registry = registry;
-        this.checks = checks;
+        this.checks = checks.orElse(Collections.emptyMap());
     }
 
     /**

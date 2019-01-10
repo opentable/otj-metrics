@@ -1,7 +1,9 @@
 package com.opentable.metrics.actuate.health;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -45,8 +47,8 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
      * @param checks Map of {@link HealthCheck} beans. Bean names as the key (Spring collections autowiring feature)
      */
     @Inject
-    CodahaleHealthIndicatorConfiguration(final Map<String, HealthCheck> checks) {
-        dropWizardChecks = checks;
+    CodahaleHealthIndicatorConfiguration(final Optional< Map<String, HealthCheck>> checks) {
+        dropWizardChecks = checks.orElse(Collections.emptyMap());
     }
 
     /**
