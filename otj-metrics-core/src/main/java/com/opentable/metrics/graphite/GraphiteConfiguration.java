@@ -96,7 +96,7 @@ public class GraphiteConfiguration {
 
         LOG.info("initializing: host {}, port {}, prefix {}, refresh period {}", host, port, prefix, reportingPeriod);
 
-        ScheduledReporter reporter = null;
+        ScheduledReporter reporter;
         if (Boolean.parseBoolean(environment.getProperty("ot.graphite.reporter.legacy", "false"))) {
             LOG.debug("Using legacy graphite reporter");
             reporter = GraphiteReporter.forRegistry(metricRegistry)
