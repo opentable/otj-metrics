@@ -39,6 +39,10 @@ public class HealthIndicatorCodahaleConfiguration {
         this.checks = checks;
     }
 
+    /**
+     * Registers {@link HealthIndicatorCodahaleConfiguration.Adapter} for each injected {@link HealthIndicator} bean
+     * (except for {@link CodahaleHealthIndicatorConfiguration.Adapter}, to avoid circular link) in the {@link HealthCheckRegistry}
+     */
     @PostConstruct
     void postConstruct() {
         checks.forEach((k, v) -> {
@@ -53,11 +57,14 @@ public class HealthIndicatorCodahaleConfiguration {
         checks.keySet().forEach(registry::unregister);
     }
 
-    public static class Adapter extends HealthCheck {
+    /**
+     * Delegating adapter {@link HealthIndicator} -> {@link HealthCheck}
+     */
+    static class Adapter extends HealthCheck {
 
         private final HealthIndicator indicator;
 
-        public Adapter(HealthIndicator indicator) {
+        Adapter(HealthIndicator indicator) {
             this.indicator = indicator;
         }
 

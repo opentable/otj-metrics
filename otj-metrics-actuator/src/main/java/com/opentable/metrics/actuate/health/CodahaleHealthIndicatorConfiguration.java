@@ -42,19 +42,29 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
 
     /**
      *Dependencies:
-     * @param checks Map of HealthCheck beans. Bean names as the key (Spring collections autowiring feature)
+     * @param checks Map of {@link HealthCheck} beans. Bean names as the key (Spring collections autowiring feature)
      */
     @Inject
     CodahaleHealthIndicatorConfiguration(final Map<String, HealthCheck> checks) {
         dropWizardChecks = checks;
     }
 
+    /**
+     * Creates {@link org.springframework.boot.actuate.health.CompositeHealthIndicator} bean which represents state of
+     * all injected {@link HealthCheck} beans. This bean is created conditionally, if there are no other  "dropWizardHealthIndicator"
+     * defined in application context.
+     *
+     * @return HealthIndicator
+     */
     @Bean
     @Conditional(MissingBeanCondition.class)
     public HealthIndicator dropWizardHealthIndicator() {
         return createHealthIndicator(this.dropWizardChecks);
     }
 
+    /**
+     * Delegating adapter {@link HealthCheck} -> {@link HealthIndicator}
+     */
     public static class Adapter implements HealthIndicator {
 
         private final HealthCheck healthCheck;
@@ -76,6 +86,10 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
         }
     }
 
+
+    /**
+     * {@link Condition} to check that "dropWizardHealthIndicator" bean is not defined in the application Context.
+     */
     static class MissingBeanCondition implements Condition {
         @Override
         public boolean matches(@NonNull ConditionContext context, @NonNull AnnotatedTypeMetadata metadata) {
