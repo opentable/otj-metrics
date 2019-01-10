@@ -73,7 +73,7 @@ public class OtMicrometerToDropWizardExportConfiguration {
 
             @Override
             @Nullable
-            public String get(String s) {
+            public String get(@NonNull String s) {
                 return env.getProperty(s);
             }
         };

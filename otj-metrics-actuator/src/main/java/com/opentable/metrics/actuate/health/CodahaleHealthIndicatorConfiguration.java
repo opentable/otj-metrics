@@ -1,6 +1,5 @@
 package com.opentable.metrics.actuate.health;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -10,21 +9,15 @@ import javax.inject.Inject;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheck.Result;
 
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthIndicatorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.type.AnnotatedTypeMetadata;
-
-import io.micrometer.core.lang.NonNull;
 
 /**
  * Presents {@link HealthCheck} beans as a composite {@link HealthIndicator}.
@@ -58,8 +51,8 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
      *
      * @return HealthIndicator
      */
+    @ConditionalOnMissingBean
     @Bean
-    @Conditional(MissingBeanCondition.class)
     public HealthIndicator dropWizardHealthIndicator() {
         return createHealthIndicator(this.dropWizardChecks);
     }
@@ -85,22 +78,6 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
                 builder.withException(res.getError());
             }
             return builder.build();
-        }
-    }
-
-
-    /**
-     * {@link Condition} to check that "dropWizardHealthIndicator" bean is not defined in the application Context.
-     */
-    static class MissingBeanCondition implements Condition {
-        @Override
-        public boolean matches(@NonNull ConditionContext context, @NonNull AnnotatedTypeMetadata metadata) {
-            final ConfigurableListableBeanFactory factory = context.getBeanFactory();
-            if (factory == null) {
-                return false;
-            }
-            return !Arrays.asList(factory.getBeanNamesForType(HealthIndicator.class))
-                .contains("dropWizardHealthIndicator");
         }
     }
 
