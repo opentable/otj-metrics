@@ -6,6 +6,10 @@ otj-metrics
 * OtGraphiteReporter - extends standard reporter with additional metrics for counters
   * <name>.hits - counter derivative
   * <name>.cps - count per second
+
+This approach is really similar to the statsd counters, where counters are reset to the 0 after each report. Motivation for this change is to attempt to overcome some issues graphite has 
+with handling absolute counter values, such as resampling historical data and aggregating counter values across multiple instances. Additionally we do not need to put NonNegativeDerivative() everywhere to handle service restarts.
+
 * New module "otj-metrics-actuator" adds additional support for the Spring Boot actuator
   * Configuration for Micrometer to report metrics through DropWizard (needs to be explicitly enabled by property: management.metrics.export.dw-new.enabled=true)
   * 2-way bridge between DropWizard's HealthCheck(s) and Actuator's HealthIndicator(s)  
