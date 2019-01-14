@@ -25,6 +25,10 @@
         <version>4.0.1-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <basepom.check.fail-license>false</basepom.check.fail-license>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
