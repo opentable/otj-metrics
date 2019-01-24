@@ -32,7 +32,7 @@
     <groupId>com.opentable.components</groupId>
     <artifactId>otj-metrics-parent</artifactId>
     <name>OpenTable Metrics - Parent</name>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.0.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>OpenTable Metrics - Parent</description>
 
@@ -41,6 +41,7 @@
         <module>otj-metrics-jaxrs</module>
         <module>otj-metrics-mvc</module>
         <module>otj-metrics</module>
+        <module>otj-metrics-actuator</module>
     </modules>
 
     <properties>

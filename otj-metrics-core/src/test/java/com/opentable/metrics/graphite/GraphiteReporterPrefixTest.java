@@ -21,6 +21,7 @@ import java.util.Objects;
 import javax.inject.Inject;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.GraphiteReporter;
 
 import org.junit.Assert;
@@ -37,7 +38,7 @@ import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
     @Inject
-    private GraphiteReporter reporter;
+    private ScheduledReporter reporter;
 
     @Test
     public void withFlavor() {
