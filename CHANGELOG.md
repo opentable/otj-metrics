@@ -1,5 +1,8 @@
 otj-metrics
 ===========
+4.0.2
+-----
+* Recompile for DAG
 
 4.0.1
 -----
