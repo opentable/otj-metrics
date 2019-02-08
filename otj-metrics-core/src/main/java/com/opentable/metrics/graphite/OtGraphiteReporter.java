@@ -366,7 +366,9 @@ public class OtGraphiteReporter extends ScheduledReporter {
     }
 
     private void reportMetered(String name, Metered meter, long timestamp) throws IOException {
-        sendIfEnabled(COUNT, name, meter.getCount(), timestamp);
+        if (getDisabledMetricAttributes().contains(COUNT)) {
+            reportCounter(name, meter.getCount(), timestamp);
+        }
         sendIfEnabled(M1_RATE, name, convertRate(meter.getOneMinuteRate()), timestamp);
         sendIfEnabled(M5_RATE, name, convertRate(meter.getFiveMinuteRate()), timestamp);
         sendIfEnabled(M15_RATE, name, convertRate(meter.getFifteenMinuteRate()), timestamp);
@@ -375,7 +377,9 @@ public class OtGraphiteReporter extends ScheduledReporter {
 
     private void reportHistogram(String name, Histogram histogram, long timestamp) throws IOException {
         final Snapshot snapshot = histogram.getSnapshot();
-        sendIfEnabled(COUNT, name, histogram.getCount(), timestamp);
+        if (getDisabledMetricAttributes().contains(COUNT)) {
+            reportCounter(name, histogram.getCount(), timestamp);
+        }
         sendIfEnabled(MAX, name, snapshot.getMax(), timestamp);
         sendIfEnabled(MEAN, name, snapshot.getMean(), timestamp);
         sendIfEnabled(MIN, name, snapshot.getMin(), timestamp);
@@ -416,7 +420,10 @@ public class OtGraphiteReporter extends ScheduledReporter {
      * @throws IOException
      */
     private void reportCounter(String name, Counter counter, long timestamp) throws IOException {
-        final long value = counter.getCount();
+        this.reportCounter(name, counter.getCount(), timestamp);
+    }
+
+    private void reportCounter(String name, long value, long timestamp) throws IOException {
         graphite.send(prefix(name, COUNT.getCode()), format(value), timestamp);
         final long diff = value - Optional.ofNullable(reportedCounters.put(name, value)).orElse(0L);
         if (diff != 0L) {
