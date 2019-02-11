@@ -366,7 +366,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
     }
 
     private void reportMetered(String name, Metered meter, long timestamp) throws IOException {
-        if (getDisabledMetricAttributes().contains(COUNT)) {
+        if (!getDisabledMetricAttributes().contains(COUNT)) {
             reportCounter(name, meter.getCount(), timestamp);
         }
         sendIfEnabled(M1_RATE, name, convertRate(meter.getOneMinuteRate()), timestamp);
@@ -377,7 +377,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
 
     private void reportHistogram(String name, Histogram histogram, long timestamp) throws IOException {
         final Snapshot snapshot = histogram.getSnapshot();
-        if (getDisabledMetricAttributes().contains(COUNT)) {
+        if (!getDisabledMetricAttributes().contains(COUNT)) {
             reportCounter(name, histogram.getCount(), timestamp);
         }
         sendIfEnabled(MAX, name, snapshot.getMax(), timestamp);
