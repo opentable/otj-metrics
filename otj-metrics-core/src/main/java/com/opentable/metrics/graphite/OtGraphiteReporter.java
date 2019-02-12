@@ -68,6 +68,8 @@ import org.slf4j.LoggerFactory;
  *    <li>{@link OtGraphiteReporter#countFactor}</li>
  *    <li>{@link OtGraphiteReporter#reportCounter(String, Counter, long)}</li>
  *    <li>{@link OtGraphiteReporter#start(long, TimeUnit)}</li>
+ *    <li>{@link OtGraphiteReporter#reportMetered(String, Metered, long)}</li>
+ *    <li>{@link OtGraphiteReporter#reportHistogram(String, Histogram, long)}</li>
  *  <ul/>
  * NOTE: When Dropwizard versions change, be careful to painstakingly report the changes
  *
@@ -365,6 +367,9 @@ public class OtGraphiteReporter extends ScheduledReporter {
         reportMetered(name, timer, timestamp);
     }
 
+    /**
+     * CHANGE: call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
+     */
     private void reportMetered(String name, Metered meter, long timestamp) throws IOException {
         if (!getDisabledMetricAttributes().contains(COUNT)) {
             reportCounter(name, meter.getCount(), timestamp);
@@ -375,6 +380,9 @@ public class OtGraphiteReporter extends ScheduledReporter {
         sendIfEnabled(MEAN_RATE, name, convertRate(meter.getMeanRate()), timestamp);
     }
 
+    /**
+     * CHANGE: call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
+     */
     private void reportHistogram(String name, Histogram histogram, long timestamp) throws IOException {
         final Snapshot snapshot = histogram.getSnapshot();
         if (!getDisabledMetricAttributes().contains(COUNT)) {
