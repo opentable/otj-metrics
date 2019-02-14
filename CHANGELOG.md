@@ -1,5 +1,10 @@
 otj-metrics
 ===========
+4.0.3
+-----
+* Report extended counters for "Metered" and "Histogram"
+* Added configuration property `management.metrics.ignore-tags` to be able to remove "unwanted" tags from micrometer metrics.
+
 4.0.2
 -----
 * Recompile for DAG
