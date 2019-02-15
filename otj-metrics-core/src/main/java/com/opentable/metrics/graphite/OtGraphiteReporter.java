@@ -368,7 +368,8 @@ public class OtGraphiteReporter extends ScheduledReporter {
     }
 
     /**
-     * CHANGE: call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
+     * We replaced {@code sendIfEnabled(COUNT, name, meter.getCount(), timestamp)} with the
+     * call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
      */
     private void reportMetered(String name, Metered meter, long timestamp) throws IOException {
         if (!getDisabledMetricAttributes().contains(COUNT)) {
@@ -381,7 +382,8 @@ public class OtGraphiteReporter extends ScheduledReporter {
     }
 
     /**
-     * CHANGE: call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
+     * We replaced {@code sendIfEnabled(COUNT, name, histogram.getCount(), timestamp)} with the
+     * call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
      */
     private void reportHistogram(String name, Histogram histogram, long timestamp) throws IOException {
         final Snapshot snapshot = histogram.getSnapshot();
