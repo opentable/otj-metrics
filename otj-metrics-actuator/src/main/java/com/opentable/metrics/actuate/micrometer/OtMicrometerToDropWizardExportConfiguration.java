@@ -152,6 +152,17 @@ public class OtMicrometerToDropWizardExportConfiguration {
         };
     }
 
+    /**
+     * Adds configuration property management.metrics.ignore-tags to be able
+     * remove tags from configuration.
+     */
+    @Bean
+    public MeterFilter ignoreTagsMeterFilter(
+        @Value("${management.metrics.ignore-tags:}") final String[] ignoreTags
+    ) {
+        return MeterFilter.ignoreTags(ignoreTags);
+    }
+
     @Bean
     public MeterRegistry newDropWizardMeterRegistry(MetricRegistry registry, Clock clock, Optional<List<MeterFilter>> filters) {
         DropwizardMeterRegistry res =  new DropwizardMeterRegistry(dropwizardConfig(), registry, hierarchicalNameMapper(), clock) {

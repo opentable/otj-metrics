@@ -68,6 +68,8 @@ import org.slf4j.LoggerFactory;
  *    <li>{@link OtGraphiteReporter#countFactor}</li>
  *    <li>{@link OtGraphiteReporter#reportCounter(String, Counter, long)}</li>
  *    <li>{@link OtGraphiteReporter#start(long, TimeUnit)}</li>
+ *    <li>{@link OtGraphiteReporter#reportMetered(String, Metered, long)}</li>
+ *    <li>{@link OtGraphiteReporter#reportHistogram(String, Histogram, long)}</li>
  *  <ul/>
  * NOTE: When Dropwizard versions change, be careful to painstakingly report the changes
  *
@@ -365,17 +367,29 @@ public class OtGraphiteReporter extends ScheduledReporter {
         reportMetered(name, timer, timestamp);
     }
 
+    /**
+     * We replaced {@code sendIfEnabled(COUNT, name, meter.getCount(), timestamp)} with the
+     * call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
+     */
     private void reportMetered(String name, Metered meter, long timestamp) throws IOException {
-        sendIfEnabled(COUNT, name, meter.getCount(), timestamp);
+        if (!getDisabledMetricAttributes().contains(COUNT)) {
+            reportCounter(name, meter.getCount(), timestamp);
+        }
         sendIfEnabled(M1_RATE, name, convertRate(meter.getOneMinuteRate()), timestamp);
         sendIfEnabled(M5_RATE, name, convertRate(meter.getFiveMinuteRate()), timestamp);
         sendIfEnabled(M15_RATE, name, convertRate(meter.getFifteenMinuteRate()), timestamp);
         sendIfEnabled(MEAN_RATE, name, convertRate(meter.getMeanRate()), timestamp);
     }
 
+    /**
+     * We replaced {@code sendIfEnabled(COUNT, name, histogram.getCount(), timestamp)} with the
+     * call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
+     */
     private void reportHistogram(String name, Histogram histogram, long timestamp) throws IOException {
         final Snapshot snapshot = histogram.getSnapshot();
-        sendIfEnabled(COUNT, name, histogram.getCount(), timestamp);
+        if (!getDisabledMetricAttributes().contains(COUNT)) {
+            reportCounter(name, histogram.getCount(), timestamp);
+        }
         sendIfEnabled(MAX, name, snapshot.getMax(), timestamp);
         sendIfEnabled(MEAN, name, snapshot.getMean(), timestamp);
         sendIfEnabled(MIN, name, snapshot.getMin(), timestamp);
@@ -416,7 +430,10 @@ public class OtGraphiteReporter extends ScheduledReporter {
      * @throws IOException
      */
     private void reportCounter(String name, Counter counter, long timestamp) throws IOException {
-        final long value = counter.getCount();
+        this.reportCounter(name, counter.getCount(), timestamp);
+    }
+
+    private void reportCounter(String name, long value, long timestamp) throws IOException {
         graphite.send(prefix(name, COUNT.getCode()), format(value), timestamp);
         final long diff = value - Optional.ofNullable(reportedCounters.put(name, value)).orElse(0L);
         if (diff != 0L) {
