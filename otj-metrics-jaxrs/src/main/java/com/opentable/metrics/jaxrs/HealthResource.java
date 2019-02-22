@@ -15,7 +15,6 @@ package com.opentable.metrics.jaxrs;
 
 
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.inject.Named;
 import javax.ws.rs.DefaultValue;
@@ -29,7 +28,6 @@ import javax.ws.rs.core.Response;
 
 import com.codahale.metrics.health.HealthCheck.Result;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.opentable.metrics.SortedEntry;
@@ -50,7 +48,7 @@ public class HealthResource {
     @Path("/")
     public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(render(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
     }
 
     @GET
@@ -60,23 +58,7 @@ public class HealthResource {
         if (result == null) {
             return Response.status(404).build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(render(all, result.getLeft())).build();
-    }
-
-    private Map<SortedEntry, Result> render(boolean all, Map<String, Result> raw) {
-        Map<SortedEntry, Result> rendered = new TreeMap<>();
-        raw.forEach((name, result) -> {
-            rendered.put(new SortedEntry(ClassUtils.getAbbreviatedName(name, 20), result), result);
-        });
-
-        if (!all && !rendered.isEmpty()) {
-            Result worstResult = rendered.keySet().iterator().next().getResult();
-            if (!worstResult.isHealthy()) {
-                rendered.keySet().removeIf(e -> e.getResult().isHealthy());
-            }
-        }
-
-        return rendered;
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
     }
 
 }
