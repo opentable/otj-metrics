@@ -40,6 +40,7 @@
         <module>otj-metrics-core</module>
         <module>otj-metrics-jaxrs</module>
         <module>otj-metrics-mvc</module>
+        <module>otj-metrics-reactive</module>
         <module>otj-metrics</module>
         <module>otj-metrics-actuator</module>
     </modules>
@@ -80,6 +81,11 @@
             <dependency>
                 <groupId>com.opentable.components</groupId>
                 <artifactId>otj-metrics-mvc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.opentable.components</groupId>
+                <artifactId>otj-metrics-reactive</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
