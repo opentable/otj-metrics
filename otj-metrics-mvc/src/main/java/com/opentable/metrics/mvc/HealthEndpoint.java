@@ -17,11 +17,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import com.codahale.metrics.health.HealthCheck.Result;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ComparisonChain;
 
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.opentable.metrics.SortedEntry;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
 
@@ -63,48 +61,12 @@ public class HealthEndpoint {
         });
 
         if (!all && !rendered.isEmpty()) {
-            Result worstResult = rendered.keySet().iterator().next().result;
+            Result worstResult = rendered.keySet().iterator().next().getResult();
             if (!worstResult.isHealthy()) {
-                rendered.keySet().removeIf(e -> e.result.isHealthy());
+                rendered.keySet().removeIf(e -> e.getResult().isHealthy());
             }
         }
 
         return rendered;
-    }
-
-    static class SortedEntry implements Comparable<SortedEntry> {
-        final String name;
-        final Result result;
-
-        SortedEntry(String name, Result result) {
-            this.name = name;
-            this.result = result;
-        }
-
-        @Override
-        public int compareTo(SortedEntry o) {
-            return ComparisonChain.start()
-                    // severity descending
-                    .compare(o.result, result, HealthController::compare)
-                    // name ascending
-                    .compare(name, o.name)
-                    .result();
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return EqualsBuilder.reflectionEquals(this, obj, false);
-        }
-
-        @Override
-        @JsonValue
-        public String toString() {
-            return name;
-        }
     }
 }
