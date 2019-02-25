@@ -1,5 +1,10 @@
 otj-metrics
 ===========
+
+4.0.4
+-----
+* Add health and service-status endpoints for Reactive HTTP servers.
+
 4.0.3
 -----
 * Report extended counters for "Metered" and "Histogram"
