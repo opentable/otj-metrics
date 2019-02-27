@@ -19,7 +19,6 @@ import java.util.function.Function;
 import javax.inject.Provider;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jetty9.InstrumentedHandler;
 import com.codahale.metrics.jetty9.InstrumentedQueuedThreadPool;
 
 import org.eclipse.jetty.server.Handler;
@@ -70,14 +69,14 @@ public class JettyServerMetricsConfiguration {
     }
 
     /**
-     * Create a {@link Handler} customizer that wraps the handler in an {@link InstrumentedHandler} which report metrics for the handler
+     * Create a {@link Handler} customizer that wraps the handler in an {@link OTInstrumentedHandler} which report metrics for the handler
      * @param metrics metric registry to register the metrics on
      * @return a Handler customizer to add metrics to the Handler
      */
     @Bean
     public Function<Handler, Handler> getHandlerCustomizer(final MetricRegistry metrics) {
         return handler -> {
-            final InstrumentedHandler instrumented = new InstrumentedHandler(metrics, PREFIX);
+            final OTInstrumentedHandler instrumented = new OTInstrumentedHandler(metrics, PREFIX);
             instrumented.setHandler(handler);
             return instrumented;
         };
