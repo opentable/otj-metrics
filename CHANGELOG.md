@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+4.0.5
+-----
+* Correct handling of Jetty9 server metrics for asynchronous requests.
+
 4.0.4
 -----
 * Add health and service-status endpoints for Reactive HTTP servers.
