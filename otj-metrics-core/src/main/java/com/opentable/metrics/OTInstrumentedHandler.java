@@ -200,6 +200,8 @@ public class OTInstrumentedHandler extends HandlerWrapper {
         });
 
         this.listener = new AsyncListener() {
+            // Diff: removed locally scoped startTime variable
+
             @Override
             public void onTimeout(AsyncEvent event) throws IOException {
                 asyncTimeouts.mark();
@@ -207,6 +209,7 @@ public class OTInstrumentedHandler extends HandlerWrapper {
 
             @Override
             public void onStartAsync(AsyncEvent event) throws IOException {
+                // Diff: Removed local startTime variable
                 event.getAsyncContext().addListener(this);
             }
 
@@ -216,6 +219,7 @@ public class OTInstrumentedHandler extends HandlerWrapper {
 
             @Override
             public void onComplete(AsyncEvent event) throws IOException {
+                // Diff: Rewrote onComplete method body to call new #updateResponses and decrement activeSuspended correctly
                 final HttpChannelState state = ((AsyncContextEvent)event).getHttpChannelState();
 
                 final Request request = state.getBaseRequest();
@@ -261,10 +265,13 @@ public class OTInstrumentedHandler extends HandlerWrapper {
             // New request
             activeRequests.inc();
             start = request.getTimeStamp();
+            // Diff: Removed calling state.addListener(listener)
         }
         else {
             // Resumed request
             start = System.currentTimeMillis();
+            // Diff: removed decrementing activeSuspended
+            // Diff: Removed conditional around call to mark asyncDispatches
             asyncDispatches.mark();
         }
 
@@ -280,6 +287,9 @@ public class OTInstrumentedHandler extends HandlerWrapper {
 
             if (state.isSuspended()) {
                 // Request that got suspended during handling
+
+                // Diff: Moved call to increment activeSuspended inside conditional check that state.isInitial
+                // Diff: Added call to state.addListener(listener) inside conditional
                 if (state.isInitial()) {
                     state.addListener(listener);
                     activeSuspended.inc();
@@ -329,7 +339,7 @@ public class OTInstrumentedHandler extends HandlerWrapper {
             responseStatus = request.getResponse().getStatus() / 100;
         }
         else {
-            responseStatus = 4;
+            responseStatus = 4; // will end up with a 404 response sent by HttpChannel.handle
         }
 
         if (responseStatus >= 1 && responseStatus <= 5) {
@@ -337,6 +347,8 @@ public class OTInstrumentedHandler extends HandlerWrapper {
         }
 
         activeRequests.dec();
+
+        // Diff: Changed method to pass in elapsed time instead of calculating it here with an incorrect start time
         requests.update(elapsed, TimeUnit.MILLISECONDS);
         requestTimer(request.getMethod()).update(elapsed, TimeUnit.MILLISECONDS);
     }
