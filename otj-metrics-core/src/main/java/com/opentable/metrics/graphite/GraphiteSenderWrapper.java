@@ -16,12 +16,14 @@ package com.opentable.metrics.graphite;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.annotation.concurrent.GuardedBy;
+import javax.net.SocketFactory;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Metric;
@@ -62,7 +64,7 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     @GuardedBy("this")
     private Graphite delegate; // either connect()ed or null
     @GuardedBy("this")
-    private Instant lastReconnect;
+    private Instant lastReconnect = Instant.now();
 
     GraphiteSenderWrapper(Supplier<InetSocketAddress> address, Graphite delegate) {
         this.address = address;
