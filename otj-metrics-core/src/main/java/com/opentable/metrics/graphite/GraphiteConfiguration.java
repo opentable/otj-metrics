@@ -13,7 +13,6 @@
  */
 package com.opentable.metrics.graphite;
 
-import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
@@ -25,12 +24,10 @@ import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,10 +123,8 @@ public class GraphiteConfiguration {
             LOG.info("no graphite host; skipping sender initialization");
             return null;
         }
-
-        final Supplier<InetSocketAddress> address = () -> new InetSocketAddress(host, port);
-        final Graphite graphite = new Graphite(address.get());
-        GraphiteSenderWrapper result = new GraphiteSenderWrapper(address, graphite);
+        final Graphite graphite = new Graphite(host, port);
+        GraphiteSenderWrapper result = new GraphiteSenderWrapper(host, port, graphite);
         registeredMetrics = MetricSets.combineAndPrefix(PREFIX, result);
         metricRegistry.registerAll(registeredMetrics);
         return result;

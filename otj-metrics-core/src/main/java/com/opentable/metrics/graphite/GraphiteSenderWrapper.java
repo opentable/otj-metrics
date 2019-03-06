@@ -15,20 +15,15 @@ package com.opentable.metrics.graphite;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import javax.annotation.concurrent.GuardedBy;
-import javax.net.SocketFactory;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
-import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.collect.ImmutableMap;
 
@@ -59,15 +54,17 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
 
     private final Counter connectionFailures = new Counter();
     private final Counter connectionCloses = new Counter();
-    private final Supplier<InetSocketAddress> address;
+    private final String host;
+    private final int port;
 
     @GuardedBy("this")
     private Graphite delegate; // either connect()ed or null
     @GuardedBy("this")
     private Instant lastReconnect = Instant.now();
 
-    GraphiteSenderWrapper(Supplier<InetSocketAddress> address, Graphite delegate) {
-        this.address = address;
+    GraphiteSenderWrapper(String host, int port, Graphite delegate) {
+        this.host = host;
+        this.port = port;
         this.delegate = delegate;
     }
 
@@ -122,7 +119,7 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     private synchronized Graphite maybeRecycle() throws IOException {
         if (needsReconnectPeriodic()) { //NOPMD
             // Spin up new one
-            Graphite newGraphite = new Graphite(address.get());
+            Graphite newGraphite = new Graphite(host, port);
             //newGraphite.connect();
 
             // Close the old one
