@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+4.0.6
+-----
+* Correctly recycle graphite reporter connection.
+
 4.0.5
 -----
 * Correct handling of Jetty9 server metrics for asynchronous requests.
