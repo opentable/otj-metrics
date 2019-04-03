@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.ExponentiallyDecayingReservoir;
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -136,6 +138,15 @@ public class MetricSetBuilder {
      */
     public AtomicLong longGauge(String name) {
         return create(name, AtomicLongGauge::new);
+    }
+
+    /**
+     * Create a histogram
+     * @param name the name of the histogram to create
+     * @return a new histogram
+     */
+    public Histogram histogram(String name) {
+        return create(name, () -> new Histogram(new ExponentiallyDecayingReservoir()));
     }
 
     /**

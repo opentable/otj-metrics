@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.management.MBeanServer;
 
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -62,6 +63,19 @@ public class MetricSetBuilderTest {
         final MetricSetBuilder b = new MetricSetBuilder(testRegistry);
         b.setPrefix("test");
         final Meter foo = b.meter("foo");
+
+        assertThat(testRegistry.getMetrics()).isEmpty();
+        final Map<String, Metric> builtMetrics = b.build().getMetrics();
+        assertThat(builtMetrics).containsEntry("test.foo", foo);
+        assertThat(testRegistry.getMetrics()).isEqualTo(builtMetrics);
+    }
+
+    @Test
+    public void testHistogramRegisters() {
+        final MetricRegistry testRegistry = new MetricRegistry();
+        final MetricSetBuilder b = new MetricSetBuilder(testRegistry);
+        b.setPrefix("test");
+        final Histogram foo = b.histogram("foo");
 
         assertThat(testRegistry.getMetrics()).isEmpty();
         final Map<String, Metric> builtMetrics = b.build().getMetrics();
