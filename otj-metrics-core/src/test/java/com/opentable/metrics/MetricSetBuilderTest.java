@@ -25,6 +25,8 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.Reservoir;
+import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 
 import org.junit.Test;
@@ -81,6 +83,38 @@ public class MetricSetBuilderTest {
         final Map<String, Metric> builtMetrics = b.build().getMetrics();
         assertThat(builtMetrics).containsEntry("test.foo", foo);
         assertThat(testRegistry.getMetrics()).isEqualTo(builtMetrics);
+    }
+
+    @Test
+    public void testHistogramCreationWithReservoir() {
+        final Reservoir testReservoir = new Reservoir() {
+            @Override
+            public int size() {
+                return 0;
+            }
+
+            @Override
+            public void update(long value) {
+            }
+
+            @Override
+            public Snapshot getSnapshot() {
+                return null;
+            }
+        };
+        final MetricRegistry testRegistry = new MetricRegistry();
+        final MetricSetBuilder b = new MetricSetBuilder(testRegistry);
+        b.setPrefix("test");
+        b.histogram("foo", testReservoir);
+
+        final Map<String, Metric> builtMetrics = b.build().getMetrics();
+        assertThat(builtMetrics)
+            .extracting("test.foo")
+            .first()
+            .isInstanceOf(Histogram.class)
+            .extracting("reservoir")
+            .containsExactly(testReservoir)
+        ;
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -26,6 +26,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.Reservoir;
 import com.codahale.metrics.Timer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -141,12 +142,22 @@ public class MetricSetBuilder {
     }
 
     /**
-     * Create a histogram
+     * Create a histogram using an {@link ExponentiallyDecayingReservoir}
      * @param name the name of the histogram to create
      * @return a new histogram
      */
     public Histogram histogram(String name) {
-        return create(name, () -> new Histogram(new ExponentiallyDecayingReservoir()));
+        return histogram(name, new ExponentiallyDecayingReservoir());
+    }
+
+    /**
+     * Create a histogram using with a specific reservoir
+     * @param name the name of the histogram to create
+     * @param reservoir the reservoir to use for collecting histogram data
+     * @return a new histogram
+     */
+    public Histogram histogram(String name, Reservoir reservoir) {
+        return create(name, () -> new Histogram(reservoir));
     }
 
     /**
