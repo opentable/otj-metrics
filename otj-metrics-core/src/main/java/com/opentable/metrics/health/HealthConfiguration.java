@@ -16,8 +16,6 @@ package com.opentable.metrics.health;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -39,6 +37,7 @@ import org.springframework.context.annotation.Import;
 
 import com.opentable.concurrent.OTExecutors;
 import com.opentable.concurrent.ThreadPoolBuilder;
+import com.opentable.concurrent.ThreadPoolConfig;
 
 @Configuration
 @Import({
@@ -57,25 +56,8 @@ public class HealthConfiguration {
         // into the servlet pool. An alternative would be an unbounded but fixed
         return ThreadPoolBuilder
                 .shortTaskPool(HEALTH_CHECK_POOL_NAME, 8)
-                .withDefaultRejectedHandler(new LoggingCallerRunsPolicy());
+                .withDefaultRejectedHandler(ThreadPoolConfig.RejectedHandler.CALLER_RUNS.getHandler());
     }
-
-    private static class LoggingCallerRunsPolicy implements RejectedExecutionHandler {
-        /**
-         * Executes task r in the caller's thread, unless the executor
-         * has been shut down, in which case the task is discarded.
-         *
-         * @param r the runnable task requested to be executed
-         * @param e the executor attempting to execute this task
-         */
-        public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-            if (!e.isShutdown()) {
-                LOG.warn("Health check running in calling thread");
-                r.run();
-            }
-        }
-    }
-
 
     @Bean
     @Named("_jackson")
