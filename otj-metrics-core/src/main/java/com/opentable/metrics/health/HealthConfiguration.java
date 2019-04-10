@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Import;
 
 import com.opentable.concurrent.OTExecutors;
 import com.opentable.concurrent.ThreadPoolBuilder;
+import com.opentable.concurrent.ThreadPoolConfig;
 
 @Configuration
 @Import({
@@ -45,11 +46,17 @@ import com.opentable.concurrent.ThreadPoolBuilder;
 })
 public class HealthConfiguration {
     public static final String HEALTH_CHECK_POOL_NAME = "health-check";
+    private static final Logger LOG = LoggerFactory.getLogger(HealthConfiguration.class);
 
     @Bean
     @Named(HEALTH_CHECK_POOL_NAME)
     public ThreadPoolBuilder getHealthCheckPoolBuilder() {
-        return ThreadPoolBuilder.shortTaskPool(HEALTH_CHECK_POOL_NAME, 8);
+        // Used for running health checks asynchronously. This normally
+        // Should be low load anyway, so callerRuns is appropriate backPressure
+        // into the servlet pool. An alternative would be an unbounded but fixed
+        return ThreadPoolBuilder
+                .shortTaskPool(HEALTH_CHECK_POOL_NAME, 8)
+                .withDefaultRejectedHandler(ThreadPoolConfig.RejectedHandler.CALLER_RUNS.getHandler());
     }
 
     @Bean

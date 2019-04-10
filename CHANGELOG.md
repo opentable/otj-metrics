@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+4.0.7
+-----
+* Add convenience method for histograms to MetricSetBuilder (thanks bpenrod)
+* Explicitly state CallerRuns policy for Healthcheck and log if main thread is used
+
 4.0.6
 -----
 * Correctly recycle graphite reporter connection.
