@@ -46,7 +46,6 @@ import com.opentable.concurrent.ThreadPoolConfig;
 })
 public class HealthConfiguration {
     public static final String HEALTH_CHECK_POOL_NAME = "health-check";
-    private static final Logger LOG = LoggerFactory.getLogger(HealthConfiguration.class);
 
     @Bean
     @Named(HEALTH_CHECK_POOL_NAME)
