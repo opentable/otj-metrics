@@ -70,7 +70,7 @@ public class HealthConfiguration {
          */
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             if (!e.isShutdown()) {
-                LOG.debug("Health check running in calling thread");
+                LOG.warn("Health check running in calling thread");
                 r.run();
             }
         }
