@@ -22,7 +22,6 @@ import javax.inject.Inject;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.graphite.GraphiteReporter;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,31 +40,55 @@ public class GraphiteReporterPrefixTest {
     private ScheduledReporter reporter;
 
     @Test
-    public void withFlavor() {
-        final String prefix = prefixFrom("type-location.flavor", "0");
+    public void withFlavorEnabled() {
+        final String prefix = prefixFrom("type-location.flavor", "0", true);
         Assert.assertNotNull(prefix);
         Assert.assertEquals("app_metrics.test-server-flavor.type.location.instance-0", prefix);
     }
 
     @Test
+    public void withFlavorNull() {
+        final String prefix = prefixFrom("type-location.flavor", "0", null);
+        Assert.assertNotNull(prefix);
+        Assert.assertEquals("app_metrics.test-server-flavor.type.location.instance-0", prefix);
+    }
+
+    @Test
+    public void withFlavorDisabled() {
+        final String prefix = prefixFrom("type-location.flavor", "0", false);
+        Assert.assertNotNull(prefix);
+        Assert.assertEquals("app_metrics.test-server.type.location.instance-0", prefix);
+    }
+
+    @Test
     public void noFlavor() {
-        final String prefix = prefixFrom("prod-uswest2", "3");
+        final String prefix = prefixFrom("prod-uswest2", "3", false);
+        Assert.assertNotNull(prefix);
+        Assert.assertEquals("app_metrics.test-server.prod.uswest2.instance-3", prefix);
+    }
+
+    @Test
+    public void noFlavorButEnabled() {
+        final String prefix = prefixFrom("prod-uswest2", "3", true);
         Assert.assertNotNull(prefix);
         Assert.assertEquals("app_metrics.test-server.prod.uswest2.instance-3", prefix);
     }
 
     @Test
     public void bad() {
-        Assert.assertNull(prefixFrom(null, null));
+        Assert.assertNull(prefixFrom(null, null,  null));
     }
 
-    private String prefixFrom(final String env, final String instanceNo) {
+    private String prefixFrom(final String env, final String instanceNo, Boolean includeFlavor) {
         final SpringApplication app = new SpringApplication(
                 TestConfiguration.class,
                 GraphiteConfiguration.class
         );
         final Map<String, Object> mockEnv = new HashMap<>();
         if (env != null) {
+            if (includeFlavor != null) {
+                mockEnv.put("ot.graphite.reporting.include.flavors", includeFlavor);
+            }
             mockEnv.put("OT_ENV_WHOLE", env);
             final String[] typeLoc = env.split("-");
             mockEnv.put("OT_ENV_TYPE", typeLoc[0]);

@@ -71,6 +71,9 @@ public class GraphiteConfiguration {
     @Value("${ot.graphite.reporting-period:PT10s}")
     private Duration reportingPeriod;
 
+    @Value("${ot.graphite.reporting.include.flavors:#{true}}")
+    private boolean showFlavorInPrefix = true;
+
     private MetricRegistry metricRegistry;
     private MetricSet registeredMetrics;
 
@@ -85,7 +88,7 @@ public class GraphiteConfiguration {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
         }
-        String prefix = getPrefix(serviceInfo, appInfo);
+        final String prefix = getPrefix(serviceInfo, appInfo, showFlavorInPrefix);
         if (prefix == null) {
             LOG.warn("insufficient information to construct metric prefix; skipping reporter initialization");
             return null;
@@ -138,14 +141,14 @@ public class GraphiteConfiguration {
     }
 
     @VisibleForTesting
-    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo) {
+    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, boolean includeFlavorInPrefix ) {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
         final Integer i = appInfo.getInstanceNumber();
         if (env.getType() == null || env.getLocation() == null || i == null) {
             return null;
         }
-        final String name = env.getFlavor() == null ? applicationName : applicationName + "-" + env.getFlavor();
+        final String name = env.getFlavor() == null || (!includeFlavorInPrefix) ? applicationName : applicationName + "-" + env.getFlavor();
         final String instance = "instance-" + i;
         return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
     }
