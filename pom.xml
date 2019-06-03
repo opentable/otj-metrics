@@ -54,8 +54,8 @@
         <!-- As this is forked, please see the opentable/metrics-spring-1 repo for source -->
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
 
-        <!-- Remove once parent updated -->
-        <dep.otj-executors.version>2.1.4</dep.otj-executors.version>
+
+        <dep.otj-conservedheaders.version>3.0.5-SNAPSHOT</dep.otj-conservedheaders.version>
     </properties>
 
     <dependencyManagement>
