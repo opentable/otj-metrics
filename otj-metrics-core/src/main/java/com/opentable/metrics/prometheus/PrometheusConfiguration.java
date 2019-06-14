@@ -9,7 +9,6 @@ import io.prometheus.client.CollectorRegistry;
 @Configuration
 @Import({
         BridgeDropWizard.class,
-        ExposeMetricsJAXRSResource.class,
 })
 public class PrometheusConfiguration {
     @Bean

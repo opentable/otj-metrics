@@ -1,4 +1,4 @@
-package com.opentable.metrics.prometheus;
+package com.opentable.metrics.mvc;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -8,45 +8,43 @@ import java.util.List;
 import java.util.Set;
 
 import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.exporter.common.TextFormat;
 
-@Path("/infra/prometheus")
-public class ExposeMetricsJAXRSResource {
-    private static final Logger LOG = LoggerFactory.getLogger(ExposeMetricsJAXRSResource.class);
+@RequestMapping("/infra/prometheus")
+@RestController
+public class PrometheusMVCResource {
+    private static final Logger LOG = LoggerFactory.getLogger(PrometheusMVCResource.class);
 
     private final CollectorRegistry collectorRegistry;
 
     @Inject
-    public ExposeMetricsJAXRSResource(CollectorRegistry collectorRegistry) {
+    public PrometheusMVCResource(CollectorRegistry collectorRegistry) {
         this.collectorRegistry = collectorRegistry;
     }
 
-    @GET
-    @Produces(TextFormat.CONTENT_TYPE_004)
-    public Response getMetrics(@QueryParam("name")List<String> names) throws IOException {
+    @GetMapping(produces = TextFormat.CONTENT_TYPE_004)
+    public String getMetrics(@RequestParam("name")List<String> names) throws IOException {
         LOG.info("Called!");
         return commonCode(names);
     }
 
-    @POST
-    @Produces(TextFormat.CONTENT_TYPE_004)
-    public Response postMetrics(@QueryParam("name")List<String> names) throws IOException {
+    @PostMapping(produces = TextFormat.CONTENT_TYPE_004)
+    public String postMetrics(@RequestParam("name")List<String> names) throws IOException {
         return commonCode(names);
     }
 
-    private Response commonCode(final List<String> names) throws IOException {
-        return Response.ok(writer(names)).build();
+    private String commonCode(final List<String> names) throws IOException {
+        return writer(names);
     }
 
     private String writer(final List<String> names) throws IOException {
