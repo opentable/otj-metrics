@@ -15,7 +15,7 @@ import io.prometheus.client.dropwizard.samplebuilder.SampleBuilder;
 public class PrometheusConfiguration {
     @Bean
     CollectorRegistry collectorRegistry() {
-        return new CollectorRegistry();
+        return new CollectorRegistry(true);
     }
 
     @Bean
