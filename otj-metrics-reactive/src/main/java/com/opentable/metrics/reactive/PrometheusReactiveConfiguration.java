@@ -7,7 +7,7 @@ import com.opentable.metrics.prometheus.PrometheusConfiguration;
 
 @Configuration
 @Import({
-        PrometheusReactiveConfiguration.class,
+        PrometheusReactiveResource.class,
         PrometheusConfiguration.class
 })
 public class PrometheusReactiveConfiguration {

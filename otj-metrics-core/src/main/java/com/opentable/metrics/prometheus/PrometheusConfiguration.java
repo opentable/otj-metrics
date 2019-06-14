@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.dropwizard.samplebuilder.DefaultSampleBuilder;
+import io.prometheus.client.dropwizard.samplebuilder.SampleBuilder;
 
 @Configuration
 @Import({
@@ -14,5 +16,10 @@ public class PrometheusConfiguration {
     @Bean
     CollectorRegistry collectorRegistry() {
         return new CollectorRegistry();
+    }
+
+    @Bean
+    SampleBuilder sampleBuilder() {
+        return new DefaultSampleBuilder();
     }
 }
