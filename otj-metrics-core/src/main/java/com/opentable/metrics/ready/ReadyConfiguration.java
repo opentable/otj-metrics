@@ -40,6 +40,16 @@ import com.opentable.concurrent.ThreadPoolConfig;
 public class ReadyConfiguration {
     public static final String READY_CHECK_POOL_NAME = "ready-check";
 
+    /**
+     * Create a ready check registry to register health checks with
+     * @return ready check registry
+     */
+    @Bean
+    public ReadyCheckRegistry getReadyCheckRegistry() {
+        return new ReadyCheckRegistry();
+    }
+
+
     @Bean
     @Named(READY_CHECK_POOL_NAME)
     public ThreadPoolBuilder getReadyCheckPoolBuilder() {
