@@ -1,7 +1,5 @@
 package com.opentable.metrics.ready;
 
-import java.util.EventListener;
-
 /**
  * A listener contract for {@link ReadyCheckRegistry} events.
  */
