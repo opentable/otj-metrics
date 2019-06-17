@@ -106,10 +106,6 @@ public abstract class ReadyCheck {
             this(isReady, message, error, null);
         }
 
-        private Result(ResultBuilder builder) {
-            this(builder.ready, builder.message, builder.error, builder.details);
-        }
-
         private Result(boolean isReady, String message, Throwable error, Map<String, Object> details) {
             this.ready = isReady;
             this.message = message;
@@ -199,7 +195,7 @@ public abstract class ReadyCheck {
                 for (Map.Entry<String, Object> e : details.entrySet()) {
                     builder.append(", ");
                     builder.append(e.getKey())
-                            .append("=")
+                            .append('=')
                             .append(String.valueOf(e.getValue()));
                 }
             }
@@ -295,7 +291,7 @@ public abstract class ReadyCheck {
         }
 
         public Result build() {
-            return new Result(this);
+            return new Result(ready, message, error, details ); //NOPMD
         }
     }
 

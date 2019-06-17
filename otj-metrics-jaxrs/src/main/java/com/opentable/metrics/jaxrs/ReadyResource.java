@@ -16,6 +16,7 @@ package com.opentable.metrics.jaxrs;
 
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -39,6 +40,7 @@ import com.opentable.metrics.ready.SortedEntry;
 public class ReadyResource {
     private final ReadyController controller;
 
+    @Inject
     public ReadyResource(ReadyController controller) {
         this.controller = controller;
     }

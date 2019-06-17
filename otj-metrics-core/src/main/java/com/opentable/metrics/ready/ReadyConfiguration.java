@@ -61,7 +61,7 @@ public class ReadyConfiguration {
                 .withDefaultRejectedHandler(ThreadPoolConfig.RejectedHandler.CALLER_RUNS.getHandler());
     }
 
-    @Bean
+    @Bean(name="readyCheckServletContextListener")
     public ServletContextListener getServletContextListener(
             final ReadyCheckRegistry registry,
             @Named(READY_CHECK_POOL_NAME) final ExecutorService executor) {

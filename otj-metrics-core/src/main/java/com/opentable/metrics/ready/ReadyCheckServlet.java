@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class ReadyCheckServlet extends HttpServlet {
-    public static abstract class ContextListener implements ServletContextListener {
+    public abstract static class ContextListener implements ServletContextListener {
         /**
          * @return the {@link ReadyCheckRegistry} to inject into the servlet context.
          */

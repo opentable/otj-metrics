@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.jaxrs;
+package com.opentable.metrics.reactive;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -21,6 +21,7 @@ import com.opentable.metrics.ready.ReadyController;
 @Configuration
 @Import({
         ReadyController.class,
-        ReadyResource.class,
+        ReadyEndpoint.class,
 })
-public class ReadyHttpJaxRsConfiguration {}
+public class ReadyHttpReactiveConfiguration {
+}
