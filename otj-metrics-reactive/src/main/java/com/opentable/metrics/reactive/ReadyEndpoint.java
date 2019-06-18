@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import com.opentable.metrics.http.CheckState;
+import com.opentable.metrics.ready.ReadyConfiguration;
 import com.opentable.metrics.ready.ReadyController;
 import com.opentable.metrics.ready.SortedEntry;
 
@@ -35,7 +36,7 @@ import com.opentable.metrics.ready.SortedEntry;
  * Ready endpoint for Reactive HTTP servers.
  */
 @RestController
-@RequestMapping("/infra/ready")
+@RequestMapping(ReadyConfiguration.READY_CHECK_PATH)
 public class ReadyEndpoint {
 
     private final ReadyController controller;
@@ -45,9 +46,9 @@ public class ReadyEndpoint {
     }
 
     @GetMapping
-    public Mono<ResponseEntity<Map<SortedEntry, Result>>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+    public Mono<ResponseEntity<Map<SortedEntry<Result>, Result>>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runReadyChecks();
-        return Mono.just(ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.render(all, result.getLeft())));
+        return Mono.just(ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.ready(all, result.getLeft())));
     }
 
     @GetMapping("/group/{group}")
@@ -56,7 +57,7 @@ public class ReadyEndpoint {
         if (result == null) {
             return Mono.just(ResponseEntity.notFound().build());
         }
-        return Mono.just(ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.render(all, result.getLeft())));
+        return Mono.just(ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.ready(all, result.getLeft())));
     }
 
 }

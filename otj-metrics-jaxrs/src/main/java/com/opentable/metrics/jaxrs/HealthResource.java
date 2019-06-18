@@ -30,13 +30,14 @@ import com.codahale.metrics.health.HealthCheck.Result;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.opentable.metrics.SortedEntry;
+import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
+import com.opentable.metrics.ready.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/health")
+@Path(HealthConfiguration.HEALTH_CHECK_PATH)
 public class HealthResource {
     private final HealthController controller;
 
@@ -48,7 +49,7 @@ public class HealthResource {
     @Path("/")
     public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
     }
 
     @GET
@@ -58,7 +59,7 @@ public class HealthResource {
         if (result == null) {
             return Response.status(404).build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
     }
 
 }

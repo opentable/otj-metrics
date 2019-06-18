@@ -38,6 +38,7 @@ import com.opentable.concurrent.ThreadPoolConfig;
         ReadyConfiguration.ReadyRegistrar.class,
 })
 public class ReadyConfiguration {
+    public static final String READY_CHECK_PATH = "/infra/ready";
     public static final String READY_CHECK_POOL_NAME = "ready-check";
 
     /**

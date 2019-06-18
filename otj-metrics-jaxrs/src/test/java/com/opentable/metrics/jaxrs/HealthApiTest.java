@@ -30,8 +30,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 import org.springframework.mock.env.MockEnvironment;
 
-import com.opentable.metrics.SortedEntry;
 import com.opentable.metrics.http.HealthController;
+import com.opentable.metrics.ready.SortedEntry;
 
 public class HealthApiTest {
     private final HealthCheckRegistry registry = new HealthCheckRegistry();
@@ -142,7 +142,7 @@ public class HealthApiTest {
         assertEquals(500, r.getStatus());
         Map<?, ?> result = (Map<?,?>) r.getEntity();
         assertEquals(ImmutableList.of("c", "b"), result.keySet().stream()
-                .map(e -> SortedEntry.class.cast(e))
+                .map(SortedEntry.class::cast)
                 .map(SortedEntry::getName)
                 .collect(Collectors.toList()));
         r.close();

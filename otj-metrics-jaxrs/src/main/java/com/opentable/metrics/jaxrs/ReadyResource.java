@@ -31,12 +31,13 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.ready.ReadyCheck;
+import com.opentable.metrics.ready.ReadyConfiguration;
 import com.opentable.metrics.ready.ReadyController;
 import com.opentable.metrics.ready.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/infra/ready")
+@Path(ReadyConfiguration.READY_CHECK_PATH)
 public class ReadyResource {
     private final ReadyController controller;
 
@@ -49,7 +50,7 @@ public class ReadyResource {
     @Path("/")
     public Response getReady(@QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runReadyChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
     @GET
@@ -59,7 +60,7 @@ public class ReadyResource {
         if (result == null) {
             return Response.status(404).build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
 }

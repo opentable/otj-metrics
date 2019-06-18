@@ -26,21 +26,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.opentable.metrics.SortedEntry;
+import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
+import com.opentable.metrics.ready.SortedEntry;
 
 @RestController
-@RequestMapping("/health")
+@RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)
 public class HealthEndpoint {
 
     @Autowired
     private HealthController controller;
 
     @GetMapping
-    public ResponseEntity<Map<SortedEntry, Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+    public ResponseEntity<Map<SortedEntry<Result>, Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
-        return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.render(all, result.getLeft()));
+        return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.health(all, result.getLeft()));
     }
 
     @GetMapping("/group/{group}")
@@ -49,6 +50,6 @@ public class HealthEndpoint {
         if (result == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.render(all, result.getLeft()));
+        return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.health(all, result.getLeft()));
     }
 }
