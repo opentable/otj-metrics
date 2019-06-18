@@ -13,81 +13,41 @@
  */
 package com.opentable.metrics.ready;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
 import java.util.SortedMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.google.common.collect.Maps;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import com.opentable.metrics.http.CheckState;
-import com.opentable.spring.PropertySourceUtil;
 
 @Named
-public class ReadyController {
+public class ReadyController extends CheckController<ReadyCheck.Result> {
     private static final Logger LOG = LoggerFactory.getLogger(ReadyController.class);
     private static final String CONFIG_PREFIX = "ot.metrics.ready.group.";
     private static final String WARN_PREFIX = "WARN: ";
 
-    private final Map<String, ReadyCheck.Result> failingChecks = new ConcurrentHashMap<>();
-    private final Map<String, Set<String>> groups = new HashMap<>();
-
     private final ReadyCheckRegistry registry;
-    private final ExecutorService executor;
 
+    @Inject
     public ReadyController(ReadyCheckRegistry registry, @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
                            ConfigurableEnvironment env) {
+        super(executor, env, CONFIG_PREFIX);
         this.registry = registry;
-        this.executor = executor;
-        final Properties groupBaseConf = PropertySourceUtil.getProperties(env, CONFIG_PREFIX);
-        groupBaseConf.stringPropertyNames().forEach(group -> {
-            final Set<String> groupItems = Collections.unmodifiableSet(
-                    new HashSet<>(Arrays.asList(groupBaseConf.getProperty(group).split(","))));
-            groups.put(group, groupItems);
-        });
     }
 
-    public Pair<Map<String, ReadyCheck.Result>, CheckState> runReadyChecks() {
-        final SortedMap<String, ReadyCheck.Result> checkResults = getCheckResults();
-        final CheckState state = checkResults.values().stream()
-                .map(ReadyController::resultToState)
-                .max(CheckState.SEVERITY)
-                .orElse(CheckState.HEALTHY);
-        return Pair.of(checkResults, state);
+    @Override
+    protected CheckState resultToState(ReadyCheck.Result r) {
+      return resToState(r);
     }
 
-    public Pair<Map<String, ReadyCheck.Result>, CheckState> runReadyChecks(String group) {
-        final Set<String> groupItems = groups.get(group);
-        if (groupItems == null) {
-            return null;
-        }
-        final SortedMap<String, ReadyCheck.Result> checkResults = getCheckResults();
-        final CheckState state = checkResults.keySet().stream()
-                .filter(groupItems::contains)
-                .map(checkResults::get)
-                .map(ReadyController::resultToState)
-                .max(CheckState.SEVERITY)
-                .orElse(CheckState.HEALTHY);
-        final Map<String, ReadyCheck.Result> toReturn = Maps.filterKeys(checkResults, groupItems::contains);
-        return Pair.of(toReturn, state);
-    }
-
-    private static CheckState resultToState(ReadyCheck.Result r) {
+    private static CheckState resToState(ReadyCheck.Result r) {
         if (r.isReady()) {
             return CheckState.HEALTHY;
         }
@@ -97,7 +57,8 @@ public class ReadyController {
         return CheckState.CRITICAL;
     }
 
-    private SortedMap<String, ReadyCheck.Result> getCheckResults() {
+    @Override
+    protected SortedMap<String, ReadyCheck.Result> getCheckResults() {
         final SortedMap<String, ReadyCheck.Result> results = registry.runReadyChecks(executor);
         LOG.trace("The results gathered {}", results);
         results.forEach((name, result) -> {
@@ -125,6 +86,6 @@ public class ReadyController {
 
     /** Utility to sort Result objects by severity. */
     public static int compare(ReadyCheck.Result r1, ReadyCheck.Result r2) {
-        return resultToState(r1).compareTo(resultToState(r2));
+        return resToState(r1).compareTo(resToState(r2));
     }
 }

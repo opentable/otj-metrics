@@ -48,14 +48,14 @@ public class HealthResource {
     @GET
     @Path("/")
     public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
     }
 
     @GET
     @Path("/group/{group}")
     public Response getHealthGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks(group);
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }

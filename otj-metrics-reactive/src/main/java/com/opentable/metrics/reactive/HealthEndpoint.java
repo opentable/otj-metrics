@@ -47,13 +47,13 @@ public class HealthEndpoint {
 
     @GetMapping
     public Mono<ResponseEntity<Map<SortedEntry<Result>, Result>>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
-        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return Mono.just(ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.health(all, result.getLeft())));
     }
 
     @GetMapping("/group/{group}")
     public Mono<ResponseEntity<?>> getHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
-        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks(group);
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Mono.just(ResponseEntity.notFound().build());
         }

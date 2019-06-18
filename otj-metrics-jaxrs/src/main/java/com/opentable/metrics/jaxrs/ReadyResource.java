@@ -49,14 +49,14 @@ public class ReadyResource {
     @GET
     @Path("/")
     public Response getReady(@QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runReadyChecks();
+        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runChecks();
         return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
     @GET
     @Path("/group/{group}")
     public Response getReadyGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runReadyChecks(group);
+        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }
