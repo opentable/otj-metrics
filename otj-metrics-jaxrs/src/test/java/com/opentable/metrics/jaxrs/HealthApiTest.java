@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.springframework.mock.env.MockEnvironment;
 
 import com.opentable.metrics.http.HealthController;
-import com.opentable.metrics.ready.SortedEntry;
+import com.opentable.metrics.common.SortedEntry;
 
 public class HealthApiTest {
     private final HealthCheckRegistry registry = new HealthCheckRegistry();

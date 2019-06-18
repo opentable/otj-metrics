@@ -33,7 +33,7 @@ import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.ready.ReadyCheck;
 import com.opentable.metrics.ready.ReadyConfiguration;
 import com.opentable.metrics.ready.ReadyController;
-import com.opentable.metrics.ready.SortedEntry;
+import com.opentable.metrics.common.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)

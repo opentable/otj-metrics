@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.ready;
+package com.opentable.metrics.common;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -26,6 +26,8 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.opentable.metrics.http.HealthController;
+import com.opentable.metrics.ready.ReadyCheck;
+import com.opentable.metrics.ready.ReadyController;
 
 /**
  * Common code for both Ready and Health checks.

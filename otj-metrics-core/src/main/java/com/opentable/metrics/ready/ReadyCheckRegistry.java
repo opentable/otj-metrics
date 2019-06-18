@@ -92,7 +92,7 @@ public class ReadyCheckRegistry {
     /**
      * Registers an application {@link ReadyCheck}.
      *
-     * @param name        the name of the ready check
+     * @param name       the name of the ready check
      * @param readyCheck the {@link ReadyCheck} instance
      */
     public void register(String name, ReadyCheck readyCheck) {
@@ -157,58 +157,32 @@ public class ReadyCheckRegistry {
     }
 
     /**
-     * Runs the registered ready checks and returns a map of the results.
+     * Runs the registered ready checks matching the filter and returns a map of the results.
      *
      * @return a map of the ready check results
      */
     public SortedMap<String, ReadyCheck.Result> runReadyChecks() {
-        return runReadyChecks(ReadyCheckFilter.ALL);
-    }
-
-    /**
-     * Runs the registered ready checks matching the filter and returns a map of the results.
-     *
-     * @param filter ready check filter
-     * @return a map of the ready check results
-     */
-    public SortedMap<String, ReadyCheck.Result> runReadyChecks(ReadyCheckFilter filter) {
         final SortedMap<String, ReadyCheck.Result> results = new TreeMap<>();
         for (Map.Entry<String, ReadyCheck> entry : readyChecks.entrySet()) {
-            final String name = entry.getKey();
-            final ReadyCheck readyCheck = entry.getValue();
-            if (filter.matches(name, readyCheck)) {
-                final ReadyCheck.Result result = entry.getValue().execute();
-                results.put(entry.getKey(), result);
-            }
+            final ReadyCheck.Result result = entry.getValue().execute();
+            results.put(entry.getKey(), result);
         }
         return Collections.unmodifiableSortedMap(results);
     }
 
-    /**
-     * Runs the registered ready checks in parallel and returns a map of the results.
-     *
-     * @param executor object to launch and track ready checks progress
-     * @return a map of the ready check results
-     */
-    public SortedMap<String, ReadyCheck.Result> runReadyChecks(ExecutorService executor) {
-        return runReadyChecks(executor, ReadyCheckFilter.ALL);
-    }
 
     /**
      * Runs the registered ready checks matching the filter in parallel and returns a map of the results.
      *
      * @param executor object to launch and track ready checks progress
-     * @param filter   Ready check filter
      * @return a map of the ready check results
      */
-    public SortedMap<String, ReadyCheck.Result> runReadyChecks(ExecutorService executor, ReadyCheckFilter filter) {
+    public SortedMap<String, ReadyCheck.Result> runReadyChecks(ExecutorService executor) {
         final Map<String, Future<ReadyCheck.Result>> futures = new HashMap<>();
         for (final Map.Entry<String, ReadyCheck> entry : readyChecks.entrySet()) {
             final String name = entry.getKey();
             final ReadyCheck readyCheck = entry.getValue();
-            if (filter.matches(name, readyCheck)) {
-                futures.put(name, executor.submit(readyCheck::execute));
-            }
+            futures.put(name, executor.submit(readyCheck::execute));
         }
 
         final SortedMap<String, ReadyCheck.Result> results = new TreeMap<>();
@@ -223,7 +197,6 @@ public class ReadyCheckRegistry {
 
         return Collections.unmodifiableSortedMap(results);
     }
-
 
     private void onReadyCheckAdded(String name, ReadyCheck readyCheck) {
         for (ReadyCheckRegistryListener listener : listeners) {

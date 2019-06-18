@@ -33,7 +33,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
-import com.opentable.metrics.ready.SortedEntry;
+import com.opentable.metrics.common.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)

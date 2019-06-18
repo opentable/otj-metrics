@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
-import com.opentable.metrics.ready.SortedEntry;
+import com.opentable.metrics.common.SortedEntry;
 
 @RestController
 @RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)

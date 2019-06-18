@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 
+import com.opentable.metrics.common.CheckController;
 import com.opentable.metrics.http.CheckState;
 
 @Named

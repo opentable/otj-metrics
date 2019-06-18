@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
-import com.opentable.metrics.ready.SortedEntry;
+import com.opentable.metrics.common.SortedEntry;
 
 /**
  * Health endpoint for Reactive HTTP servers.

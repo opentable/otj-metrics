@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import com.opentable.metrics.health.HealthConfiguration;
-import com.opentable.metrics.ready.CheckController;
+import com.opentable.metrics.common.CheckController;
 
 @Named
 public class HealthController extends CheckController<Result> {
