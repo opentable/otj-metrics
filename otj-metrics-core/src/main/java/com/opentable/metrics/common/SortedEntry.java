@@ -34,14 +34,14 @@ import com.opentable.metrics.ready.ReadyController;
  * @param <T>
  */
 public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
-    final private static Predicate<ReadyCheck.Result> READY_CHECK_PREDICATE = ReadyCheck.Result::isReady;
-    final private static Predicate<HealthCheck.Result> HEALTH_CHECK_PREDICATE = HealthCheck.Result::isHealthy;
-    final private static Comparator<ReadyCheck.Result> READY_CHECK_COMPARATOR = ReadyController::compare;
-    final private static Comparator<HealthCheck.Result> HEALTH_CHECK_COMPARATOR = HealthController::compare;
+    private static final  Predicate<ReadyCheck.Result> READY_CHECK_PREDICATE = ReadyCheck.Result::isReady;
+    private static final Predicate<HealthCheck.Result> HEALTH_CHECK_PREDICATE = HealthCheck.Result::isHealthy;
+    private static final Comparator<ReadyCheck.Result> READY_CHECK_COMPARATOR = ReadyController::compare;
+    private static final Comparator<HealthCheck.Result> HEALTH_CHECK_COMPARATOR = HealthController::compare;
 
-    final private String name;
-    final private T result;
-    final private Comparator<T> comparator;
+    private final String name;
+    private final T result;
+    private final Comparator<T> comparator;
 
 
     public static Map<SortedEntry<ReadyCheck.Result>, ReadyCheck.Result> ready(boolean all, Map<String, ReadyCheck.Result> raw) {

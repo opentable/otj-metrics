@@ -49,5 +49,4 @@ public class ReadyConfiguration {
                 .shortTaskPool(READY_CHECK_POOL_NAME, 8)
                 .withDefaultRejectedHandler(ThreadPoolConfig.RejectedHandler.CALLER_RUNS.getHandler());
     }
-    
 }

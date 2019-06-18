@@ -36,12 +36,12 @@ class ReadyRegistrar {
     }
 
     @PostConstruct
-    private void postConstruct() {
+    public void postConstruct() {
         checks.forEach(registry::register);
     }
 
     @PreDestroy
-    private void preDestroy() {
+    public void preDestroy() {
         checks.keySet().forEach(registry::unregister);
     }
 }
