@@ -8,8 +8,6 @@ import java.util.concurrent.ExecutorService;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,45 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class ReadyCheckServlet extends HttpServlet {
-    public abstract static class ContextListener implements ServletContextListener {
-        /**
-         * @return the {@link ReadyCheckRegistry} to inject into the servlet context.
-         */
-        protected abstract ReadyCheckRegistry getReadyCheckRegistry();
-
-        /**
-         * @return the {@link ExecutorService} to inject into the servlet context, or {@code null}
-         * if the ready checks should be run in the servlet worker thread.
-         */
-        protected ExecutorService getExecutorService() {
-            // don't use a thread pool by default
-            return null;
-        }
-
-        /**
-         * @return the {@link ReadyCheckFilter} that shall be used to filter ready checks,
-         * or {@link ReadyCheckFilter#ALL} if the default should be used.
-         */
-        protected ReadyCheckFilter getReadyCheckFilter() {
-            return ReadyCheckFilter.ALL;
-        }
-
-        @Override
-        public void contextInitialized(ServletContextEvent event) {
-            final ServletContext context = event.getServletContext();
-            context.setAttribute(READY_CHECK_REGISTRY, getReadyCheckRegistry());
-            context.setAttribute(READY_CHECK_EXECUTOR, getExecutorService());
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent event) {
-            // no-op
-        }
-    }
-
-    public static final String READY_CHECK_REGISTRY = ReadyCheckServlet.class.getCanonicalName() + ".registry";
-    public static final String READY_CHECK_EXECUTOR = ReadyCheckServlet.class.getCanonicalName() + ".executor";
-    public static final String READY_CHECK_FILTER = ReadyCheckServlet.class.getCanonicalName() + ".readyCheckFilter";
 
     private static final long serialVersionUID = -8432996484889177321L;
     private static final String CONTENT_TYPE = "application/json";
@@ -80,7 +39,7 @@ public class ReadyCheckServlet extends HttpServlet {
 
         final ServletContext context = config.getServletContext();
         if (null == registry) {
-            final Object registryAttr = context.getAttribute(READY_CHECK_REGISTRY);
+            final Object registryAttr = context.getAttribute(ReadyCheckContextListener.READY_CHECK_REGISTRY);
             if (registryAttr instanceof ReadyCheckRegistry) {
                 this.registry = (ReadyCheckRegistry) registryAttr;
             } else {
@@ -88,13 +47,13 @@ public class ReadyCheckServlet extends HttpServlet {
             }
         }
 
-        final Object executorAttr = context.getAttribute(READY_CHECK_EXECUTOR);
+        final Object executorAttr = context.getAttribute(ReadyCheckContextListener.READY_CHECK_EXECUTOR);
         if (executorAttr instanceof ExecutorService) {
             this.executorService = (ExecutorService) executorAttr;
         }
 
 
-        final Object filterAttr = context.getAttribute(READY_CHECK_FILTER);
+        final Object filterAttr = context.getAttribute(ReadyCheckContextListener.READY_CHECK_FILTER);
         if (filterAttr instanceof ReadyCheckFilter) {
             filter = (ReadyCheckFilter) filterAttr;
         }
