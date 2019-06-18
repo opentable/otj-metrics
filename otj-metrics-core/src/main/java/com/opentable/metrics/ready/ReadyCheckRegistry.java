@@ -1,5 +1,6 @@
 package com.opentable.metrics.ready;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -16,12 +17,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.opentable.concurrent.OTExecutors;
+
 /**
  * A registry for ready checks.
  */
@@ -235,15 +240,11 @@ public class ReadyCheckRegistry {
     /**
      * Shuts down the scheduled executor for async ready checks
      */
+    @PreDestroy
     public void shutdown() {
-        asyncExecutorService.shutdown(); // Disable new ready checks from being submitted
         try {
-            // Give some time to the current ready checks to finish gracefully
-            if (!asyncExecutorService.awaitTermination(1, TimeUnit.SECONDS)) {
-                asyncExecutorService.shutdownNow();
-            }
+            OTExecutors.shutdownAndAwaitTermination(asyncExecutorService, Duration.ofSeconds(1));
         } catch (InterruptedException ie) {
-            asyncExecutorService.shutdownNow();
             Thread.currentThread().interrupt();
         }
     }

@@ -27,6 +27,10 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.opentable.metrics.http.HealthController;
 
+/**
+ * Common code for both Ready and Health checks.
+ * @param <T>
+ */
 public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
     final private static Predicate<ReadyCheck.Result> READY_CHECK_PREDICATE = ReadyCheck.Result::isReady;
     final private static Predicate<HealthCheck.Result> HEALTH_CHECK_PREDICATE = HealthCheck.Result::isHealthy;

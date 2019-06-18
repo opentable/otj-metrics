@@ -2,9 +2,6 @@ package com.opentable.metrics.ready;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * A ReadyCheck check for a component of your application.
@@ -15,8 +12,6 @@ public abstract class ReadyCheck {
      * or unready (with either an error message or a thrown exception and optional details).
      */
     public static class Result {
-        private static final DateTimeFormatter DATE_FORMAT_PATTERN =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         private static final int PRIME = 31;
 
         /**
@@ -86,32 +81,16 @@ public abstract class ReadyCheck {
             return new Result(false, error.getMessage(), error);
         }
 
-
-        /**
-         * Returns a new {@link ResultBuilder}
-         *
-         * @return the {@link ResultBuilder}
-         */
-        public static ResultBuilder builder() {
-            return new ResultBuilder();
-        }
-
         private final boolean ready;
         private final String message;
         private final Throwable error;
-        private final Map<String, Object> details;
-        private final String timestamp;
+        private final String timestamp =
+                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.now());
 
         private Result(boolean isReady, String message, Throwable error) {
-            this(isReady, message, error, null);
-        }
-
-        private Result(boolean isReady, String message, Throwable error, Map<String, Object> details) {
             this.ready = isReady;
             this.message = message;
             this.error = error;
-            this.details = details == null ? null : Collections.unmodifiableMap(details);
-            timestamp = DATE_FORMAT_PATTERN.format(ZonedDateTime.now());
         }
 
         /**
@@ -152,10 +131,6 @@ public abstract class ReadyCheck {
             return timestamp;
         }
 
-        public Map<String, Object> getDetails() {
-            return details;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -176,7 +151,7 @@ public abstract class ReadyCheck {
             int result = ready ? 1 : 0;
             result = PRIME * result + (message != null ? message.hashCode() : 0);
             result = PRIME * result + (error != null ? error.hashCode() : 0);
-            result = PRIME * result + (timestamp != null ? timestamp.hashCode() : 0);
+            result = PRIME * result + timestamp.hashCode();
             return result;
         }
 
@@ -191,107 +166,8 @@ public abstract class ReadyCheck {
                 builder.append(", error=").append(error);
             }
             builder.append(", timestamp=").append(timestamp);
-            if (details != null) {
-                for (Map.Entry<String, Object> e : details.entrySet()) {
-                    builder.append(", ");
-                    builder.append(e.getKey())
-                            .append('=')
-                            .append(String.valueOf(e.getValue()));
-                }
-            }
             builder.append('}');
             return builder.toString();
-        }
-    }
-
-    /**
-     * This a convenient builder for an {@link ReadyCheck.Result}. It can be ready (with optional message and detail)
-     * or unready (with optional message, error and detail)
-     */
-    public static class ResultBuilder {
-        private boolean ready;
-        private String message;
-        private Throwable error;
-        private Map<String, Object> details;
-
-        protected ResultBuilder() {
-            this.ready = true;
-            this.details = new LinkedHashMap<>();
-        }
-
-        /**
-         * Configure an ready result
-         *
-         * @return this builder with ready status
-         */
-        public ResultBuilder ready() {
-            this.ready = true;
-            return this;
-        }
-
-        /**
-         * Configure an unready result
-         *
-         * @return this builder with unready status
-         */
-        public ResultBuilder unready() {
-            this.ready = false;
-            return this;
-        }
-
-        /**
-         * Configure an unready result with an {@code error}
-         *
-         * @param error the error
-         * @return this builder with the given error
-         */
-        public ResultBuilder unready(Throwable error) {
-            this.error = error;
-            return this.unready().withMessage(error.getMessage());
-        }
-
-        /**
-         * Set an optional message
-         *
-         * @param message an informative message
-         * @return this builder with the given {@code message}
-         */
-        public ResultBuilder withMessage(String message) {
-            this.message = message;
-            return this;
-        }
-
-        /**
-         * Set an optional formatted message
-         * <p/>
-         * Message formatting follows the same rules as {@link String#format(String, Object...)}.
-         *
-         * @param message a message format
-         * @param args    the arguments apply to the message format
-         * @return this builder with the given formatted {@code message}
-         * @see String#format(String, Object...)
-         */
-        public ResultBuilder withMessage(String message, Object... args) {
-            return withMessage(String.format(message, args));
-        }
-
-        /**
-         * Add an optional detail
-         *
-         * @param key  a key for this detail
-         * @param data an object representing the detail data
-         * @return this builder with the given detail added
-         */
-        public ResultBuilder withDetail(String key, Object data) {
-            if (this.details == null) {
-                this.details = new LinkedHashMap<>();
-            }
-            this.details.put(key, data);
-            return this;
-        }
-
-        public Result build() {
-            return new Result(ready, message, error, details ); //NOPMD
         }
     }
 

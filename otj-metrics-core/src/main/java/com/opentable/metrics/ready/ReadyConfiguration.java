@@ -13,10 +13,7 @@
  */
 package com.opentable.metrics.ready;
 
-import java.util.concurrent.ExecutorService;
-
 import javax.inject.Named;
-import javax.servlet.ServletContextListener;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,12 +49,5 @@ public class ReadyConfiguration {
                 .shortTaskPool(READY_CHECK_POOL_NAME, 8)
                 .withDefaultRejectedHandler(ThreadPoolConfig.RejectedHandler.CALLER_RUNS.getHandler());
     }
-
-    @Bean(name="readyCheckServletContextListener")
-    public ServletContextListener getServletContextListener(
-            final ReadyCheckRegistry registry,
-            @Named(READY_CHECK_POOL_NAME) final ExecutorService executor) {
-        return new ReadyCheckContextListener(registry, executor);
-    }
-
+    
 }
