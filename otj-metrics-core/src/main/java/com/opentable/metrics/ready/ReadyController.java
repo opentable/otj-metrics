@@ -32,7 +32,6 @@ import com.opentable.metrics.http.CheckState;
 public class ReadyController extends CheckController<ReadyCheck.Result> {
     private static final Logger LOG = LoggerFactory.getLogger(ReadyController.class);
     private static final String CONFIG_PREFIX = "ot.metrics.ready.group.";
-    private static final String WARN_PREFIX = "WARN: ";
 
     private final ReadyCheckRegistry registry;
 

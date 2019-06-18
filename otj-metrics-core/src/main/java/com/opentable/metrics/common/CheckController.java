@@ -37,6 +37,7 @@ import com.opentable.spring.PropertySourceUtil;
  * @param <T>
  */
 public abstract class CheckController<T> {
+    protected static final String WARN_PREFIX = "WARN: ";
 
     protected Map<String, T> failingChecks = new ConcurrentHashMap<>();
     protected final Map<String, Set<String>> groups = new HashMap<>();

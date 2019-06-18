@@ -35,7 +35,6 @@ import com.opentable.metrics.common.CheckController;
 public class HealthController extends CheckController<Result> {
     private static final Logger LOG = LoggerFactory.getLogger(HealthController.class);
     private static final String CONFIG_PREFIX = "ot.metrics.health.group.";
-    private static final String WARN_PREFIX = "WARN: ";
 
     private final HealthCheckRegistry registry;
 
