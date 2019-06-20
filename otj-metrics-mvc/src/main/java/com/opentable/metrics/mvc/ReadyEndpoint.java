@@ -41,6 +41,7 @@ public class ReadyEndpoint {
     public ReadyEndpoint(ReadyController readyController) {
         this.readyController = readyController;
     }
+
     @GetMapping
     public ResponseEntity<Map<SortedEntry<ReadyCheck.Result>, ReadyCheck.Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, ReadyCheck.Result>, CheckState> result = readyController.runChecks();

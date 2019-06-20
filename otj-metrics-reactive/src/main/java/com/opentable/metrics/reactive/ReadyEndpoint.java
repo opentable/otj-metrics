@@ -17,6 +17,8 @@ import static com.opentable.metrics.ready.ReadyCheck.Result;
 
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +43,7 @@ public class ReadyEndpoint {
 
     private final ReadyController controller;
 
+    @Inject
     public ReadyEndpoint(ReadyController controller) {
         this.controller = controller;
     }

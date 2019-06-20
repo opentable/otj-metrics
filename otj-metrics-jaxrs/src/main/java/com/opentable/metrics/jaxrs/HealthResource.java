@@ -37,7 +37,6 @@ import com.opentable.metrics.common.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path(HealthConfiguration.HEALTH_CHECK_PATH)
 public class HealthResource {
     private final HealthController controller;
 
@@ -46,14 +45,26 @@ public class HealthResource {
     }
 
     @GET
-    @Path("/")
+    @Path(HealthConfiguration.NEW_HEALTH_CHECK_PATH + "/")
+    public Response getInfraHealth ( @QueryParam("all") @DefaultValue("false") boolean all){
+        return getHealth(all);
+    }
+
+    @GET
+    @Path(HealthConfiguration.NEW_HEALTH_CHECK_PATH + "/group/{group}")
+    public Response getInfraHeathGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
+       return getHealthGroup(group, all);
+    }
+
+    @GET
+    @Path(HealthConfiguration.HEALTH_CHECK_PATH + "/")
     public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
     }
 
     @GET
-    @Path("/group/{group}")
+    @Path(HealthConfiguration.HEALTH_CHECK_PATH + "/group/{group}")
     public Response getHealthGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {

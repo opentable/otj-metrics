@@ -17,6 +17,8 @@ import static com.codahale.metrics.health.HealthCheck.Result;
 
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,16 +43,31 @@ public class HealthEndpoint {
 
     private final HealthController controller;
 
+    @Inject
     public HealthEndpoint(HealthController controller) {
         this.controller = controller;
     }
 
+    @RequestMapping(HealthConfiguration.NEW_HEALTH_CHECK_PATH)
+    @GetMapping
+    public Mono<ResponseEntity<Map<SortedEntry<Result>, Result>>> getInfraHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+        return getHealth(all);
+    }
+
+    @RequestMapping(HealthConfiguration.NEW_HEALTH_CHECK_PATH)
+    @GetMapping("/group/{group}")
+    public Mono<ResponseEntity<?>> getInfraHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
+       return getHealthGroup(group, all);
+    }
+
+    @RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)
     @GetMapping
     public Mono<ResponseEntity<Map<SortedEntry<Result>, Result>>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return Mono.just(ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.health(all, result.getLeft())));
     }
 
+    @RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)
     @GetMapping("/group/{group}")
     public Mono<ResponseEntity<?>> getHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
