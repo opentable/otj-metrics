@@ -31,7 +31,7 @@ public class ReadyConfiguration {
     public static final String READY_CHECK_POOL_NAME = "ready-check";
 
     /**
-     * Create a ready check registry to register health checks with
+     * Create a ready check registry to register ready checks.
      * @return ready check registry
      */
     @Bean
