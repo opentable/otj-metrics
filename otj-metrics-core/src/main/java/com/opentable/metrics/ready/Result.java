@@ -2,6 +2,7 @@ package com.opentable.metrics.ready;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 /**
  * The result of a {@link ReadyCheck} being run. It can be ready (with an optional message and optional details)
@@ -9,6 +10,19 @@ import java.time.format.DateTimeFormatter;
  */
 public class Result {
     private static final int PRIME = 31;
+
+    private final boolean ready;
+    private final String message;
+    private final Throwable error;
+    private final String timestamp =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.now());
+
+    public Result(boolean isReady, String message, Throwable error) {
+        this.ready = isReady;
+        this.message = message;
+        this.error = error;
+    }
+
 
     /**
      * Returns a ready {@link Result} with no additional message.
@@ -77,18 +91,6 @@ public class Result {
         return new Result(false, error.getMessage(), error);
     }
 
-    private final boolean ready;
-    private final String message;
-    private final Throwable error;
-    private final String timestamp =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.now());
-
-    public Result(boolean isReady, String message, Throwable error) {
-        this.ready = isReady;
-        this.message = message;
-        this.error = error;
-    }
-
     /**
      * Returns {@code true} if the result indicates the component is ready; {@code false}
      * otherwise.
@@ -128,8 +130,8 @@ public class Result {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(final Object o) {
+        if (this == o)  {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
@@ -137,18 +139,14 @@ public class Result {
         }
         final Result result = (Result) o;
         return ready == result.ready &&
-                !(error != null ? !error.equals(result.error) : result.error != null) &&
-                !(message != null ? !message.equals(result.message) : result.message != null) &&
-                !(timestamp != null ? !timestamp.equals(result.timestamp) : result.timestamp != null);
+                Objects.equals(message, result.message) &&
+                Objects.equals(error, result.error) &&
+                Objects.equals(timestamp, result.timestamp);
     }
 
     @Override
     public int hashCode() {
-        int result = ready ? 1 : 0;
-        result = PRIME * result + (message != null ? message.hashCode() : 0);
-        result = PRIME * result + (error != null ? error.hashCode() : 0);
-        result = PRIME * result + timestamp.hashCode();
-        return result;
+        return Objects.hash(ready, message, error, timestamp);
     }
 
     @Override
