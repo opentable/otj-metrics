@@ -38,7 +38,6 @@ import com.opentable.metrics.http.HealthController;
  * Health endpoint for Reactive HTTP servers.
  */
 @RestController
-@RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)
 public class HealthEndpoint {
 
     public static final String ALL = "all";
