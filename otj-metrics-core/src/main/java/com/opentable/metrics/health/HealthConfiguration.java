@@ -45,6 +45,8 @@ import com.opentable.concurrent.ThreadPoolConfig;
         HealthConfiguration.HealthRegistrar.class,
 })
 public class HealthConfiguration {
+    public static final String HEALTH_CHECK_PATH = "/health";
+    public static final String NEW_HEALTH_CHECK_PATH = "/infra/health";
     public static final String HEALTH_CHECK_POOL_NAME = "health-check";
 
     @Bean

@@ -11,22 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http;
+package com.opentable.metrics.reactive;
 
-import java.util.Comparator;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
-public enum CheckState {
-    HEALTHY(200), WARNING(400), CRITICAL(500);
+import com.opentable.metrics.ready.ReadyController;
 
-    public static final Comparator<CheckState> SEVERITY_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
-
-    private final int httpStatus;
-
-    CheckState(int httpStatus) {
-        this.httpStatus = httpStatus;
-    }
-
-    public int getHttpStatus() {
-        return httpStatus;
-    }
+@Configuration
+@Import({
+        ReadyController.class,
+        ReadyEndpoint.class,
+})
+public class ReadyHttpReactiveConfiguration {
 }

@@ -30,14 +30,16 @@ import com.codahale.metrics.health.HealthCheck.Result;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.opentable.metrics.SortedEntry;
+import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
+import com.opentable.metrics.common.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/health")
 public class HealthResource {
+    public static final String FALSE = "false";
+    public static final String ALL = "all";
     private final HealthController controller;
 
     public HealthResource(HealthController controller) {
@@ -45,20 +47,32 @@ public class HealthResource {
     }
 
     @GET
-    @Path("/")
-    public Response getHealth(@QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
+    @Path(HealthConfiguration.NEW_HEALTH_CHECK_PATH + "/")
+    public Response getInfraHealth ( @QueryParam(ALL) @DefaultValue(FALSE) boolean all){
+        return getHealth(all);
     }
 
     @GET
-    @Path("/group/{group}")
-    public Response getHealthGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, Result>, CheckState> result = controller.runHealthChecks(group);
+    @Path(HealthConfiguration.NEW_HEALTH_CHECK_PATH + "/group/{group}")
+    public Response getInfraHeathGroup(@PathParam("group") String group, @QueryParam(ALL) @DefaultValue(FALSE) boolean all) {
+       return getHealthGroup(group, all);
+    }
+
+    @GET
+    @Path(HealthConfiguration.HEALTH_CHECK_PATH + "/")
+    public Response getHealth(@QueryParam(ALL) @DefaultValue(FALSE) boolean all) {
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
+    }
+
+    @GET
+    @Path(HealthConfiguration.HEALTH_CHECK_PATH + "/group/{group}")
+    public Response getHealthGroup(@PathParam("group") String group, @QueryParam(ALL) @DefaultValue(FALSE) boolean all) {
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.render(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
     }
 
 }

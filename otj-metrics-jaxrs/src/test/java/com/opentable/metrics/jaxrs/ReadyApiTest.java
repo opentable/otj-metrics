@@ -21,31 +21,31 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.Response;
 
-import com.codahale.metrics.health.HealthCheck;
-import com.codahale.metrics.health.HealthCheck.Result;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.junit.Test;
 import org.springframework.mock.env.MockEnvironment;
 
-import com.opentable.metrics.http.HealthController;
 import com.opentable.metrics.common.SortedEntry;
+import com.opentable.metrics.ready.ReadyCheck;
+import com.opentable.metrics.ready.ReadyCheckRegistry;
+import com.opentable.metrics.ready.ReadyController;
+import com.opentable.metrics.ready.Result;
 
-public class HealthApiTest {
-    private final HealthCheckRegistry registry = new HealthCheckRegistry();
-    private final HealthController controller = new HealthController(registry, MoreExecutors.newDirectExecutorService(),
+public class ReadyApiTest {
+    private final ReadyCheckRegistry registry = new ReadyCheckRegistry();
+    private final ReadyController controller = new ReadyController(registry, MoreExecutors.newDirectExecutorService(),
             new MockEnvironment().withProperty(
-                    "ot.metrics.health.group.mygroup", "a,c"
+                    "ot.metrics.ready.group.mygroup", "a,c"
             ));
-    private final HealthResource resource = new HealthResource(controller);
+    private final ReadyResource resource = new ReadyResource(controller);
 
     @Test
     public void testOk() {
-        registry.register("a", new Healthy());
+        registry.register("a", new Ready());
 
-        Response r = resource.getHealth(false);
+        Response r = resource.getReady(false);
         assertEquals(200, r.getStatus());
         assertEquals(1, ((Map<?,?>) r.getEntity()).size());
         r.close();
@@ -53,9 +53,9 @@ public class HealthApiTest {
 
     @Test
     public void testOneBad() {
-        registry.register("a", new Unhealthy());
+        registry.register("a", new UnReady());
 
-        Response r = resource.getHealth(false);
+        Response r = resource.getReady(false);
         assertEquals(500, r.getStatus());
         assertEquals(1, ((Map<?,?>) r.getEntity()).size());
         r.close();
@@ -63,11 +63,11 @@ public class HealthApiTest {
 
     @Test
     public void testMixed() {
-        registry.register("a", new Healthy());
-        registry.register("b", new Unhealthy());
-        registry.register("c", new Healthy());
+        registry.register("a", new Ready());
+        registry.register("b", new UnReady());
+        registry.register("c", new Ready());
 
-        Response r = resource.getHealth(true);
+        Response r = resource.getReady(true);
         assertEquals(500, r.getStatus());
         assertEquals(3, ((Map<?,?>) r.getEntity()).size());
         r.close();
@@ -75,11 +75,11 @@ public class HealthApiTest {
 
     @Test
     public void testGroupHappyCase() {
-        registry.register("a", new Healthy());
-        registry.register("b", new Unhealthy());
-        registry.register("c", new Healthy());
+        registry.register("a", new Ready());
+        registry.register("b", new UnReady());
+        registry.register("c", new Ready());
 
-        Response r2 = resource.getHealthGroup("mygroup", false);
+        Response r2 = resource.getReadyGroup("mygroup", false);
         assertEquals(200, r2.getStatus());
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
         r2.close();
@@ -87,11 +87,11 @@ public class HealthApiTest {
 
     @Test
     public void testGroupUnknownGroupIs404() {
-        registry.register("a", new Healthy());
-        registry.register("b", new Unhealthy());
-        registry.register("c", new Healthy());
+        registry.register("a", new Ready());
+        registry.register("b", new UnReady());
+        registry.register("c", new Ready());
 
-        Response r2 = resource.getHealthGroup("nogroup", true);
+        Response r2 = resource.getReadyGroup("nogroup", true);
         assertEquals(404, r2.getStatus());
         assertEquals(null, r2.getEntity());
         r2.close();
@@ -99,11 +99,11 @@ public class HealthApiTest {
 
     @Test
     public void testGroupUnhealthy() {
-        registry.register("a", new Healthy());
-        registry.register("b", new Healthy());
-        registry.register("c", new Unhealthy());
+        registry.register("a", new Ready());
+        registry.register("b", new Ready());
+        registry.register("c", new UnReady());
 
-        Response r2 = resource.getHealthGroup("mygroup", true);
+        Response r2 = resource.getReadyGroup("mygroup", true);
         assertEquals(500, r2.getStatus());
         assertEquals(2, ((Map<?,?>) r2.getEntity()).size());
         r2.close();
@@ -111,10 +111,10 @@ public class HealthApiTest {
 
     @Test
     public void testWarning() {
-        registry.register("a", new Healthy());
+        registry.register("a", new Ready());
         registry.register("b", new Warning());
 
-        Response r = resource.getHealth(true);
+        Response r = resource.getReady(true);
         assertEquals(400, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
         r.close();
@@ -122,11 +122,11 @@ public class HealthApiTest {
 
     @Test
     public void testBadTrumpsWarn() {
-        registry.register("a", new Healthy());
+        registry.register("a", new Ready());
         registry.register("b", new Warning());
-        registry.register("c", new Unhealthy());
+        registry.register("c", new UnReady());
 
-        Response r = resource.getHealth(true);
+        Response r = resource.getReady(true);
         assertEquals(500, r.getStatus());
         assertEquals(3, ((Map<?,?>) r.getEntity()).size());
         r.close();
@@ -134,11 +134,11 @@ public class HealthApiTest {
 
     @Test
     public void testHideSuccesses() {
-        registry.register("a", new Healthy());
+        registry.register("a", new Ready());
         registry.register("b", new Warning());
-        registry.register("c", new Unhealthy());
+        registry.register("c", new UnReady());
 
-        Response r = resource.getHealth(false);
+        Response r = resource.getReady(false);
         assertEquals(500, r.getStatus());
         Map<?, ?> result = (Map<?,?>) r.getEntity();
         assertEquals(ImmutableList.of("c", "b"), result.keySet().stream()
@@ -150,10 +150,10 @@ public class HealthApiTest {
 
     @Test
     public void testMalformedWarn() {
-        registry.register("a", new Healthy());
+        registry.register("a", new Ready());
         registry.register("b", new OopsWarning());
 
-        Response r = resource.getHealth(true);
+        Response r = resource.getReady(true);
         assertEquals(500, r.getStatus());
         assertEquals(2, ((Map<?,?>) r.getEntity()).size());
         r.close();
@@ -162,12 +162,12 @@ public class HealthApiTest {
     @Test
     public void testTransitionToHealthy() {
         final Iterator<Result> results = ImmutableList.of(
-                Result.healthy(),
-                Result.unhealthy("failure"),
-                Result.unhealthy((String) null),
-                Result.healthy()).iterator();
+                Result.ready(),
+                Result.unready("failure"),
+                Result.unready((String) null),
+                Result.ready()).iterator();
 
-        registry.register("a", new HealthCheck() {
+        registry.register("a", new ReadyCheck() {
             @Override
             protected Result check() throws Exception {
                 return results.next();
@@ -175,35 +175,35 @@ public class HealthApiTest {
         });
 
         while (results.hasNext()) {
-            resource.getHealth(true);
+            resource.getReady(true);
         }
     }
 
-    static class Healthy extends HealthCheck {
+    static class Ready extends ReadyCheck {
         @Override
         protected Result check() throws Exception {
-            return Result.healthy();
+            return Result.ready();
         }
     }
 
-    static class Unhealthy extends HealthCheck {
+    static class UnReady extends ReadyCheck {
         @Override
         protected Result check() throws Exception {
-            return Result.unhealthy("wah");
+            return Result.unready("wah");
         }
     }
 
-    static class Warning extends HealthCheck {
+    static class Warning extends ReadyCheck {
         @Override
         protected Result check() throws Exception {
-            return Result.unhealthy("WARN: blop");
+            return Result.unready("WARN: blop");
         }
     }
 
-    static class OopsWarning extends HealthCheck {
+    static class OopsWarning extends ReadyCheck {
         @Override
         protected Result check() throws Exception {
-            return Result.unhealthy("I meant to put WARN: at the start");
+            return Result.unready("I meant to put WARN: at the start");
         }
     }
 }

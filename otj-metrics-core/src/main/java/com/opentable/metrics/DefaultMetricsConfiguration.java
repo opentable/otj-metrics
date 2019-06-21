@@ -39,12 +39,14 @@ import org.springframework.context.annotation.Scope;
 import com.opentable.metrics.MetricSetBuilder.BuiltMetricSet;
 import com.opentable.metrics.graphite.GraphiteConfiguration;
 import com.opentable.metrics.health.HealthConfiguration;
+import com.opentable.metrics.ready.ReadyConfiguration;
 
 @Configuration
 @Import({
         JettyServerMetricsConfiguration.class,
         JvmMetricsConfiguration.class,
         HealthConfiguration.class,
+        ReadyConfiguration.class,
         GraphiteConfiguration.class,
         MetricsJmxExporter.class,
         MetricAnnotationConfiguration.class,

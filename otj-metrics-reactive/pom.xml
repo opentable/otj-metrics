@@ -30,7 +30,10 @@
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-metrics-core</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
