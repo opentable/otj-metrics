@@ -9,7 +9,6 @@ import java.util.Objects;
  * or unready (with either an error message or a thrown exception and optional details).
  */
 public class Result {
-    private static final int PRIME = 31;
 
     private final boolean ready;
     private final String message;

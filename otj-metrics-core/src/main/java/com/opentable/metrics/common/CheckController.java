@@ -34,7 +34,7 @@ import com.opentable.spring.PropertySourceUtil;
 
 /**
  * Common Code for both ReadyController and HealthController
- * @param <T>
+ * @param <T> Health.Result or Ready.Result
  */
 public abstract class CheckController<T> {
     protected static final String WARN_PREFIX = "WARN: ";
@@ -59,7 +59,7 @@ public abstract class CheckController<T> {
         final SortedMap<String, T> checkResults = getCheckResults();
         final CheckState state = checkResults.values().stream()
                 .map(this::resultToState)
-                .max(CheckState.SEVERITY)
+                .max(CheckState.SEVERITY_COMPARATOR)
                 .orElse(CheckState.HEALTHY);
         return Pair.of(checkResults, state);
     }
@@ -74,7 +74,7 @@ public abstract class CheckController<T> {
                 .filter(groupItems::contains)
                 .map(checkResults::get)
                 .map(this::resultToState)
-                .max(CheckState.SEVERITY)
+                .max(CheckState.SEVERITY_COMPARATOR)
                 .orElse(CheckState.HEALTHY);
         final Map<String, T> toReturn = Maps.filterKeys(checkResults, groupItems::contains);
         return Pair.of(toReturn, state);

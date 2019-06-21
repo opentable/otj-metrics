@@ -18,7 +18,7 @@ import java.util.Comparator;
 public enum CheckState {
     HEALTHY(200), WARNING(400), CRITICAL(500);
 
-    public static final Comparator<CheckState> SEVERITY = (c1, c2) -> c1.ordinal() - c2.ordinal();
+    public static final Comparator<CheckState> SEVERITY_COMPARATOR = Comparator.comparingInt(Enum::ordinal);
 
     private final int httpStatus;
 

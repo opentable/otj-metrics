@@ -31,10 +31,10 @@ import com.opentable.metrics.ready.Result;
 
 /**
  * Common code for both Ready and Health checks.
- * @param <T>
+ * @param <T> Ready.Result or HealthCheck.Result
  */
 public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
-    private static final  Predicate<Result> READY_CHECK_PREDICATE = Result::isReady;
+    private static final Predicate<Result> READY_CHECK_PREDICATE = Result::isReady;
     private static final Predicate<HealthCheck.Result> HEALTH_CHECK_PREDICATE = HealthCheck.Result::isHealthy;
     private static final Comparator<Result> READY_CHECK_COMPARATOR = ReadyController::compare;
     private static final Comparator<HealthCheck.Result> HEALTH_CHECK_COMPARATOR = HealthController::compare;
@@ -43,7 +43,6 @@ public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
     private final T result;
     private final Comparator<T> comparator;
 
-
     public static Map<SortedEntry<Result>, Result> ready(boolean all, Map<String, Result> raw) {
         return render(all, raw, READY_CHECK_PREDICATE, READY_CHECK_COMPARATOR);
     }
@@ -51,7 +50,6 @@ public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
     public static Map<SortedEntry<HealthCheck.Result>, HealthCheck.Result> health(boolean all, Map<String, HealthCheck.Result> raw) {
         return render(all, raw, HEALTH_CHECK_PREDICATE, HEALTH_CHECK_COMPARATOR);
     }
-
 
     private static <U> Map<SortedEntry<U>, U> render(boolean all, Map<String, U> raw, Predicate<U> test, Comparator<U> comparator) {
         Map<SortedEntry<U>, U> rendered = new TreeMap<>();
