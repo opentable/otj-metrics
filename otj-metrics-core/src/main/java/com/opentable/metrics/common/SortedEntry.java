@@ -26,17 +26,17 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import com.opentable.metrics.http.HealthController;
-import com.opentable.metrics.ready.ReadyCheck;
 import com.opentable.metrics.ready.ReadyController;
+import com.opentable.metrics.ready.Result;
 
 /**
  * Common code for both Ready and Health checks.
  * @param <T>
  */
 public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
-    private static final  Predicate<ReadyCheck.Result> READY_CHECK_PREDICATE = ReadyCheck.Result::isReady;
+    private static final  Predicate<Result> READY_CHECK_PREDICATE = Result::isReady;
     private static final Predicate<HealthCheck.Result> HEALTH_CHECK_PREDICATE = HealthCheck.Result::isHealthy;
-    private static final Comparator<ReadyCheck.Result> READY_CHECK_COMPARATOR = ReadyController::compare;
+    private static final Comparator<Result> READY_CHECK_COMPARATOR = ReadyController::compare;
     private static final Comparator<HealthCheck.Result> HEALTH_CHECK_COMPARATOR = HealthController::compare;
 
     private final String name;
@@ -44,7 +44,7 @@ public class SortedEntry<T> implements Comparable<SortedEntry<T>> {
     private final Comparator<T> comparator;
 
 
-    public static Map<SortedEntry<ReadyCheck.Result>, ReadyCheck.Result> ready(boolean all, Map<String, ReadyCheck.Result> raw) {
+    public static Map<SortedEntry<Result>, Result> ready(boolean all, Map<String, Result> raw) {
         return render(all, raw, READY_CHECK_PREDICATE, READY_CHECK_COMPARATOR);
     }
 

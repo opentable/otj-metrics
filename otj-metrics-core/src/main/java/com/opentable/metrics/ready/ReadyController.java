@@ -29,7 +29,7 @@ import com.opentable.metrics.common.CheckController;
 import com.opentable.metrics.http.CheckState;
 
 @Named
-public class ReadyController extends CheckController<ReadyCheck.Result> {
+public class ReadyController extends CheckController<Result> {
     private static final Logger LOG = LoggerFactory.getLogger(ReadyController.class);
     private static final String CONFIG_PREFIX = "ot.metrics.ready.group.";
 
@@ -43,11 +43,11 @@ public class ReadyController extends CheckController<ReadyCheck.Result> {
     }
 
     @Override
-    protected CheckState resultToState(ReadyCheck.Result r) {
+    protected CheckState resultToState(Result r) {
       return resToState(r);
     }
 
-    private static CheckState resToState(ReadyCheck.Result r) {
+    private static CheckState resToState(Result r) {
         if (r.isReady()) {
             return CheckState.HEALTHY;
         }
@@ -58,11 +58,11 @@ public class ReadyController extends CheckController<ReadyCheck.Result> {
     }
 
     @Override
-    protected SortedMap<String, ReadyCheck.Result> getCheckResults() {
-        final SortedMap<String, ReadyCheck.Result> results = registry.runReadyChecks(executor);
+    protected SortedMap<String, Result> getCheckResults() {
+        final SortedMap<String, Result> results = registry.runReadyChecks(executor);
         LOG.trace("The results gathered {}", results);
         results.forEach((name, result) -> {
-            final ReadyCheck.Result oldResult = failingChecks.get(name);
+            final Result oldResult = failingChecks.get(name);
             LOG.trace("oldResult vs currentResult: {} VS {}", oldResult, result);
             LOG.trace("currentState of failingChecks: {} ", failingChecks);
             LOG.trace("result.isReady, result.getMessage(), oldResult != null, oldResult.getMessage {} || {} || {} || {}", result.isReady(),
@@ -85,7 +85,7 @@ public class ReadyController extends CheckController<ReadyCheck.Result> {
     }
 
     /** Utility to sort Result objects by severity. */
-    public static int compare(ReadyCheck.Result r1, ReadyCheck.Result r2) {
+    public static int compare(Result r1, Result r2) {
         return resToState(r1).compareTo(resToState(r2));
     }
 }

@@ -31,6 +31,7 @@ import com.opentable.metrics.common.SortedEntry;
 import com.opentable.metrics.ready.ReadyCheck;
 import com.opentable.metrics.ready.ReadyCheckRegistry;
 import com.opentable.metrics.ready.ReadyController;
+import com.opentable.metrics.ready.Result;
 
 public class ReadyApiTest {
     private final ReadyCheckRegistry registry = new ReadyCheckRegistry();
@@ -160,15 +161,15 @@ public class ReadyApiTest {
 
     @Test
     public void testTransitionToHealthy() {
-        final Iterator<ReadyCheck.Result> results = ImmutableList.of(
-                ReadyCheck.Result.ready(),
-                ReadyCheck.Result.unready("failure"),
-                ReadyCheck.Result.unready((String) null),
-                ReadyCheck.Result.ready()).iterator();
+        final Iterator<Result> results = ImmutableList.of(
+                Result.ready(),
+                Result.unready("failure"),
+                Result.unready((String) null),
+                Result.ready()).iterator();
 
         registry.register("a", new ReadyCheck() {
             @Override
-            protected ReadyCheck.Result check() throws Exception {
+            protected Result check() throws Exception {
                 return results.next();
             }
         });

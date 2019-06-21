@@ -160,7 +160,7 @@ public class ReadyCheckRegistry {
      * @return the result of the ready check
      * @throws NoSuchElementException if there is no ready check with the given name
      */
-    public ReadyCheck.Result runReadyCheck(String name) throws NoSuchElementException {
+    public Result runReadyCheck(String name) throws NoSuchElementException {
         final ReadyCheck readyCheck = readyChecks.get(name);
         if (readyCheck == null) {
             throw new NoSuchElementException("No ready check named " + name + " exists");
@@ -173,10 +173,10 @@ public class ReadyCheckRegistry {
      *
      * @return a map of the ready check results
      */
-    public SortedMap<String, ReadyCheck.Result> runReadyChecks() {
-        final SortedMap<String, ReadyCheck.Result> results = new TreeMap<>();
+    public SortedMap<String, Result> runReadyChecks() {
+        final SortedMap<String, Result> results = new TreeMap<>();
         for (Map.Entry<String, ReadyCheck> entry : readyChecks.entrySet()) {
-            final ReadyCheck.Result result = entry.getValue().execute();
+            final Result result = entry.getValue().execute();
             results.put(entry.getKey(), result);
         }
         return Collections.unmodifiableSortedMap(results);
@@ -189,21 +189,21 @@ public class ReadyCheckRegistry {
      * @param executor object to launch and track ready checks progress
      * @return a map of the ready check results
      */
-    public SortedMap<String, ReadyCheck.Result> runReadyChecks(ExecutorService executor) {
-        final Map<String, Future<ReadyCheck.Result>> futures = new HashMap<>();
+    public SortedMap<String, Result> runReadyChecks(ExecutorService executor) {
+        final Map<String, Future<Result>> futures = new HashMap<>();
         for (final Map.Entry<String, ReadyCheck> entry : readyChecks.entrySet()) {
             final String name = entry.getKey();
             final ReadyCheck readyCheck = entry.getValue();
             futures.put(name, executor.submit(readyCheck::execute));
         }
 
-        final SortedMap<String, ReadyCheck.Result> results = new TreeMap<>();
-        for (Map.Entry<String, Future<ReadyCheck.Result>> entry : futures.entrySet()) {
+        final SortedMap<String, Result> results = new TreeMap<>();
+        for (Map.Entry<String, Future<Result>> entry : futures.entrySet()) {
             try {
                 results.put(entry.getKey(), entry.getValue().get());
             } catch (Exception e) {
                 LOGGER.warn("Error executing ready check {}", entry.getKey(), e);
-                results.put(entry.getKey(), ReadyCheck.Result.unready(e));
+                results.put(entry.getKey(), Result.unready(e));
             }
         }
 

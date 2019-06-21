@@ -30,10 +30,10 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.opentable.metrics.http.CheckState;
-import com.opentable.metrics.ready.ReadyCheck;
 import com.opentable.metrics.ready.ReadyConfiguration;
 import com.opentable.metrics.ready.ReadyController;
 import com.opentable.metrics.common.SortedEntry;
+import com.opentable.metrics.ready.Result;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
@@ -49,14 +49,14 @@ public class ReadyResource {
     @GET
     @Path("/")
     public Response getReady(@QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runChecks();
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
     @GET
     @Path("/group/{group}")
     public Response getReadyGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
-        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = controller.runChecks(group);
+        final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }

@@ -13,7 +13,7 @@
  */
 package com.opentable.metrics.reactive;
 
-import static com.opentable.metrics.ready.ReadyCheck.Result;
+import com.opentable.metrics.ready.Result;
 
 import java.util.Map;
 

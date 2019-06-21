@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.opentable.metrics.http.CheckState;
-import com.opentable.metrics.ready.ReadyCheck;
 import com.opentable.metrics.ready.ReadyConfiguration;
 import com.opentable.metrics.ready.ReadyController;
 import com.opentable.metrics.common.SortedEntry;
+import com.opentable.metrics.ready.Result;
 
 @RestController
 @RequestMapping(ReadyConfiguration.READY_CHECK_PATH)
@@ -43,14 +43,14 @@ public class ReadyEndpoint {
     }
 
     @GetMapping
-    public ResponseEntity<Map<SortedEntry<ReadyCheck.Result>, ReadyCheck.Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
-        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = readyController.runChecks();
+    public ResponseEntity<Map<SortedEntry<Result>, Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+        final Pair<Map<String, Result>, CheckState> result = readyController.runChecks();
         return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.ready(all, result.getLeft()));
     }
 
     @GetMapping("/group/{group}")
     public ResponseEntity<?> getHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
-        final Pair<Map<String, ReadyCheck.Result>, CheckState> result = readyController.runChecks(group);
+        final Pair<Map<String, Result>, CheckState> result = readyController.runChecks(group);
         if (result == null) {
             return ResponseEntity.notFound().build();
         }
