@@ -48,14 +48,14 @@ public class ReadyResource {
 
     @GET
     @Path("/")
-    public Response getReady(@QueryParam("all") @DefaultValue("false") boolean all) {
+    public Response getReady(@QueryParam("all") @DefaultValue(HealthResource.FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
     @GET
     @Path("/group/{group}")
-    public Response getReadyGroup(@PathParam("group") String group, @QueryParam("all") @DefaultValue("false") boolean all) {
+    public Response getReadyGroup(@PathParam("group") String group, @QueryParam(HealthResource.ALL) @DefaultValue(HealthResource.FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Response.status(404).build();

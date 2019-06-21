@@ -43,13 +43,13 @@ public class ReadyEndpoint {
     }
 
     @GetMapping
-    public ResponseEntity<Map<SortedEntry<Result>, Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+    public ResponseEntity<Map<SortedEntry<Result>, Result>> getHealth(@RequestParam(name=HealthEndpoint.ALL, defaultValue=HealthEndpoint.FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = readyController.runChecks();
         return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.ready(all, result.getLeft()));
     }
 
     @GetMapping("/group/{group}")
-    public ResponseEntity<?> getHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
+    public ResponseEntity<?> getHealthGroup(@PathVariable("group") String group, @RequestParam(name=HealthEndpoint.ALL, defaultValue=HealthEndpoint.FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = readyController.runChecks(group);
         if (result == null) {
             return ResponseEntity.notFound().build();

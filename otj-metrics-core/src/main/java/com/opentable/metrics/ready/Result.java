@@ -83,7 +83,7 @@ public class Result {
     private final String timestamp =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(ZonedDateTime.now());
 
-    private Result(boolean isReady, String message, Throwable error) {
+    public Result(boolean isReady, String message, Throwable error) {
         this.ready = isReady;
         this.message = message;
         this.error = error;

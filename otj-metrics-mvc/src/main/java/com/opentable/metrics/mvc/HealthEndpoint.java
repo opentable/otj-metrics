@@ -21,9 +21,9 @@ import com.codahale.metrics.health.HealthCheck.Result;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,6 +35,8 @@ import com.opentable.metrics.http.HealthController;
 @RestController
 public class HealthEndpoint {
 
+    public static final String FALSE = "false";
+    public static final String ALL = "all";
     private final HealthController controller;
 
     @Inject
@@ -42,28 +44,25 @@ public class HealthEndpoint {
         this.controller = controller;
     }
 
-    @RequestMapping(HealthConfiguration.NEW_HEALTH_CHECK_PATH)
-    @GetMapping
-    public ResponseEntity<Map<SortedEntry<Result>, Result>> getInfraHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+
+    @RequestMapping(value = HealthConfiguration.NEW_HEALTH_CHECK_PATH, method = RequestMethod.GET)
+    public ResponseEntity<Map<SortedEntry<Result>, Result>> getInfraHealth(@RequestParam(name= ALL, defaultValue= FALSE) boolean all) {
         return getHealth(all);
     }
 
-    @RequestMapping(HealthConfiguration.NEW_HEALTH_CHECK_PATH)
-    @GetMapping("/group/{group}")
-    public ResponseEntity<?> getInfraHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
+    @RequestMapping(value = HealthConfiguration.NEW_HEALTH_CHECK_PATH + "/group/{group}", method = RequestMethod.GET)
+    public ResponseEntity<?> getInfraHealthGroup(@PathVariable("group") String group, @RequestParam(name= ALL, defaultValue= FALSE) boolean all) {
         return getHealthGroup(group, all);
     }
 
-    @RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)
-    @GetMapping
-    public ResponseEntity<Map<SortedEntry<Result>, Result>> getHealth(@RequestParam(name="all", defaultValue="false") boolean all) {
+    @RequestMapping(value = HealthConfiguration.HEALTH_CHECK_PATH, method = RequestMethod.GET)
+    public ResponseEntity<Map<SortedEntry<Result>, Result>> getHealth(@RequestParam(name= ALL, defaultValue= FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
         return ResponseEntity.status(result.getRight().getHttpStatus()).body(SortedEntry.health(all, result.getLeft()));
     }
 
-    @RequestMapping(HealthConfiguration.HEALTH_CHECK_PATH)
-    @GetMapping("/group/{group}")
-    public ResponseEntity<?> getHealthGroup(@PathVariable("group") String group, @RequestParam(name="all", defaultValue="false") boolean all) {
+    @RequestMapping(value = HealthConfiguration.HEALTH_CHECK_PATH  + "/group/{group}", method = RequestMethod.GET)
+    public ResponseEntity<?> getHealthGroup(@PathVariable("group") String group, @RequestParam(name= ALL, defaultValue= FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return ResponseEntity.notFound().build();
