@@ -1,6 +1,14 @@
 otj-metrics
 ===========
 
+4.0.10
+-----
+* Bug fix to 4.0.8 regression
+
+4.0.9
+-----
+* Unreleased - release issue.
+
 4.0.8
 -----
 * Introduce new ReadyCheck system. This allows for K8s Readiness Probes.
