@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+4.0.11
+-----
+* Sigh, another bug in 4.0.8/4.0.9
+
 4.0.10
 -----
 * Bug fix to 4.0.8 regression
