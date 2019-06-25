@@ -16,6 +16,7 @@ package com.opentable.metrics.jaxrs;
 
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -26,41 +27,40 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.codahale.metrics.health.HealthCheck.Result;
-
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.opentable.metrics.http.CheckState;
-import com.opentable.metrics.http.HealthController;
+import com.opentable.metrics.ready.ReadyConfiguration;
+import com.opentable.metrics.ready.ReadyController;
 import com.opentable.metrics.common.SortedEntry;
+import com.opentable.metrics.ready.Result;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/health")
-public class HealthResource {
-    public static final String FALSE = "false";
-    public static final String ALL = "all";
-    private final HealthController controller;
+@Path(ReadyConfiguration.READY_CHECK_PATH)
+public class ReadyResource {
+    private final ReadyController controller;
 
-    public HealthResource(HealthController controller) {
+    @Inject
+    public ReadyResource(ReadyController controller) {
         this.controller = controller;
     }
 
     @GET
     @Path("/")
-    public Response getHealth(@QueryParam(ALL) @DefaultValue(FALSE) boolean all) {
+    public Response getReady(@QueryParam("all") @DefaultValue(HealthResource.FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks();
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
     @GET
     @Path("/group/{group}")
-    public Response getHealthGroup(@PathParam("group") String group, @QueryParam(ALL) @DefaultValue(FALSE) boolean all) {
+    public Response getReadyGroup(@PathParam("group") String group, @QueryParam(HealthResource.ALL) @DefaultValue(HealthResource.FALSE) boolean all) {
         final Pair<Map<String, Result>, CheckState> result = controller.runChecks(group);
         if (result == null) {
             return Response.status(404).build();
         }
-        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.health(all, result.getLeft())).build();
+        return Response.status(result.getRight().getHttpStatus()).entity(SortedEntry.ready(all, result.getLeft())).build();
     }
 
 }

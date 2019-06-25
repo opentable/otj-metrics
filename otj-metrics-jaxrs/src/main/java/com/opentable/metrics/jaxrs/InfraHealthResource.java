@@ -30,19 +30,20 @@ import com.codahale.metrics.health.HealthCheck.Result;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.opentable.metrics.common.SortedEntry;
+import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.http.CheckState;
 import com.opentable.metrics.http.HealthController;
-import com.opentable.metrics.common.SortedEntry;
 
 @Named
 @Produces(MediaType.APPLICATION_JSON)
-@Path("/health")
-public class HealthResource {
+@Path(HealthConfiguration.NEW_HEALTH_CHECK_PATH)
+public class InfraHealthResource {
     public static final String FALSE = "false";
     public static final String ALL = "all";
     private final HealthController controller;
 
-    public HealthResource(HealthController controller) {
+    public InfraHealthResource(HealthController controller) {
         this.controller = controller;
     }
 

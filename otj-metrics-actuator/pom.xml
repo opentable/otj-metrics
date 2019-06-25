@@ -20,7 +20,7 @@
     <parent>
         <artifactId>otj-metrics-parent</artifactId>
         <groupId>com.opentable.components</groupId>
-        <version>4.0.8-SNAPSHOT</version>
+        <version>4.0.12-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -84,7 +84,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -154,11 +157,6 @@
             <groupId> com.opentable.components</groupId>
             <artifactId>otj-spring</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

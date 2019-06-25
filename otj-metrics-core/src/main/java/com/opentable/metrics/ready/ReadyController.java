@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.opentable.metrics.http;
+package com.opentable.metrics.ready;
 
 import java.util.Objects;
 import java.util.SortedMap;
@@ -20,38 +20,35 @@ import java.util.concurrent.ExecutorService;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.codahale.metrics.health.HealthCheck.Result;
-import com.codahale.metrics.health.HealthCheckRegistry;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.common.CheckController;
+import com.opentable.metrics.http.CheckState;
 
 @Named
-public class HealthController extends CheckController<Result> {
-    private static final Logger LOG = LoggerFactory.getLogger(HealthController.class);
-    private static final String CONFIG_PREFIX = "ot.metrics.health.group.";
+public class ReadyController extends CheckController<Result> {
+    private static final Logger LOG = LoggerFactory.getLogger(ReadyController.class);
+    private static final String CONFIG_PREFIX = "ot.metrics.ready.group.";
 
-    private final HealthCheckRegistry registry;
+    private final ReadyCheckRegistry registry;
 
     @Inject
-    public HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
-            ConfigurableEnvironment env) {
+    public ReadyController(ReadyCheckRegistry registry, @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
+                           ConfigurableEnvironment env) {
         super(executor, env, CONFIG_PREFIX);
         this.registry = registry;
     }
 
     @Override
     protected CheckState resultToState(Result r) {
-        return resToState(r);
+      return resToState(r);
     }
 
     private static CheckState resToState(Result r) {
-        if (r.isHealthy()) {
+        if (r.isReady()) {
             return CheckState.HEALTHY;
         }
         if (StringUtils.startsWithIgnoreCase(r.getMessage(), WARN_PREFIX)) {
@@ -62,26 +59,26 @@ public class HealthController extends CheckController<Result> {
 
     @Override
     protected SortedMap<String, Result> getCheckResults() {
-        final SortedMap<String, Result> results = registry.runHealthChecks(executor);
+        final SortedMap<String, Result> results = registry.runReadyChecks(executor);
         LOG.trace("The results gathered {}", results);
         results.forEach((name, result) -> {
             final Result oldResult = failingChecks.get(name);
             LOG.trace("oldResult vs currentResult: {} VS {}", oldResult, result);
             LOG.trace("currentState of failingChecks: {} ", failingChecks);
-            LOG.trace("result.isHealthy, result.getMessage(), oldResult != null, oldResult.getMessage {} || {} || {} || {}", result.isHealthy(),
+            LOG.trace("result.isReady, result.getMessage(), oldResult != null, oldResult.getMessage {} || {} || {} || {}", result.isReady(),
                     result.getMessage(), oldResult != null, oldResult == null ? "I can't tell you!" : oldResult.getMessage());
-            if (result.isHealthy() && oldResult != null) {
+            if (result.isReady() && oldResult != null) {
                 failingChecks.remove(name);
-                LOG.info("Health check {} is now {}", name, result);
-            } else if (!result.isHealthy() && (oldResult == null || !Objects.equals(result.getMessage(), oldResult.getMessage()))) {
+                LOG.info("Ready check {} is now {}", name, result);
+            } else if (!result.isReady() && (oldResult == null || !Objects.equals(result.getMessage(), oldResult.getMessage()))) {
                 failingChecks.put(name, result);
                 if (result.getError() == null) {
-                    LOG.error("Health check {} is now {}", name, result);
+                    LOG.error("Ready check {} is now {}", name, result);
                 } else {
-                    LOG.error("Health check {} is now {}", name, result, result.getError());
+                    LOG.error("ready check {} is now {}", name, result, result.getError());
                 }
             } else {
-                LOG.trace("Health check {} is still {}", name, result);
+                LOG.trace("ready check {} is still {}", name, result);
             }
         });
         return results;

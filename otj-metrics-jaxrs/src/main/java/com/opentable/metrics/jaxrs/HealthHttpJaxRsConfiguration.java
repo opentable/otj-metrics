@@ -22,5 +22,6 @@ import com.opentable.metrics.http.HealthController;
 @Import({
         HealthController.class,
         HealthResource.class,
+        InfraHealthResource.class
 })
 public class HealthHttpJaxRsConfiguration {}
