@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.opentable</groupId>
         <artifactId>otj-parent-spring</artifactId>
-        <version>208</version>
+        <version>211</version>
     </parent>
 
     <scm>
@@ -55,7 +55,7 @@
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
 
         <!-- remove once parent updated -->
-        <dep.resteasy.version>4.0.0.Final</dep.resteasy.version>
+        <dep.resteasy.version>4.1.0.Final</dep.resteasy.version>
         <dep.otj-conservedheaders.version>3.0.5-SNAPSHOT</dep.otj-conservedheaders.version>
     </properties>
 
