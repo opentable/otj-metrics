@@ -1,6 +1,24 @@
 otj-metrics
 ===========
 
+4.0.12
+------
+* If running on Kubernetes the metric prefix becomes
+
+app_metrics.(applicationName).(clustername).(environmentType).(environmentLocation).instance
+
+instead of 
+
+app_metrics.(applicationName).(environmentType).(environmentLocation).instance
+
+Example:
+
+app_metrics.service-demo.ci.sf.instance-1 becomes
+
+app_metrics.service-demo.arch-team-cluster.ci.sf.instance-1
+
+**This will affect dashboards, metrics, and alerts**
+
 4.0.11
 -----
 * Sigh, another bug in 4.0.8/4.0.9

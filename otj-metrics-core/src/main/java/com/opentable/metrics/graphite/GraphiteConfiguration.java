@@ -39,6 +39,7 @@ import org.springframework.core.env.Environment;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
+import com.opentable.service.K8sInfo;
 import com.opentable.service.ServiceInfo;
 import com.opentable.spring.ConversionServiceConfiguration;
 
@@ -48,6 +49,7 @@ import com.opentable.spring.ConversionServiceConfiguration;
          * {@link ConversionServiceConfiguration} needed for {@link java.time.Duration} config value.
          */
         ConversionServiceConfiguration.class,
+        K8sInfo.class
 })
 /**
  * Spring-ey wrapper for Dropwizard Metrics Graphite reporter.
@@ -83,12 +85,14 @@ public class GraphiteConfiguration {
 
     @Bean
     public ScheduledReporter graphiteReporter(Optional<GraphiteSender> sender,
-                                              MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo, Environment environment) {
+                                              MetricRegistry metricRegistry, ServiceInfo serviceInfo,
+                                              AppInfo appInfo,  K8sInfo k8sInfo,
+                                              Environment environment) {
         if (!sender.isPresent()) {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
         }
-        final String prefix = getPrefix(serviceInfo, appInfo, showFlavorInPrefix);
+        final String prefix = getPrefix(serviceInfo, appInfo, k8sInfo,  showFlavorInPrefix);
         if (prefix == null) {
             LOG.warn("insufficient information to construct metric prefix; skipping reporter initialization");
             return null;
@@ -141,7 +145,7 @@ public class GraphiteConfiguration {
     }
 
     @VisibleForTesting
-    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, boolean includeFlavorInPrefix ) {
+    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo, boolean includeFlavorInPrefix ) {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
         final Integer i = appInfo.getInstanceNumber();
@@ -150,6 +154,12 @@ public class GraphiteConfiguration {
         }
         final String name = env.getFlavor() == null || (!includeFlavorInPrefix) ? applicationName : applicationName + "-" + env.getFlavor();
         final String instance = "instance-" + i;
+
+        // On Kubernetes include the cluster name
+        if (k8sInfo.isKubernetes() && k8sInfo.getClusterName().isPresent()) {
+            return String.join(".", Arrays.asList("app_metrics", name, k8sInfo.getClusterName().get(),
+                    env.getType(), env.getLocation(), instance));
+        }
         return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
     }
 

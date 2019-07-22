@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.opentable</groupId>
         <artifactId>otj-parent-spring</artifactId>
-        <version>184</version>
+        <version>211</version>
     </parent>
 
     <scm>
@@ -55,7 +55,7 @@
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
 
         <!-- Remove once parent updated -->
-        <dep.otj-executors.version>2.1.4</dep.otj-executors.version>
+        <dep.otj-spring.version>1.3.6</dep.otj-spring.version>
     </properties>
 
     <dependencyManagement>
