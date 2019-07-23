@@ -76,6 +76,9 @@ public class GraphiteConfiguration {
     @Value("${ot.graphite.reporting.include.flavors:#{true}}")
     private boolean showFlavorInPrefix = true;
 
+    @Value("${ot.graphite.reporting.include.cluster:#{true}}")
+    private boolean addClusterNametoPrefix = true;
+
     private MetricRegistry metricRegistry;
     private MetricSet registeredMetrics;
 
@@ -92,7 +95,7 @@ public class GraphiteConfiguration {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
         }
-        final String prefix = getPrefix(serviceInfo, appInfo, k8sInfo,  showFlavorInPrefix);
+        final String prefix = getPrefix(serviceInfo, appInfo, k8sInfo,  showFlavorInPrefix, addClusterNametoPrefix);
         if (prefix == null) {
             LOG.warn("insufficient information to construct metric prefix; skipping reporter initialization");
             return null;
@@ -145,7 +148,8 @@ public class GraphiteConfiguration {
     }
 
     @VisibleForTesting
-    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo, boolean includeFlavorInPrefix ) {
+    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo,
+                            boolean includeFlavorInPrefix, boolean includeClusterinPrefix ) {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
         final Integer i = appInfo.getInstanceNumber();
@@ -156,7 +160,7 @@ public class GraphiteConfiguration {
         final String instance = "instance-" + i;
 
         // On Kubernetes include the cluster name
-        if (k8sInfo.isKubernetes() && k8sInfo.getClusterName().isPresent()) {
+        if (includeClusterinPrefix && k8sInfo.isKubernetes() && k8sInfo.getClusterName().isPresent()) {
             return String.join(".", Arrays.asList("app_metrics", name, k8sInfo.getClusterName().get(),
                     env.getType(), env.getLocation(), instance));
         }
