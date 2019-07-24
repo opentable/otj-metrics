@@ -76,7 +76,7 @@ public class GraphiteConfiguration {
     @Value("${ot.graphite.reporting.include.flavors:#{true}}")
     private boolean showFlavorInPrefix = true;
 
-    @Value("${ot.graphite.reporting.include.cluster:#{true}}")
+    @Value("${ot.graphite.reporting.include.cluster:#{false }}")
     private boolean addClusterNametoPrefix = true;
 
     private MetricRegistry metricRegistry;
