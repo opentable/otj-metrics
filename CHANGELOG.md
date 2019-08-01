@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+4.0.12
+------
+* Recompile for Resteasy 4.1.1
+
 4.0.11
 -----
 * Sigh, another bug in 4.0.8/4.0.9

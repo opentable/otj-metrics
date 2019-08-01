@@ -55,8 +55,8 @@
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
 
         <!-- remove once parent updated -->
-        <dep.resteasy.version>4.1.0.Final</dep.resteasy.version>
-        <dep.otj-conservedheaders.version>3.0.5-SNAPSHOT</dep.otj-conservedheaders.version>
+        <dep.resteasy.version>4.1.1.Final</dep.resteasy.version>
+        <dep.otj-conservedheaders.version>3.0.5</dep.otj-conservedheaders.version>
     </properties>
 
     <dependencyManagement>
