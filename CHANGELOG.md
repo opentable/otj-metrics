@@ -1,7 +1,7 @@
 otj-metrics
 ===========
 
-4.0.12
+4.0.13
 ------
 * If running on Kubernetes the metric prefix becomes
 
@@ -33,6 +33,11 @@ metrics and dashes.
 
 - In Singularity, the metrics prefix remains unchanged. 
 - You may disable this behavior even in Kubernetes with `ot.graphite.reporting.include.cluster=false`
+
+
+4.0.12
+------
+* Recompile for Resteasy 4.1.1
 
 4.0.11
 -----

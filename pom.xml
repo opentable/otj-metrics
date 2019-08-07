@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.opentable</groupId>
         <artifactId>otj-parent-spring</artifactId>
-        <version>211</version>
+        <version>213</version>
     </parent>
 
     <scm>
@@ -32,7 +32,7 @@
     <groupId>com.opentable.components</groupId>
     <artifactId>otj-metrics-parent</artifactId>
     <name>OpenTable Metrics - Parent</name>
-    <version>4.0.12-SNAPSHOT</version>
+    <version>4.0.13-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>OpenTable Metrics - Parent</description>
 
@@ -54,8 +54,6 @@
         <!-- As this is forked, please see the opentable/metrics-spring-1 repo for source -->
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
 
-        <!-- Remove once parent updated -->
-        <dep.otj-spring.version>1.3.6</dep.otj-spring.version>
     </properties>
 
     <dependencyManagement>
