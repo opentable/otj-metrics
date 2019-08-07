@@ -32,8 +32,7 @@ This is superior in the future for metrics and dashboards, (separation of semant
 metrics and dashes.
 
 - In Singularity, the metrics prefix remains unchanged. 
-- You may disable this behavior even in Kubernetes with `ot.graphite.reporting.include.cluster=false`
-
+- You may disable this behavior in Kubernetes with `ot.graphite.reporting.include.cluster.type=none`
 
 4.0.12
 ------
