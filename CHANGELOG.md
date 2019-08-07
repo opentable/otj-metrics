@@ -1,6 +1,39 @@
 otj-metrics
 ===========
 
+4.0.13
+------
+* If running on Kubernetes the metric prefix becomes
+
+app_metrics.(applicationName).(environmentType).(environmentLocation).(clustername)-instance
+
+instead of 
+
+app_metrics.(applicationName).(environmentType).(environmentLocation).instance
+
+Example:
+
+app_metrics.service-demo.ci.sf.instance-1 becomes
+
+app_metrics.service-demo.ci.sf.arch-team-cluster-instance-1
+
+**This has been chosen as the least disruptive option but metrics relying
+on a certain count of announcements in an env-region might need fixing**
+
+- There's also an optional property
+
+`ot.graphite.reporting.include.cluster.type=separate`
+
+If you select this option:
+
+app_metrics.service-demo.ci.sf.instance-1 becomes app_metrics.service-demo.ci.sf.arch-team-cluster.instance-1
+
+This is superior in the future for metrics and dashboards, (separation of semantics) but requires rewriting your
+metrics and dashes.
+
+- In Singularity, the metrics prefix remains unchanged. 
+- You may disable this behavior in Kubernetes with `ot.graphite.reporting.include.cluster.type=none`
+
 4.0.12
 ------
 * Recompile for Resteasy 4.1.1

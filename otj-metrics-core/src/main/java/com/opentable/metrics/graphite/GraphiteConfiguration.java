@@ -39,6 +39,7 @@ import org.springframework.core.env.Environment;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
+import com.opentable.service.K8sInfo;
 import com.opentable.service.ServiceInfo;
 import com.opentable.spring.ConversionServiceConfiguration;
 
@@ -48,6 +49,7 @@ import com.opentable.spring.ConversionServiceConfiguration;
          * {@link ConversionServiceConfiguration} needed for {@link java.time.Duration} config value.
          */
         ConversionServiceConfiguration.class,
+        K8sInfo.class
 })
 /**
  * Spring-ey wrapper for Dropwizard Metrics Graphite reporter.
@@ -74,6 +76,9 @@ public class GraphiteConfiguration {
     @Value("${ot.graphite.reporting.include.flavors:#{true}}")
     private boolean showFlavorInPrefix = true;
 
+    @Value("ot.graphite.reporting.include.cluster.type:#{null}}")
+    private String clusterNameType;
+
     private MetricRegistry metricRegistry;
     private MetricSet registeredMetrics;
 
@@ -83,12 +88,14 @@ public class GraphiteConfiguration {
 
     @Bean
     public ScheduledReporter graphiteReporter(Optional<GraphiteSender> sender,
-                                              MetricRegistry metricRegistry, ServiceInfo serviceInfo, AppInfo appInfo, Environment environment) {
+                                              MetricRegistry metricRegistry, ServiceInfo serviceInfo,
+                                              AppInfo appInfo,  K8sInfo k8sInfo,
+                                              Environment environment) {
         if (!sender.isPresent()) {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
         }
-        final String prefix = getPrefix(serviceInfo, appInfo, showFlavorInPrefix);
+        final String prefix = getPrefix(serviceInfo, appInfo, k8sInfo,  showFlavorInPrefix, ClusterNameType.fromParameterName(clusterNameType));
         if (prefix == null) {
             LOG.warn("insufficient information to construct metric prefix; skipping reporter initialization");
             return null;
@@ -141,7 +148,8 @@ public class GraphiteConfiguration {
     }
 
     @VisibleForTesting
-    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, boolean includeFlavorInPrefix ) {
+    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo,
+                            boolean includeFlavorInPrefix, ClusterNameType clusterNameType ) {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
         final Integer i = appInfo.getInstanceNumber();
@@ -150,10 +158,52 @@ public class GraphiteConfiguration {
         }
         final String name = env.getFlavor() == null || (!includeFlavorInPrefix) ? applicationName : applicationName + "-" + env.getFlavor();
         final String instance = "instance-" + i;
+
+        // On Kubernetes include the cluster name
+        if (k8sInfo.isKubernetes() && k8sInfo.getClusterName().isPresent()) {
+            switch(clusterNameType) {
+                case SEPARATE: {
+                    return String.join(".", Arrays.asList("app_metrics", k8sInfo.getClusterName().get(), name,
+                            env.getType(), env.getLocation(), instance));
+                }
+                case PART_OF_INSTANCE: {
+                    return String.join(".", Arrays.asList("app_metrics", name,
+                            env.getType(), env.getLocation(), k8sInfo.getClusterName().get() + "- "+ instance));
+                }
+                case NONE: {
+                    break; // effectively skips
+                }
+                default: {
+                    throw new IllegalArgumentException("Can't understand ClusterNameType " + clusterNameType);
+                }
+            }
+        }
+        // Cluster name is not included
         return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
     }
 
     private boolean hasHost() {
         return !Strings.isNullOrEmpty(host);
+    }
+
+    private enum ClusterNameType {
+        PART_OF_INSTANCE("instance"),
+        SEPARATE("separate"),
+        NONE("none")
+        ;
+        private final String parameterName;
+        ClusterNameType(String parameterName) {
+            this.parameterName = parameterName;
+        }
+
+        public String getParameterName() {
+            return parameterName;
+        }
+
+        public static ClusterNameType fromParameterName(String parameterName) {
+            return Arrays.stream(ClusterNameType.values())
+                    .filter(t -> t.getParameterName().equalsIgnoreCase(parameterName))
+                    .findFirst().orElse(ClusterNameType.PART_OF_INSTANCE);
+        }
     }
 }
