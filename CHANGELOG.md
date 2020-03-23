@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+4.0.14
+------
+* 12 factor per OTPL-4430
+
 4.0.13
 ------
 * If running on Kubernetes the metric prefix becomes

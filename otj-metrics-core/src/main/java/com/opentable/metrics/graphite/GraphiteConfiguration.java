@@ -27,8 +27,9 @@ import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
+import com.google.common.net.HostAndPort;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -63,12 +64,18 @@ public class GraphiteConfiguration {
     static final String PREFIX = "metrics.graphite.";
 
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteConfiguration.class);
+    private static final int DEFAULT_PORT = 2003;
 
+    // Original Java standards for setting host and port
     @Value("${ot.graphite.graphite-host:#{null}}")
-    private String host;
+    private String graphiteHost;
 
     @Value("${ot.graphite.graphite-port:2003}")
-    private int port;
+    private int graphitePort;
+
+    // 12 factor standard of setting host and port
+    @Value("${METRICS_GRAPHITE_URL:#{null}}")
+    private String twelveFactorURL;
 
     @Value("${ot.graphite.reporting-period:PT10s}")
     private Duration reportingPeriod;
@@ -101,7 +108,10 @@ public class GraphiteConfiguration {
             return null;
         }
 
-        LOG.info("initializing: host {}, port {}, prefix {}, refresh period {}", host, port, prefix, reportingPeriod);
+        final Optional<HostAndPort> hostAndPort = getHostPort();
+        hostAndPort.ifPresent(hp -> {
+            LOG.info("initializing: host {}, port {}, prefix {}, refresh period {}", hp.getHost(), hp.getPortOrDefault(DEFAULT_PORT), prefix, reportingPeriod);
+        });
 
         ScheduledReporter reporter;
         if (Boolean.parseBoolean(environment.getProperty("ot.graphite.reporter.legacy", "false"))) {
@@ -129,12 +139,15 @@ public class GraphiteConfiguration {
     @Bean
     public GraphiteSender graphiteSender(MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        if (!hasHost()) {
+        final Optional<HostAndPort> hostAndPortOptional = getHostPort();
+        if (!hostAndPortOptional.isPresent()) {
             LOG.info("no graphite host; skipping sender initialization");
             return null;
         }
-        final Graphite graphite = new Graphite(host, port);
-        GraphiteSenderWrapper result = new GraphiteSenderWrapper(host, port, graphite);
+        final HostAndPort hostAndPort = hostAndPortOptional.get();
+        @SuppressWarnings("PMD.CloseResource")
+        final Graphite graphite = new Graphite(hostAndPort.getHost(), hostAndPort.getPortOrDefault(DEFAULT_PORT));
+        GraphiteSenderWrapper result = new GraphiteSenderWrapper(hostAndPort.getHost(), hostAndPort.getPortOrDefault(DEFAULT_PORT), graphite);
         registeredMetrics = MetricSets.combineAndPrefix(PREFIX, result);
         metricRegistry.registerAll(registeredMetrics);
         return result;
@@ -142,7 +155,7 @@ public class GraphiteConfiguration {
 
     @PreDestroy
     void close() {
-        if (hasHost()) {
+        if (getHostPort().isPresent()) {
             MetricSets.removeAll(metricRegistry, registeredMetrics);
         }
     }
@@ -182,10 +195,6 @@ public class GraphiteConfiguration {
         return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
     }
 
-    private boolean hasHost() {
-        return !Strings.isNullOrEmpty(host);
-    }
-
     private enum ClusterNameType {
         PART_OF_INSTANCE("instance"),
         SEPARATE("separate"),
@@ -206,4 +215,15 @@ public class GraphiteConfiguration {
                     .findFirst().orElse(ClusterNameType.PART_OF_INSTANCE);
         }
     }
+
+    private Optional<HostAndPort> getHostPort() {
+        if (StringUtils.isNotBlank(graphiteHost)) {
+            return Optional.of(HostAndPort.fromParts(graphiteHost, graphitePort));
+        }
+        if (StringUtils.isNotBlank(twelveFactorURL)) {
+            return Optional.of(HostAndPort.fromString(twelveFactorURL));
+        }
+        return Optional.empty();
+    }
+
 }
