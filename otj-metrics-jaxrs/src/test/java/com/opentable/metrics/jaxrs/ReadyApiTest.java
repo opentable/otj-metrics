@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.junit.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.mock.env.MockEnvironment;
 
 import com.opentable.metrics.common.SortedEntry;
@@ -38,7 +39,12 @@ public class ReadyApiTest {
     private final ReadyController controller = new ReadyController(registry, MoreExecutors.newDirectExecutorService(),
             new MockEnvironment().withProperty(
                     "ot.metrics.ready.group.mygroup", "a,c"
-            ));
+            ), new ApplicationEventPublisher() {
+        @Override
+        public void publishEvent(final Object o) {
+            /* do nothing */
+        }
+    });
     private final ReadyResource resource = new ReadyResource(controller);
 
     @Test
