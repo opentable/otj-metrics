@@ -30,15 +30,17 @@ import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 import org.springframework.mock.env.MockEnvironment;
 
-import com.opentable.metrics.http.HealthController;
 import com.opentable.metrics.common.SortedEntry;
+import com.opentable.metrics.http.HealthController;
 
 public class HealthApiTest {
     private final HealthCheckRegistry registry = new HealthCheckRegistry();
     private final HealthController controller = new HealthController(registry, MoreExecutors.newDirectExecutorService(),
             new MockEnvironment().withProperty(
                     "ot.metrics.health.group.mygroup", "a,c"
-            ));
+            ), o -> {
+                /* do nothing */
+            });
     private final HealthResource resource = new HealthResource(controller);
 
     @Test

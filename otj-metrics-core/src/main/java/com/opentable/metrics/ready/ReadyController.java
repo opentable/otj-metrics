@@ -13,7 +13,6 @@
  */
 package com.opentable.metrics.ready;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
@@ -22,7 +21,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -37,13 +35,11 @@ public class ReadyController extends CheckController<Result> {
     private static final String CONFIG_PREFIX = "ot.metrics.ready.group.";
 
     private final ReadyCheckRegistry registry;
-    private final ApplicationEventPublisher publisher;
 
     @Inject
     public ReadyController(ReadyCheckRegistry registry, @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
                            ConfigurableEnvironment env, ApplicationEventPublisher publisher) {
-        super(executor, env, CONFIG_PREFIX);
-        this.publisher = publisher;
+        super(executor, env, CONFIG_PREFIX, publisher);
         this.registry = registry;
     }
 
@@ -60,14 +56,6 @@ public class ReadyController extends CheckController<Result> {
             return CheckState.WARNING;
         }
         return CheckState.CRITICAL;
-    }
-
-    @Override
-    public Pair<Map<String, Result>, CheckState> runChecks() {
-        Pair<Map<String, Result>, CheckState> check = super.runChecks();
-        final boolean ready = check.getRight() == CheckState.HEALTHY;
-        publisher.publishEvent(new ReadinessProbeEvent(this, ready));
-        return check;
     }
 
     @Override
@@ -95,6 +83,11 @@ public class ReadyController extends CheckController<Result> {
             }
         });
         return results;
+    }
+
+    @Override
+    protected void publish(final boolean checkPasses) {
+        publisher.publishEvent(new ReadinessProbeEvent(this, checkPasses));
     }
 
     /** Utility to sort Result objects by severity. */

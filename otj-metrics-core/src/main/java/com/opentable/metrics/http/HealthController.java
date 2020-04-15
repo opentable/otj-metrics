@@ -26,10 +26,12 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.common.CheckController;
+import com.opentable.metrics.health.HealthProbeEvent;
 
 @Named
 public class HealthController extends CheckController<Result> {
@@ -40,8 +42,8 @@ public class HealthController extends CheckController<Result> {
 
     @Inject
     public HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
-            ConfigurableEnvironment env) {
-        super(executor, env, CONFIG_PREFIX);
+                            ConfigurableEnvironment env, ApplicationEventPublisher publisher) {
+        super(executor, env, CONFIG_PREFIX, publisher);
         this.registry = registry;
     }
 
@@ -85,6 +87,11 @@ public class HealthController extends CheckController<Result> {
             }
         });
         return results;
+    }
+
+    @Override
+    protected void publish(final boolean checkPasses) {
+        publisher.publishEvent(new HealthProbeEvent(this, checkPasses));
     }
 
     /** Utility to sort Result objects by severity. */
