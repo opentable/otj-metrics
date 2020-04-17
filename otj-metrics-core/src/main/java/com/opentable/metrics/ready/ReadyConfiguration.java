@@ -25,6 +25,7 @@ import com.opentable.concurrent.ThreadPoolConfig;
 @Configuration
 @Import({
         ReadyRegistrar.class,
+        MediocreReadyCheck.class
 })
 public class ReadyConfiguration {
     public static final String READY_CHECK_PATH = "/infra/ready";
