@@ -26,6 +26,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -90,8 +91,8 @@ public class HealthController extends CheckController<Result> {
     }
 
     @Override
-    protected void publish(final boolean checkPasses) {
-        publisher.publishEvent(new HealthProbeEvent(this, checkPasses));
+    protected ApplicationEvent getEvent(final boolean checkPasses) {
+        return new HealthProbeEvent(this, checkPasses);
     }
 
     /** Utility to sort Result objects by severity. */

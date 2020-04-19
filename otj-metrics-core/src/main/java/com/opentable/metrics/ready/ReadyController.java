@@ -23,6 +23,7 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -86,8 +87,8 @@ public class ReadyController extends CheckController<Result> {
     }
 
     @Override
-    protected void publish(final boolean checkPasses) {
-        publisher.publishEvent(new ReadinessProbeEvent(this, checkPasses));
+    protected ApplicationEvent getEvent(final boolean checkPasses) {
+        return new ReadinessProbeEvent(this, checkPasses);
     }
 
     /** Utility to sort Result objects by severity. */

@@ -23,10 +23,16 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
 
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
@@ -43,7 +49,7 @@ public abstract class CheckController<T> {
     protected final ExecutorService executor;
     protected final ApplicationEventPublisher publisher;
     protected Map<String, T> failingChecks = new ConcurrentHashMap<>();
-
+    protected ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     public CheckController(ExecutorService executor,
                            ConfigurableEnvironment env, String configPrefix, ApplicationEventPublisher publisher) {
         this.executor = executor;
@@ -86,6 +92,15 @@ public abstract class CheckController<T> {
 
     protected abstract CheckState resultToState(T r);
     protected abstract SortedMap<String, T> getCheckResults();
-    protected abstract void publish(boolean checkPasses);
 
+    protected void publish(boolean checkPasses) {
+        scheduledExecutorService.schedule(() -> publisher.publishEvent(getEvent(checkPasses)), 50, TimeUnit.MILLISECONDS);
+    }
+
+    protected abstract ApplicationEvent getEvent(boolean checkPasses);
+
+    @PreDestroy
+    public void close() {
+        this.executor.shutdown();
+    }
 }
