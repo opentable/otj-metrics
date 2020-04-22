@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+4.0.15
+-----
+* Fixes Kubernetes race condition with Readiness probe by adding published
+Spring events for ReadinessProbeEvent and HealthProbeEvent
+
 4.0.14
 ------
 * 12 factor per OTPL-4430
