@@ -23,10 +23,17 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
 
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import com.opentable.metrics.http.CheckState;
@@ -38,15 +45,15 @@ import com.opentable.spring.PropertySourceUtil;
  */
 public abstract class CheckController<T> {
     protected static final String WARN_PREFIX = "WARN: ";
-
-    protected Map<String, T> failingChecks = new ConcurrentHashMap<>();
     protected final Map<String, Set<String>> groups = new HashMap<>();
-
     protected final ExecutorService executor;
-
+    protected final ApplicationEventPublisher publisher;
+    protected Map<String, T> failingChecks = new ConcurrentHashMap<>();
+    protected ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
     public CheckController(ExecutorService executor,
-                           ConfigurableEnvironment env, String configPrefix) {
+                           ConfigurableEnvironment env, String configPrefix, ApplicationEventPublisher publisher) {
         this.executor = executor;
+        this.publisher = publisher;
         final Properties groupBaseConf = PropertySourceUtil.getProperties(env, configPrefix);
         groupBaseConf.stringPropertyNames().forEach(group -> {
             final Set<String> groupItems = Collections.unmodifiableSet(
@@ -61,7 +68,10 @@ public abstract class CheckController<T> {
                 .map(this::resultToState)
                 .max(CheckState.SEVERITY_COMPARATOR)
                 .orElse(CheckState.HEALTHY);
-        return Pair.of(checkResults, state);
+        final Pair<Map<String, T>, CheckState> check = Pair.of(checkResults, state);
+        final boolean passesCheck = check.getRight() == CheckState.HEALTHY;
+        publish(passesCheck);
+        return check;
     }
 
     public Pair<Map<String, T>, CheckState> runChecks(String group) {
@@ -83,4 +93,14 @@ public abstract class CheckController<T> {
     protected abstract CheckState resultToState(T r);
     protected abstract SortedMap<String, T> getCheckResults();
 
+    protected void publish(boolean checkPasses) {
+        scheduledExecutorService.schedule(() -> publisher.publishEvent(getEvent(checkPasses)), 50, TimeUnit.MILLISECONDS);
+    }
+
+    protected abstract ApplicationEvent getEvent(boolean checkPasses);
+
+    @PreDestroy
+    public void close() {
+        this.executor.shutdown();
+    }
 }

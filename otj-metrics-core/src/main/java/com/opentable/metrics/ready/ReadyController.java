@@ -23,6 +23,8 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import com.opentable.metrics.common.CheckController;
@@ -37,8 +39,8 @@ public class ReadyController extends CheckController<Result> {
 
     @Inject
     public ReadyController(ReadyCheckRegistry registry, @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
-                           ConfigurableEnvironment env) {
-        super(executor, env, CONFIG_PREFIX);
+                           ConfigurableEnvironment env, ApplicationEventPublisher publisher) {
+        super(executor, env, CONFIG_PREFIX, publisher);
         this.registry = registry;
     }
 
@@ -82,6 +84,11 @@ public class ReadyController extends CheckController<Result> {
             }
         });
         return results;
+    }
+
+    @Override
+    protected ApplicationEvent getEvent(final boolean checkPasses) {
+        return new ReadinessProbeEvent(this, checkPasses);
     }
 
     /** Utility to sort Result objects by severity. */
