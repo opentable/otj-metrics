@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.management.MBeanServer;
 
@@ -108,12 +109,17 @@ public class MetricSetBuilderTest {
         b.histogram("foo", testReservoir);
 
         final Map<String, Metric> builtMetrics = b.build().getMetrics();
-        assertThat(builtMetrics)
-            .extracting("test.foo")
-            .first()
-            .isInstanceOf(Histogram.class)
-            .extracting("reservoir")
-            .containsExactly(testReservoir)
+        Optional<Histogram> foo = Optional.ofNullable(builtMetrics.get("test.foo"))
+                .filter(t -> t instanceof Histogram)
+                .map(t -> (Histogram)t);
+        assertThat(foo).isPresent();
+        assertThat(foo.get()).extracting("reservoir").isEqualTo(testReservoir);
+
+//        assertThat(builtMetrics)
+//            .extracting("test.foo")
+//            .isInstanceOf(Histogram.class)
+//            .extracting("reservoir")
+//            .containsExactly(testReservoir)
         ;
     }
 
