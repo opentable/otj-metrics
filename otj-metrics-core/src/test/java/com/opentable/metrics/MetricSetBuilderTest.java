@@ -114,13 +114,6 @@ public class MetricSetBuilderTest {
                 .map(t -> (Histogram)t);
         assertThat(foo).isPresent();
         assertThat(foo.get()).extracting("reservoir").isEqualTo(testReservoir);
-
-//        assertThat(builtMetrics)
-//            .extracting("test.foo")
-//            .isInstanceOf(Histogram.class)
-//            .extracting("reservoir")
-//            .containsExactly(testReservoir)
-        ;
     }
 
     @Test(expected = IllegalArgumentException.class)
