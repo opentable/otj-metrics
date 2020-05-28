@@ -81,7 +81,7 @@ public class GraphiteConfiguration {
     private Duration reportingPeriod;
 
     @Value("${ot.graphite.reporting.include.flavors:#{true}}")
-    private boolean showFlavorInPrefix = true;
+    private boolean showFlavorInPrefix = true; //NOPMD
 
     @Value("ot.graphite.reporting.include.cluster.type:#{null}}")
     private String clusterNameType;
