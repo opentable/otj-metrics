@@ -84,8 +84,16 @@ public class HealthConfiguration {
         }
 
         @PostConstruct
+        @SuppressWarnings("PMD.EmptyCatchBlock")
         private void postConstruct() {
-            checks.forEach(registry::register);
+            // Hack since Dropwizard 4.1x craps out on this
+            checks.forEach((name, healthCheck) -> {
+                try {
+                    registry.register(name, healthCheck);
+                } catch (IllegalArgumentException e) {
+                    /* ignore */
+                }
+            });
         }
 
         @PreDestroy
