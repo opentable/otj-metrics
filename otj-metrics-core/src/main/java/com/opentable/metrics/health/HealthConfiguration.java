@@ -48,6 +48,7 @@ public class HealthConfiguration {
     public static final String HEALTH_CHECK_PATH = "/health";
     public static final String NEW_HEALTH_CHECK_PATH = "/infra/health";
     public static final String HEALTH_CHECK_POOL_NAME = "health-check";
+    private static final Logger LOG = LoggerFactory.getLogger( HealthConfiguration.class );
 
     @Bean
     @Named(HEALTH_CHECK_POOL_NAME)
@@ -87,11 +88,14 @@ public class HealthConfiguration {
         @SuppressWarnings("PMD.EmptyCatchBlock")
         private void postConstruct() {
             // Hack since Dropwizard 4.1x craps out on this
+            // Unfortunately the reason it occurs is simply unavoidably check then act
+            // If only they provided putIfAbsent, but no....
             checks.forEach((name, healthCheck) -> {
                 try {
                     registry.register(name, healthCheck);
                 } catch (IllegalArgumentException e) {
                     /* ignore */
+                    LOG.trace("Duplicate health check registration - {}", name, e);
                 }
             });
         }
