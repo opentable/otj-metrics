@@ -81,7 +81,7 @@ class MediocreReadyCheck extends ReadyCheck {
         }
         private Result makeResult() {
             return ready ? Result.ready(formatMessage()) :
-                    Result.ready(formatMessage());
+                    Result.unready(formatMessage());
         }
     }
 }
