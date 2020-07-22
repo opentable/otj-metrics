@@ -32,6 +32,6 @@ public class CodahaleHealthIndicatorConfigurationTest extends AbstractTest {
     public void actuatorHealthEndpoint() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/actuator/health"))
             .andExpect(status().is2xxSuccessful())
-            .andExpect(jsonPath("$.details.dropWizard.status", is(equalTo("UP"))));
+            .andExpect(jsonPath("$.components.dropWizard.status", is(equalTo("UP"))));
     }
 }

@@ -22,10 +22,11 @@ import javax.inject.Inject;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheck.Result;
 
-import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthIndicatorConfiguration;
+import org.springframework.boot.actuate.autoconfigure.health.CompositeHealthContributorConfiguration;
 import org.springframework.boot.actuate.autoconfigure.health.ConditionalOnEnabledHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Health.Builder;
+import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -44,7 +45,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnEnabledHealthIndicator("drop-wizard")
-public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndicatorConfiguration<CodahaleHealthIndicatorConfiguration.Adapter, HealthCheck> {
+public class CodahaleHealthIndicatorConfiguration extends CompositeHealthContributorConfiguration<CodahaleHealthIndicatorConfiguration.Adapter, HealthCheck> {
 
     private final Map<String, HealthCheck> dropWizardChecks;
 
@@ -66,8 +67,8 @@ public class CodahaleHealthIndicatorConfiguration extends  CompositeHealthIndica
      */
     @ConditionalOnMissingBean
     @Bean
-    public HealthIndicator dropWizardHealthIndicator() {
-        return createHealthIndicator(this.dropWizardChecks);
+    public HealthContributor dropWizardHealthIndicator() {
+        return createContributor(this.dropWizardChecks);
     }
 
     /**
