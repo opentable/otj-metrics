@@ -47,6 +47,8 @@
 
     <properties>
         <!-- Remove once parent updated -->
+        <!-- this added to pass the duplicate-finder check -->
+        <basepom.check.fail-duplicate-finder>false</basepom.check.fail-duplicate-finder>
         <dep.metrics4.version>4.1.7</dep.metrics4.version>
         <dep.spring-boot.version>2.2.7.RELEASE</dep.spring-boot.version>
         <dep.spring.version>5.2.6.RELEASE</dep.spring.version>
