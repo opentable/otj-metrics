@@ -1,6 +1,13 @@
 otj-metrics
 ===========
 
+5.2.0
+-----
+* Recompiled for Spring 5.2
+* This in turn led to various fixes - primarily because of types changing.
+* This also is an upgrade to DropWizard 4.1.7, which required a "hack" -
+previously duplicate registration was permitted.
+
 4.0.15
 -----
 * Fixes Kubernetes race condition with Readiness probe by adding published
