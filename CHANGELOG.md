@@ -7,6 +7,8 @@ otj-metrics
 * This in turn led to various fixes - primarily because of types changing.
 * This also is an upgrade to DropWizard 4.1.7, which required a "hack" -
 previously duplicate registration was permitted.
+* A small bug with the MediocreReadyCheck would imply always ready.
+
 
 4.0.15
 -----
