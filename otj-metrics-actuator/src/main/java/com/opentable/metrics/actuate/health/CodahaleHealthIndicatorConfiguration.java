@@ -68,7 +68,11 @@ public class CodahaleHealthIndicatorConfiguration extends CompositeHealthContrib
     @ConditionalOnMissingBean
     @Bean
     public HealthContributor dropWizardHealthIndicator() {
-        return createContributor(this.dropWizardChecks);
+        return this.dropWizardChecks.isEmpty() ? dummyContributor() : createContributor(this.dropWizardChecks);
+    }
+
+    private HealthContributor dummyContributor() {
+        return (HealthIndicator) () -> Health.unknown().build();
     }
 
     /**
