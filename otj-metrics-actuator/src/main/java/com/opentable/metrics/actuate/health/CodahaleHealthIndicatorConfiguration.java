@@ -72,7 +72,7 @@ public class CodahaleHealthIndicatorConfiguration extends CompositeHealthContrib
     }
 
     private HealthContributor dummyContributor() {
-        return (HealthIndicator) () -> Health.unknown().build();
+        return (HealthIndicator) () -> Health.up().build();
     }
 
     /**
