@@ -86,8 +86,10 @@ public class CodahaleHealthIndicatorConfiguration extends CompositeHealthContrib
         public Health health() {
             final Result res = healthCheck.execute();
             final Builder builder = Health
-                .status(res.isHealthy() ? Status.UP : Status.DOWN)
-                .withDetail("message", res.getMessage());
+                .status(res.isHealthy() ? Status.UP : Status.DOWN);
+            if (res.getMessage() != null) {
+                builder.withDetail("message", res.getMessage());
+            }
             if (res.getError() != null) {
                 builder.withException(res.getError());
             }

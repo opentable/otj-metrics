@@ -13,14 +13,16 @@
  */
 package com.opentable.metrics.actuate;
 
+import com.codahale.metrics.health.HealthCheck;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableMBeanExport;
 import org.springframework.context.annotation.Import;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -36,7 +38,8 @@ import com.opentable.service.ServiceInfo;
     AppInfo.class,
     EnvInfo.class,
     DefaultMetricsConfiguration.class,
-    HealthHttpMVCConfiguration.class
+    HealthHttpMVCConfiguration.class,
+    TestMvcServer2Configuration.HealthCheckWithEmptyMessage.class
 })
 public class TestMvcServer2Configuration {
 
@@ -47,6 +50,13 @@ public class TestMvcServer2Configuration {
         return () -> serviceType;
     }
 
+    @Component
+    static class HealthCheckWithEmptyMessage extends HealthCheck  {
+        @Override
+        protected Result check() throws Exception {
+            return Result.healthy();
+        }
+    }
 
     @Bean
     RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
