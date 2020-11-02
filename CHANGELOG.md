@@ -3,7 +3,8 @@ otj-metrics
 
 5.2.1
 -----
-* Fixes java.lang.IllegalArgumentException: Beans must not be empty
+* Fixes java.lang.IllegalArgumentException: Beans must not be empty.
+* Fixes HealthChecks with empty message.
 
 5.2.0
 -----
