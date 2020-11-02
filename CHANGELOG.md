@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+5.2.1
+-----
+* Fixes java.lang.IllegalArgumentException: Beans must not be empty
+
 5.2.0
 -----
 * Recompiled for Spring 5.2
