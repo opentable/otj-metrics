@@ -102,5 +102,6 @@ public abstract class CheckController<T> {
     @PreDestroy
     public void close() {
         this.executor.shutdown();
+        this.scheduledExecutorService.shutdown();
     }
 }
