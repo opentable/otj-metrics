@@ -20,7 +20,7 @@
     <parent>
         <artifactId>otj-metrics-parent</artifactId>
         <groupId>com.opentable.components</groupId>
-        <version>5.2.2</version>
+        <version>5.2.3-SNAPSHOT</version>
     </parent>
 
     <properties>
