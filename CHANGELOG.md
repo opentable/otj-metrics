@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+5.2.2
+-----
+* The health/ready endpoints had a scheduledexecutorservice not being shutdown
+properly
+  
 5.2.1
 -----
 * Fixes java.lang.IllegalArgumentException: Beans must not be empty.
