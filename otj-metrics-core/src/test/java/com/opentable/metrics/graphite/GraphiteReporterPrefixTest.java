@@ -76,9 +76,16 @@ public class GraphiteReporterPrefixTest {
 
     @Test
     public void customizedPrefix() {
-        final String prefix = prefixFrom("mike_bell","prod-uswest2", "3", false);
+        final String prefix = prefixFrom(null, "mike_bell","prod-uswest2", "3", false);
         Assert.assertNotNull(prefix);
         Assert.assertEquals("mike_bell.test-server.prod.uswest2.instance-3", prefix);
+    }
+
+    @Test
+    public void customizedPrefixInK8s() {
+        final String prefix = prefixFrom("foo-ci-rs","mike_bell","prod-uswest2", "3", false);
+        Assert.assertNotNull(prefix);
+        Assert.assertEquals("mike_bell.test-server.prod.uswest2.foo-ci-rs-instance-3", prefix);
     }
 
     @Test
@@ -87,15 +94,20 @@ public class GraphiteReporterPrefixTest {
     }
 
     private String prefixFrom(final String env, final String instanceNo, Boolean includeFlavor) {
-        return prefixFrom(null, env, instanceNo, includeFlavor);
+        return prefixFrom(null,null, env, instanceNo, includeFlavor);
     }
 
-    private String prefixFrom(final String prefix, final String env, final String instanceNo, Boolean includeFlavor) {
+    private String prefixFrom(final String kubernetesCluster,
+                              final String prefix, final String env, final String instanceNo, Boolean includeFlavor) {
         final SpringApplication app = new SpringApplication(
                 TestConfiguration.class,
                 GraphiteConfiguration.class
         );
         final Map<String, Object> mockEnv = new HashMap<>();
+        if (kubernetesCluster != null) {
+            mockEnv.put("IS_KUBERNETES", "true");
+            mockEnv.put("K8S_CLUSTER_NAME", kubernetesCluster);
+        }
         if (prefix != null) {
             mockEnv.put("ot.graphite.prefix", prefix);
         }
