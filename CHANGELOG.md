@@ -3,7 +3,11 @@ otj-metrics
 
 5.2.3
 -----
-`ot.graphite.prefix` - defaults to app_metrics. *Normally you
+* Fix stray "-". Metrics were emitted in PL3 was
+  app_metrics.$env.$region.clustername--instance-5.... for example. Now
+  they correctly emit  app_metrics.$env.$region.clustername-instance-5...
+  
+* `ot.graphite.prefix` - defaults to app_metrics. *Normally you
 should never ever change this and please discuss with Visibility if you do*
 
 5.2.2

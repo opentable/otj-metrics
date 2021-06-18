@@ -184,7 +184,7 @@ public class GraphiteConfiguration {
                 }
                 case PART_OF_INSTANCE: {
                     return String.join(".", Arrays.asList(graphitePrefix, name,
-                            env.getType(), env.getLocation(), k8sInfo.getClusterName().get() + "- "+ instance));
+                            env.getType(), env.getLocation(), k8sInfo.getClusterName().get() + "-"+ instance));
                 }
                 case NONE: {
                     break; // effectively skips
