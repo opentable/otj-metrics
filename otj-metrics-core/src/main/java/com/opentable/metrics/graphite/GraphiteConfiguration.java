@@ -26,7 +26,6 @@ import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteSender;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.HostAndPort;
 
 import org.apache.commons.lang3.StringUtils;
@@ -66,6 +65,10 @@ public class GraphiteConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(GraphiteConfiguration.class);
     private static final int DEFAULT_PORT = 2003;
 
+
+    @Value("${ot.graphite.prefix:app_metrics}")
+    private String graphitePrefix = "app_metrics"; //NOPMD
+
     // Original Java standards for setting host and port
     @Value("${ot.graphite.graphite-host:#{null}}")
     private String graphiteHost;
@@ -102,7 +105,8 @@ public class GraphiteConfiguration {
             LOG.warn("No sender to report to, skipping reporter initialization");
             return null;
         }
-        final String prefix = getPrefix(serviceInfo, appInfo, k8sInfo,  showFlavorInPrefix, ClusterNameType.fromParameterName(clusterNameType));
+        final String prefix = getPrefix(graphitePrefix, serviceInfo, appInfo, k8sInfo,
+                showFlavorInPrefix, ClusterNameType.fromParameterName(clusterNameType));
         if (prefix == null) {
             LOG.warn("insufficient information to construct metric prefix; skipping reporter initialization");
             return null;
@@ -160,8 +164,7 @@ public class GraphiteConfiguration {
         }
     }
 
-    @VisibleForTesting
-    static String getPrefix(ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo,
+    private String getPrefix(String graphitePrefix, ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo,
                             boolean includeFlavorInPrefix, ClusterNameType clusterNameType ) {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
@@ -176,11 +179,11 @@ public class GraphiteConfiguration {
         if (k8sInfo.isKubernetes() && k8sInfo.getClusterName().isPresent()) {
             switch(clusterNameType) {
                 case SEPARATE: {
-                    return String.join(".", Arrays.asList("app_metrics", k8sInfo.getClusterName().get(), name,
+                    return String.join(".", Arrays.asList(graphitePrefix, k8sInfo.getClusterName().get(), name,
                             env.getType(), env.getLocation(), instance));
                 }
                 case PART_OF_INSTANCE: {
-                    return String.join(".", Arrays.asList("app_metrics", name,
+                    return String.join(".", Arrays.asList(graphitePrefix, name,
                             env.getType(), env.getLocation(), k8sInfo.getClusterName().get() + "- "+ instance));
                 }
                 case NONE: {
@@ -192,7 +195,7 @@ public class GraphiteConfiguration {
             }
         }
         // Cluster name is not included
-        return String.join(".", Arrays.asList("app_metrics", name, env.getType(), env.getLocation(), instance));
+        return String.join(".", Arrays.asList(graphitePrefix, name, env.getType(), env.getLocation(), instance));
     }
 
     private enum ClusterNameType {

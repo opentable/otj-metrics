@@ -1,6 +1,11 @@
 otj-metrics
 ===========
 
+5.2.3
+-----
+`ot.graphite.prefix` - defaults to app_metrics. *Normally you
+should never ever change this and please discuss with Visibility if you do*
+
 5.2.2
 -----
 * The health/ready endpoints had a scheduledexecutorservice not being shutdown

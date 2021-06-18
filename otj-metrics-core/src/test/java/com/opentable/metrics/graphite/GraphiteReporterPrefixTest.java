@@ -75,16 +75,30 @@ public class GraphiteReporterPrefixTest {
     }
 
     @Test
+    public void customizedPrefix() {
+        final String prefix = prefixFrom("mike_bell","prod-uswest2", "3", false);
+        Assert.assertNotNull(prefix);
+        Assert.assertEquals("mike_bell.test-server.prod.uswest2.instance-3", prefix);
+    }
+
+    @Test
     public void bad() {
         Assert.assertNull(prefixFrom(null, null,  null));
     }
 
     private String prefixFrom(final String env, final String instanceNo, Boolean includeFlavor) {
+        return prefixFrom(null, env, instanceNo, includeFlavor);
+    }
+
+    private String prefixFrom(final String prefix, final String env, final String instanceNo, Boolean includeFlavor) {
         final SpringApplication app = new SpringApplication(
                 TestConfiguration.class,
                 GraphiteConfiguration.class
         );
         final Map<String, Object> mockEnv = new HashMap<>();
+        if (prefix != null) {
+            mockEnv.put("ot.graphite.prefix", prefix);
+        }
         if (env != null) {
             if (includeFlavor != null) {
                 mockEnv.put("ot.graphite.reporting.include.flavors", includeFlavor);
