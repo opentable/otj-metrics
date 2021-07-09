@@ -25,6 +25,9 @@
     <name>OpenTable Metrics JAX-RS</name>
     <description>OpenTable Metrics with JAX-RS endpoints</description>
 
+    <properties>
+	<ot.build.allow-jaxrs>true</ot.build.allow-jaxrs>
+    </properties>
     <dependencies>
 
         <dependency>
