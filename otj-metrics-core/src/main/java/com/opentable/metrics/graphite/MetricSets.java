@@ -91,7 +91,7 @@ public final class MetricSets {
     }
 
     /**
-     * Remove all {@param metrics} from the given {@param metricRegistry}.
+     * Remove all metrics from the given metricRegistry.
      * @param metricRegistry A Metric Registry to remove metrics from
      * @param metrics The set of metrics to remove
      */

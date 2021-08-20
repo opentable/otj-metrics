@@ -214,7 +214,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
          * Don't report the passed metric attributes for all metrics (e.g. "p999", "stddev" or "m15").
          * See {@link MetricAttribute}.
          *
-         * @param disabledMetricAttributes a {@link MetricFilter}
+         * @param disabledMetricAttributes disabled metrics
          * @return {@code this}
          */
         public Builder disabledMetricAttributes(Set<MetricAttribute> disabledMetricAttributes) {

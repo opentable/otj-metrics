@@ -38,7 +38,7 @@ public final class MetricUtils {
     /**
      * Attempts to extract a long value from the given metric.
      * @param m the metric to extract the long value from if possible,
-     * must be of a relevant type (e.g. {@link Gauge}, {@link Counter}, {@link Histogram}, {@link Meter}, {@link Timer}, ...)
+     * must be of a relevant type (e.g. Gage, Counter, Histogram, Meter
      * @return the extracted long value/count
      * @throws IllegalArgumentException if a long value could not be extracted.
      */
