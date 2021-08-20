@@ -157,7 +157,6 @@ public class GraphiteConnectTest {
     }
 
     @Test
-    @Ignore
     public void senderWrapperTest() throws Exception {
         final TcpServer server = new TcpServer(0);
         final int port = server.start();
