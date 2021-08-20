@@ -10,7 +10,7 @@ otj-metrics
 How this is relevant to you:
 
 * In PL3, we must signal readiness before announcing to disco. This is so the Service load balancer adds the pod to the
-load balancer before disco announcement to avoid a "blip" when someone consuming disco contacts them during startup.
+load balancer before disco announcement to avoid a "blip" when someone consuming disco announcements contacts them during startup.
 * Out of a sense of caution, because the time is indeterminate between returning an HTTP 200 and the load balancer actually
 adding the endpoint, we've increased the delay and made it configurable.
 
