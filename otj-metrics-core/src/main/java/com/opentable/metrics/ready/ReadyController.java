@@ -13,6 +13,7 @@
  */
 package com.opentable.metrics.ready;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
@@ -23,6 +24,7 @@ import javax.inject.Named;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -38,9 +40,12 @@ public class ReadyController extends CheckController<Result> {
     private final ReadyCheckRegistry registry;
 
     @Inject
-    public ReadyController(ReadyCheckRegistry registry, @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
-                           ConfigurableEnvironment env, ApplicationEventPublisher publisher) {
-        super(executor, env, CONFIG_PREFIX, publisher);
+    public ReadyController(@Value("${ot.endpoint.ready.publish:PT1.5S}") Duration publishDelay,
+                           ReadyCheckRegistry registry,
+                           @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
+                           ConfigurableEnvironment env,
+                           ApplicationEventPublisher publisher) {
+        super(publishDelay, executor, env, CONFIG_PREFIX, publisher);
         this.registry = registry;
     }
 

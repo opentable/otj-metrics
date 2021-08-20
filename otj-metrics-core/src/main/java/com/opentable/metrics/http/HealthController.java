@@ -13,6 +13,7 @@
  */
 package com.opentable.metrics.http;
 
+import java.time.Duration;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
@@ -26,6 +27,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -42,9 +44,9 @@ public class HealthController extends CheckController<Result> {
     private final HealthCheckRegistry registry;
 
     @Inject
-    public HealthController(HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
+    public HealthController(@Value("${ot.endpoint.health.publish:PT0.05S}") Duration publishDelay, HealthCheckRegistry registry, @Named(HealthConfiguration.HEALTH_CHECK_POOL_NAME) ExecutorService executor,
                             ConfigurableEnvironment env, ApplicationEventPublisher publisher) {
-        super(executor, env, CONFIG_PREFIX, publisher);
+        super(publishDelay, executor, env, CONFIG_PREFIX, publisher);
         this.registry = registry;
     }
 
@@ -98,5 +100,10 @@ public class HealthController extends CheckController<Result> {
     /** Utility to sort Result objects by severity. */
     public static int compare(Result r1, Result r2) {
         return resToState(r1).compareTo(resToState(r2));
+    }
+
+    public static void main(String[] args) {
+        System.err.println("50ms is " + Duration.ofMillis(50));
+        System.err.println("1.5s is "+ Duration.ofMillis(1500));
     }
 }

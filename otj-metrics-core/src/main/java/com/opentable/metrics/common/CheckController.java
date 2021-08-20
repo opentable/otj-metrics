@@ -13,6 +13,7 @@
  */
 package com.opentable.metrics.common;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,10 +51,13 @@ public abstract class CheckController<T> {
     protected final ApplicationEventPublisher publisher;
     protected Map<String, T> failingChecks = new ConcurrentHashMap<>();
     protected ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-    public CheckController(ExecutorService executor,
+    protected final Duration publishDelay;
+
+    public CheckController(Duration publishDelay, ExecutorService executor,
                            ConfigurableEnvironment env, String configPrefix, ApplicationEventPublisher publisher) {
         this.executor = executor;
         this.publisher = publisher;
+        this.publishDelay = publishDelay;
         final Properties groupBaseConf = PropertySourceUtil.getProperties(env, configPrefix);
         groupBaseConf.stringPropertyNames().forEach(group -> {
             final Set<String> groupItems = Collections.unmodifiableSet(
@@ -94,7 +98,7 @@ public abstract class CheckController<T> {
     protected abstract SortedMap<String, T> getCheckResults();
 
     protected void publish(boolean checkPasses) {
-        scheduledExecutorService.schedule(() -> publisher.publishEvent(getEvent(checkPasses)), 50, TimeUnit.MILLISECONDS);
+        scheduledExecutorService.schedule(() -> publisher.publishEvent(getEvent(checkPasses)), publishDelay.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     protected abstract ApplicationEvent getEvent(boolean checkPasses);

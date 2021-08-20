@@ -15,6 +15,7 @@ package com.opentable.metrics.jaxrs;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ import com.opentable.metrics.http.HealthController;
 
 public class HealthApiTest {
     private final HealthCheckRegistry registry = new HealthCheckRegistry();
-    private final HealthController controller = new HealthController(registry, MoreExecutors.newDirectExecutorService(),
+    private final HealthController controller = new HealthController(Duration.ofMillis(50), registry, MoreExecutors.newDirectExecutorService(),
             new MockEnvironment().withProperty(
                     "ot.metrics.health.group.mygroup", "a,c"
             ), o -> {

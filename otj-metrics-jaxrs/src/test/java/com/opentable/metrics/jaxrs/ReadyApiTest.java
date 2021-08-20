@@ -15,6 +15,7 @@ package com.opentable.metrics.jaxrs;
 
 import static org.junit.Assert.assertEquals;
 
+import java.time.Duration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,7 +37,7 @@ import com.opentable.metrics.ready.Result;
 
 public class ReadyApiTest {
     private final ReadyCheckRegistry registry = new ReadyCheckRegistry();
-    private final ReadyController controller = new ReadyController(registry, MoreExecutors.newDirectExecutorService(),
+    private final ReadyController controller = new ReadyController(Duration.ofSeconds(1), registry, MoreExecutors.newDirectExecutorService(),
             new MockEnvironment().withProperty(
                     "ot.metrics.ready.group.mygroup", "a,c"
             ), new ApplicationEventPublisher() {
