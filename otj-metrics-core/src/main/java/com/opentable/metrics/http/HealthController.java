@@ -32,8 +32,8 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.common.CheckController;
+import com.opentable.metrics.health.HealthConfiguration;
 import com.opentable.metrics.health.HealthProbeEvent;
 
 @Named
@@ -100,10 +100,5 @@ public class HealthController extends CheckController<Result> {
     /** Utility to sort Result objects by severity. */
     public static int compare(Result r1, Result r2) {
         return resToState(r1).compareTo(resToState(r2));
-    }
-
-    public static void main(String[] args) {
-        System.err.println("50ms is " + Duration.ofMillis(50));
-        System.err.println("1.5s is "+ Duration.ofMillis(1500));
     }
 }
