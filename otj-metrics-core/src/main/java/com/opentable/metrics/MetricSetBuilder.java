@@ -169,6 +169,8 @@ public class MetricSetBuilder {
      * @param enumClass the enum type to key by
      * @param factory a factory to create metrics
      * @return a map of enum values to metrics
+     * @param <E> enum generic
+     * @param <M> enum generic
      */
     public <E extends Enum<E>, M extends Metric> Map<E, M> enumMetrics(String name, Class<E> enumClass, Supplier<? extends M> factory) {
         ImmutableMap.Builder<E, M> builder = ImmutableMap.builder();
@@ -182,6 +184,7 @@ public class MetricSetBuilder {
      * @param name the name of the metric to create
      * @param factory the factory for instances
      * @return the created metric
+     * @param <T> metric type
      */
     public <T extends Metric> T create(String name, Supplier<T> factory) {
         final T result = factory.get();

@@ -149,6 +149,7 @@ public class ReadyCheckRegistry {
      * Returns the {@link ReadyCheck} instance with a given name
      *
      * @param name the name of the {@link ReadyCheck} instance
+     * @return ReadyCheck the ready check instance
      */
     public ReadyCheck getReadyCheck(String name) {
         return readyChecks.get(name);

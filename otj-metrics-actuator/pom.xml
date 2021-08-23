@@ -24,7 +24,8 @@
     </parent>
 
     <properties>
-        <basepom.check.fail-license>false</basepom.check.fail-license>
+        <basepom.check.fail-duplicate-finder>false</basepom.check.fail-duplicate-finder>
+<!--        <basepom.check.fail-license>false</basepom.check.fail-license>-->
     </properties>
 
     <dependencies>

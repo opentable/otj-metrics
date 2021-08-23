@@ -57,7 +57,6 @@ public class Result {
 
     /**
      * Returns a ready {@link Result} with a formatted message.
-     * <p/>
      * Message formatting follows the same rules as {@link String#format(String, Object...)}.
      *
      * @param message a message format
@@ -81,7 +80,6 @@ public class Result {
 
     /**
      * Returns an unready {@link Result} with a formatted message.
-     * <p/>
      * Message formatting follows the same rules as {@link String#format(String, Object...)}.
      *
      * @param message a message format

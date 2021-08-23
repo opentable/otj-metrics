@@ -59,7 +59,7 @@ public class FloatingPointHistogram extends Histogram {
     /**
      * Create a histogram that stores floating point numbers
      * Uses a scale of 1, so all floating point numbers will just be rounded to the nearest long
-     * @param reservoir
+     * @param reservoir a metrics reservoir
      */
     public FloatingPointHistogram(final Reservoir reservoir) {
         this(reservoir, 1);

@@ -40,7 +40,7 @@ public class ReadyController extends CheckController<Result> {
     private final ReadyCheckRegistry registry;
 
     @Inject
-    public ReadyController(@Value("${ot.endpoint.ready.publish:PT1.5S}") Duration publishDelay,
+    public ReadyController(@Value("${ot.endpoint.ready.publish:PT0.5S}") Duration publishDelay,
                            ReadyCheckRegistry registry,
                            @Named(ReadyConfiguration.READY_CHECK_POOL_NAME) ExecutorService executor,
                            ConfigurableEnvironment env,
@@ -96,8 +96,14 @@ public class ReadyController extends CheckController<Result> {
         return new ReadinessProbeEvent(this, checkPasses);
     }
 
-    /** Utility to sort Result objects by severity. */
+    /**
+     * Utility to sort Result objects by severity.
+     * @param r1 r1
+     * @param r2 r2
+     * @return the comparator value
+     */
     public static int compare(Result r1, Result r2) {
         return resToState(r1).compareTo(resToState(r2));
     }
+
 }

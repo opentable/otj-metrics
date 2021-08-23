@@ -97,7 +97,12 @@ public class HealthController extends CheckController<Result> {
         return new HealthProbeEvent(this, checkPasses);
     }
 
-    /** Utility to sort Result objects by severity. */
+    /**
+     * Comparator
+     * @param r1 r1
+     * @param r2 r2
+     * @return comparison
+     */
     public static int compare(Result r1, Result r2) {
         return resToState(r1).compareTo(resToState(r2));
     }

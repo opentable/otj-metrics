@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  *    <li>{@link OtGraphiteReporter#start(long, TimeUnit)}</li>
  *    <li>{@link OtGraphiteReporter#reportMetered(String, Metered, long)}</li>
  *    <li>{@link OtGraphiteReporter#reportHistogram(String, Histogram, long)}</li>
- *  <ul/>
+ *  </ul>
  * NOTE: When Dropwizard versions change, be careful to painstakingly report the changes
  *
  * A reporter which publishes metric values to a Graphite server.
@@ -276,6 +276,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
      * @param filter                 the filter for which metrics to report
      * @param executor               the executor to use while scheduling reporting of metrics (may be null).
      * @param shutdownExecutorOnStop if true, then executor will be stopped in same time with this reporter
+     * @param disabledMetricAttributes  disabled metrics.
      */
     protected OtGraphiteReporter(MetricRegistry registry,
                                  GraphiteSender graphite,

@@ -247,8 +247,8 @@ public class OTInstrumentedHandler extends HandlerWrapper {
      * - Requests that got suspended during handling (isSuspended() == true) get attached with an AsyncListener,
      *   do not update response metrics, and will later be redispatched to the handler whenever processing is resumed.
      * - New requests that completed without being suspended and which were not previously suspended
-     *   (isSuspended() == false &amp;&amp; isInitial() == true) will trigger the update of response metrics in-line.
-     * - Previously suspended requests that finally got completely handled (isSuspended() == true && isInitial() == false)
+     *   (isSuspended() == false AND isInitial() == true) will trigger the update of response metrics in-line.
+     * - Previously suspended requests that finally got completely handled (isSuspended() == true AND isInitial() == false)
      *   will be picked up by the attached AsyncListener's onComplete method, and trigger the update of response metrics.
      */
     @Override

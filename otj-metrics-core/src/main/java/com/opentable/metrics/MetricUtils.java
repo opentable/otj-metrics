@@ -21,8 +21,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.codahale.metrics.Counting;
 import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.SlidingTimeWindowReservoir;
@@ -75,6 +73,7 @@ public final class MetricUtils {
      * Update a map of metrics with counts from an accumulated Multiset.
      * @param metricMap the registered metrics to update with new values
      * @param counts the new values to emit
+     * @param <E> enum
      */
     public static <E extends Enum<E>> void updateEnumMetrics(Map<E, ? extends AtomicLong> metricMap, Multiset<E> counts) {
         metricMap.entrySet().stream().forEach(e -> e.getValue().set(counts.count(e.getKey())));
@@ -91,9 +90,9 @@ public final class MetricUtils {
     }
 
     /**
-     * Like {@link #toString(Metric)}, but defaults to {@link Metric#toString()} if a long can't be extracted.
+     * Like Metric.tostring, but defaults to Metric.toString() if a long can't be extracted.
      * @param m the metric to extract the value from
-     * @return the value (either string version of the long value, or just the {@link Metric#toString()})
+     * @return the value (either string version of the long value, or just the Metric.toString())
      */
     public static String toStringSafe(final Metric m) {
         try {
@@ -104,9 +103,9 @@ public final class MetricUtils {
     }
 
     /**
-     * Produce sorted map-style {@link #toString()} of metric set, extracting long values from values that support it
-     * using {@link #extractLong(Metric)}.  If a long can't be extracted, falls back to using
-     * {@link Metric#toString()}.
+     * Produce sorted map-style  toString() of metric set, extracting long values from values that support it
+     * using extractLong(Metric).  If a long can't be extracted, falls back to using
+     * Metric#toString.
      * @param metricSet the metric set to get all the values from
      * @return string representation of a sorted map of metrics to their values
      */
@@ -118,8 +117,8 @@ public final class MetricUtils {
 
     /**
      * Testing utility function to assert that a subset of the given {@link MetricSet} metrics have the asserted
-     * values.  Values in the {@param metricSet} will be ascertained with {@link #extractLong(MetricSet, String)}.
-     * Will extract the {@link Number#longValue()} from the {@param assertions} entries.
+     * values.  Values in the metricSet will be ascertained with extractLong(MetricSet, String).
+     * Will extract the Number#longValue() from the assertions entries.
      *
      * @param metricSet The metric set against which to assert.
      * @param assertions Mapping of metric name to asserted value.

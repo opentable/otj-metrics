@@ -4,7 +4,7 @@ otj-metrics
 5.2.4
 -----
 * Previously heath and ready endpoint had a 50ms delay hardcoded after returning an HTTP 200 to 
-* This is now 50ms for health endpoint and 1.5 seconds for ready endpoint.
+* This is now 50ms for health endpoint and 500 milli seconds for ready endpoint.
 * It is now configurable via `ot.endpoint.ready.publish` and `ot.endpoint.health.publish` which take an ISO Duration argument
 
 How this is relevant to you:
