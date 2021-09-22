@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
 import io.micrometer.core.instrument.Clock;
@@ -58,18 +59,22 @@ import io.micrometer.core.lang.Nullable;
  *
  */
 @Configuration
-@ConditionalOnProperty(prefix = OtMicrometerToDropWizardExportConfiguration.CONFIGURATION_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = false)
+@Import(OtMicrometerConfig.class)
+@ConditionalOnProperty(prefix = OtMicrometerConfig.CONFIGURATION_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = false)
 public class OtMicrometerToDropWizardExportConfiguration {
 
-    static final String CONFIGURATION_PREFIX = "management.metrics.export.dw-new";
+
     private static final Logger log = LoggerFactory.getLogger(OtMicrometerToDropWizardExportConfiguration.class);
     private static final Pattern blacklistedChars = Pattern.compile("[{}(),=\\[\\]/]");
 
-    @Value("${management.metrics.export.dw-new.prefix:v2}")
-    private String dwMetricsPrefix;
+    private final String dwMetricsPrefix;
+    private final Environment env;
 
     @Inject
-    private Environment env;
+    public OtMicrometerToDropWizardExportConfiguration(OtMicrometerConfig otMicrometerConfig, Environment env) {
+        dwMetricsPrefix = otMicrometerConfig.getPrefix();
+        this.env = env;
+    }
 
     /**
      *
@@ -81,7 +86,7 @@ public class OtMicrometerToDropWizardExportConfiguration {
             @Override
             @NonNull
             public String prefix() {
-                return CONFIGURATION_PREFIX;
+                return OtMicrometerConfig.CONFIGURATION_PREFIX;
             }
 
             @Override
