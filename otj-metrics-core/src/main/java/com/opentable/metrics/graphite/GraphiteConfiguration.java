@@ -164,7 +164,7 @@ public class GraphiteConfiguration {
         }
     }
 
-    private String getPrefix(String graphitePrefix, ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo,
+    public String getPrefix(String graphitePrefix, ServiceInfo serviceInfo, AppInfo appInfo, K8sInfo k8sInfo,
                             boolean includeFlavorInPrefix, ClusterNameType clusterNameType ) {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
@@ -198,7 +198,7 @@ public class GraphiteConfiguration {
         return String.join(".", Arrays.asList(graphitePrefix, name, env.getType(), env.getLocation(), instance));
     }
 
-    private enum ClusterNameType {
+    public enum ClusterNameType {
         PART_OF_INSTANCE("instance"),
         SEPARATE("separate"),
         NONE("none")
