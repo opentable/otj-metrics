@@ -25,8 +25,8 @@ public class CustomNameMapper implements HierarchicalNameMapper {
         hierarchicalName.append(id.getConventionName(convention));
         for (Tag tag : id.getTagsAsIterable()) {
             if (!tagsToAvoidInMetricPath.contains(tag.getKey())) {
-                hierarchicalName.append('.').append(convention.tagKey(tag.getKey()))
-                        .append('.').append(convention.tagValue(tag.getValue()));
+                hierarchicalName.append('.')
+                        .append(convention.tagValue(tag.getValue()));
             }
         }
         return hierarchicalName.toString();
