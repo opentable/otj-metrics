@@ -2,12 +2,12 @@ package com.opentable.metrics.micrometer;
 
 import java.time.Duration;
 
-import javax.annotation.PostConstruct;
-
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.web.jetty.JettyMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.web.servlet.WebMvcMetricsAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -17,16 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.graphite.GraphiteConfig;
 import io.micrometer.graphite.GraphiteMeterRegistry;
-
-import io.micrometer.core.instrument.binder.jvm.JvmHeapPressureMetrics;
 
 import com.opentable.metrics.graphite.GraphiteConfiguration;
 import com.opentable.metrics.graphite.OtGraphiteReporter;
@@ -37,6 +30,8 @@ import com.opentable.service.ServiceInfo;
 
 @Configuration
 @ImportAutoConfiguration({
+        SystemMetricsAutoConfiguration.class,
+        JvmMetricsAutoConfiguration.class,
         WebMvcMetricsAutoConfiguration.class,
         JettyMetricsAutoConfiguration.class
 })
@@ -107,19 +102,6 @@ public class MicrometerMetricsConfiguration {
                                 new Graphite(graphiteConfig.host(), graphiteConfig.port())
                         )
         );
-    }
-
-    @PostConstruct
-    public void init() {
-
-        GraphiteMeterRegistry graphiteMeterRegistry = graphite();
-
-        new JvmGcMetrics().bindTo(graphiteMeterRegistry);
-        new JvmHeapPressureMetrics().bindTo(graphiteMeterRegistry);
-        new JvmMemoryMetrics().bindTo(graphiteMeterRegistry);
-        new JvmThreadMetrics().bindTo(graphiteMeterRegistry);
-        new ProcessorMetrics().bindTo(graphiteMeterRegistry);
-        new FileDescriptorMetrics().bindTo(graphiteMeterRegistry);
     }
 
     @Bean
