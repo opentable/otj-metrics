@@ -11,6 +11,7 @@ import org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoC
 import org.springframework.boot.actuate.autoconfigure.metrics.web.jetty.JettyMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.web.servlet.WebMvcMetricsAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,6 +30,7 @@ import com.opentable.service.ServiceInfo;
 
 
 @Configuration
+@ConditionalOnProperty(prefix = "metrics.micrometer", name = "enabled", havingValue = "true")
 @ImportAutoConfiguration({
         SystemMetricsAutoConfiguration.class,
         JvmMetricsAutoConfiguration.class,
@@ -40,7 +42,7 @@ public class MicrometerMetricsConfiguration {
     private final GraphiteConfiguration dropwizardGraphiteConfiguration;
 
     @Value("${ot.graphite.prefix:app_metrics_micrometer}")
-    private final String graphitePrefix = "app_metrics"; //NOPMD
+    private final String graphitePrefix = "app_metrics_micrometer"; //NOPMD
 
     private final ServiceInfo serviceInfo;
 

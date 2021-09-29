@@ -17,11 +17,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.opentable.metrics.http.MetricsHttpCoreConfiguration;
+import com.opentable.metrics.micrometer.MicrometerMetricsConfiguration;
 
 @Configuration
 @Import({
     MetricsHttpCoreConfiguration.class,
     MetricsHttpEndpoint.class,
+    MicrometerMetricsConfiguration.class,
 })
 public class MetricsHttpMVCConfiguration {
 

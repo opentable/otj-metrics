@@ -23,6 +23,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>otj-metrics-micrometer</artifactId>
+    <name>OpenTable Micrometer Metrics</name>
+    <description>Exposes metrics using Micrometer library</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
