@@ -19,11 +19,13 @@ import org.springframework.context.annotation.Import;
 import com.opentable.metrics.actuate.health.CodahaleHealthIndicatorConfiguration;
 import com.opentable.metrics.actuate.health.HealthIndicatorCodahaleConfiguration;
 import com.opentable.metrics.actuate.micrometer.OtMicrometerToDropWizardExportConfiguration;
-import com.opentable.metrics.actuate.micrometer.OtWebMvcTagsContributor;
+import com.opentable.metrics.actuate.micrometer.OtTagsContributorWebFlux;
+import com.opentable.metrics.actuate.micrometer.OtTagsContributorWebMvc;
 
 @Configuration
 @Import({
-        OtWebMvcTagsContributor.class,
+        OtTagsContributorWebMvc.class,
+        OtTagsContributorWebFlux.class,
         OtMicrometerToDropWizardExportConfiguration.class,
         CodahaleHealthIndicatorConfiguration.class,
         HealthIndicatorCodahaleConfiguration.class
