@@ -220,7 +220,7 @@ public class GraphiteConnectTest {
                 .get(GraphiteConfiguration.PREFIX + GraphiteSenderWrapper.CONNECTION_CLOSE);
     }
 
-    private void emulateGraphiteReporterSend(GraphiteSender graphite, String name, String value, long timestamp)  {
+    private void emulateGraphiteReporterSend(GraphiteSender graphite, String name, String value, long timestamp) throws IOException {
         // STRIPPED DOWN VERSION OF GRAPHITEREPORT.REPORT METHOD
         try {
             graphite.connect();
@@ -228,6 +228,7 @@ public class GraphiteConnectTest {
             graphite.flush();
         } catch (IOException e) {
             LOG.warn("Unable to report to Graphite", graphite, e);
+            throw e;
         } finally {
             try {
                 graphite.close();
