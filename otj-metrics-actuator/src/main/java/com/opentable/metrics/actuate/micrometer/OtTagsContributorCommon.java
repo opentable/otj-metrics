@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.util.StringUtils;
 
+/**
+ * Base class for tags contributors. Contains utility methods and configuration.
+ */
 class OtTagsContributorCommon {
     static final String REFERRING_SERVICE_TAG_NAME = "referring-service";
     private static final String UNKNOWN = "unknown";

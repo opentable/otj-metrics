@@ -13,6 +13,9 @@ import io.micrometer.core.instrument.Tags;
 
 import com.opentable.httpheaders.OTHeaders;
 
+/**
+ * WebMVC tags contributor. Adds referring service name as a tag.
+ */
 @Import(OtMicrometerConfig.class)
 @ConditionalOnProperty(prefix = OtMicrometerConfig.CONFIGURATION_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = false)
 public class OtTagsContributorWebMvc extends OtTagsContributorCommon implements WebMvcTagsContributor {

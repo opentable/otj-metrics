@@ -12,6 +12,9 @@ import io.micrometer.core.instrument.Tags;
 
 import com.opentable.httpheaders.OTHeaders;
 
+/**
+ * WebFlux tags contributor. Adds referring service name as a tag.
+ */
 @Import(OtMicrometerConfig.class)
 @ConditionalOnProperty(prefix = OtMicrometerConfig.CONFIGURATION_PREFIX, name = "enabled", havingValue = "true", matchIfMissing = false)
 public class OtTagsContributorWebFlux extends OtTagsContributorCommon implements WebFluxTagsContributor {
