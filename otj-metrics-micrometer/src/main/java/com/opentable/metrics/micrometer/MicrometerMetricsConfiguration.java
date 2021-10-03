@@ -1,6 +1,7 @@
 package com.opentable.metrics.micrometer;
 
 import java.time.Duration;
+import java.util.StringJoiner;
 
 import javax.annotation.PostConstruct;
 
@@ -43,8 +44,10 @@ public class MicrometerMetricsConfiguration {
 
     private final GraphiteConfiguration dropwizardGraphiteConfiguration;
 
-    @Value("${ot.graphite.prefix:app_metrics_micrometer}")
-    private final String graphitePrefix = "app_metrics_micrometer"; //NOPMD
+    private static final String MicrometerMetricsPrefix = "micrometer";
+
+    @Value("${ot.graphite.prefix:app_metrics}")
+    private final String graphitePrefix = "app_metrics"; //NOPMD
 
     private final ServiceInfo serviceInfo;
 
@@ -82,6 +85,11 @@ public class MicrometerMetricsConfiguration {
                 return null;
             }
 
+            @Override
+            public boolean graphiteTagsEnabled() {
+                return false;
+            }
+
         };
 
         String prefix = dropwizardGraphiteConfiguration.getPrefix(
@@ -92,6 +100,11 @@ public class MicrometerMetricsConfiguration {
                 showFlavorInPrefix,
                 GraphiteConfiguration.ClusterNameType.fromParameterName(clusterNameType)
         );
+
+        StringJoiner sj = new StringJoiner(".");
+        sj.add(prefix);
+        sj.add(MicrometerMetricsPrefix);
+        prefix = sj.toString();
 
         return new GraphiteMeterRegistry(
                 graphiteConfig,
