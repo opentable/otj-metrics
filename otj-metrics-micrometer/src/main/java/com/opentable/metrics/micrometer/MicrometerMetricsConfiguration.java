@@ -2,12 +2,9 @@ package com.opentable.metrics.micrometer;
 
 import java.time.Duration;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.graphite.Graphite;
+import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.web.jetty.JettyMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.web.servlet.WebMvcMetricsAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
@@ -18,12 +15,19 @@ import org.springframework.context.annotation.Configuration;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jetty.JettyConnectionMetrics;
+import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.graphite.GraphiteConfig;
 import io.micrometer.graphite.GraphiteMeterRegistry;
 
 import com.opentable.metrics.graphite.GraphiteConfiguration;
-import com.opentable.metrics.graphite.OtGraphiteReporter;
 import com.opentable.service.AppInfo;
 import com.opentable.service.K8sInfo;
 import com.opentable.service.ServiceInfo;
@@ -32,8 +36,6 @@ import com.opentable.service.ServiceInfo;
 @Configuration
 @ConditionalOnProperty(prefix = "metrics.micrometer", name = "enabled", havingValue = "true")
 @ImportAutoConfiguration({
-        SystemMetricsAutoConfiguration.class,
-        JvmMetricsAutoConfiguration.class,
         WebMvcMetricsAutoConfiguration.class,
         JettyMetricsAutoConfiguration.class
 })
@@ -68,8 +70,6 @@ public class MicrometerMetricsConfiguration {
 
     @Bean
     public GraphiteMeterRegistry graphite() {
-
-        MetricRegistry metricRegistry = new MetricRegistry();
         GraphiteConfig graphiteConfig = new GraphiteConfig() {
             @Override
             public Duration step() {
@@ -96,18 +96,33 @@ public class MicrometerMetricsConfiguration {
         return new GraphiteMeterRegistry(
                 graphiteConfig,
                 Clock.SYSTEM,
-                new CustomNameMapper(prefix),
-                metricRegistry,
-                OtGraphiteReporter
-                        .forRegistry(metricRegistry)
-                        .build(
-                                new Graphite(graphiteConfig.host(), graphiteConfig.port())
-                        )
+                new CustomNameMapper(prefix)
         );
+    }
+
+    @PostConstruct
+    public void init() {
+        GraphiteMeterRegistry graphiteMeterRegistry = graphite();
+
+        //  Refer: org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration;
+        new UptimeMetrics().bindTo(graphiteMeterRegistry);
+        new ProcessorMetrics().bindTo(graphiteMeterRegistry);
+        new FileDescriptorMetrics().bindTo(graphiteMeterRegistry);
+
+        // Refer: org.springframework.boot.actuate.autoconfigure.metrics.web.jetty.JettyMetricsAutoConfiguration;
+        new JvmGcMetrics().bindTo(graphiteMeterRegistry);
+        new JvmMemoryMetrics().bindTo(graphiteMeterRegistry);
+        new JvmThreadMetrics().bindTo(graphiteMeterRegistry);
+        new ClassLoaderMetrics().bindTo(graphiteMeterRegistry);
     }
 
     @Bean
     public TimedAspect timedAspect(MeterRegistry registry) {
         return new TimedAspect(registry);
+    }
+
+    @Bean
+    public JettyConnectionMetrics jettyConnectionMetrics(MeterRegistry registry) {
+        return new JettyConnectionMetrics(registry);
     }
 }
