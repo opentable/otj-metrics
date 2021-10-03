@@ -32,6 +32,7 @@ import static com.codahale.metrics.MetricAttribute.STDDEV;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -50,9 +51,10 @@ import com.codahale.metrics.Metered;
 import com.codahale.metrics.MetricAttribute;
 import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteSender;
 
 import org.slf4j.Logger;
@@ -64,10 +66,10 @@ import org.slf4j.LoggerFactory;
  *  <ul>
  *    <li>{@link OtGraphiteReporter#reportedCounters}</li>
  *    <li>{@link OtGraphiteReporter#countFactor}</li>
- *    <li>{@link OtGraphiteReporter#reportCounterExtended(String, Counter, long)}</li>
+ *    <li>{@link OtGraphiteReporter#reportCounter(String, Counter, long)}</li>
  *    <li>{@link OtGraphiteReporter#start(long, TimeUnit)}</li>
- *    <li>{@link OtGraphiteReporter#reportMeteredExtended(String, Metered, long)}</li>
- *    <li>{@link OtGraphiteReporter#reportHistogramExtended(String, Histogram, long)}</li>
+ *    <li>{@link OtGraphiteReporter#reportMetered(String, Metered, long)}</li>
+ *    <li>{@link OtGraphiteReporter#reportHistogram(String, Histogram, long)}</li>
  *  <ul/>
  * NOTE: When Dropwizard versions change, be careful to painstakingly report the changes
  *
@@ -75,19 +77,184 @@ import org.slf4j.LoggerFactory;
  *
  * @see <a href="http://graphite.wikidot.com/">Graphite - Scalable Realtime Graphing</a>
  */
-public class OtGraphiteReporter extends GraphiteReporter {
+public class OtGraphiteReporter extends ScheduledReporter {
 
     /**
      * State of the counters from the last report. Used to calculate derivative
-     * See {@link #reportCounterExtended(String, Counter, long)}
+     * See {@link #reportCounter(String, Counter, long)}
      */
     private final Map<String, Long> reportedCounters = new ConcurrentHashMap<>();
 
     /**
      * 1 / (Report period in seconds) to calculate cps.
-     * See {@link #reportCounterExtended(String, Counter, long)}
+     * See {@link #reportCounter(String, Counter, long)}
      */
     private volatile double countFactor = 1.0;
+
+    /**
+     * Returns a new {@link Builder} for {@link OtGraphiteReporter}.
+     *
+     * @param registry the registry to report
+     * @return a {@link Builder} instance for a {@link OtGraphiteReporter}
+     */
+    public static Builder forRegistry(MetricRegistry registry) {
+        return new Builder(registry);
+    }
+
+    /**
+     * A builder for {@link OtGraphiteReporter} instances. Defaults to not using a prefix, using the
+     * default clock, converting rates to events/second, converting durations to milliseconds, and
+     * not filtering metrics.
+     */
+    public static class Builder {
+        private final MetricRegistry registry;
+        private Clock clock;
+        private String prefix;
+        private TimeUnit rateUnit;
+        private TimeUnit durationUnit;
+        private MetricFilter filter;
+        private ScheduledExecutorService executor;
+        private boolean shutdownExecutorOnStop;
+        private Set<MetricAttribute> disabledMetricAttributes;
+
+        Builder(MetricRegistry registry) {
+            this.registry = registry;
+            this.clock = Clock.defaultClock();
+            this.prefix = null;
+            this.rateUnit = TimeUnit.SECONDS;
+            this.durationUnit = TimeUnit.MILLISECONDS;
+            this.filter = MetricFilter.ALL;
+            this.executor = null;
+            this.shutdownExecutorOnStop = true;
+            this.disabledMetricAttributes = Collections.emptySet();
+        }
+
+        /**
+         * Specifies whether or not, the executor (used for reporting) will be stopped with same time with reporter.
+         * Default value is true.
+         * Setting this parameter to false, has the sense in combining with providing external managed executor via {@link #scheduleOn(ScheduledExecutorService)}.
+         *
+         * @param shutdownExecutorOnStop if true, then executor will be stopped in same time with this reporter
+         * @return {@code this}
+         */
+        public Builder shutdownExecutorOnStop(boolean shutdownExecutorOnStop) {
+            this.shutdownExecutorOnStop = shutdownExecutorOnStop;
+            return this;
+        }
+
+        /**
+         * Specifies the executor to use while scheduling reporting of metrics.
+         * Default value is null.
+         * Null value leads to executor will be auto created on start.
+         *
+         * @param executor the executor to use while scheduling reporting of metrics.
+         * @return {@code this}
+         */
+        public Builder scheduleOn(ScheduledExecutorService executor) {
+            this.executor = executor;
+            return this;
+        }
+
+        /**
+         * Use the given {@link Clock} instance for the time.
+         *
+         * @param clock a {@link Clock} instance
+         * @return {@code this}
+         */
+        public Builder withClock(Clock clock) {
+            this.clock = clock;
+            return this;
+        }
+
+        /**
+         * Prefix all metric names with the given string.
+         *
+         * @param prefix the prefix for all metric names
+         * @return {@code this}
+         */
+        public Builder prefixedWith(String prefix) {
+            this.prefix = prefix;
+            return this;
+        }
+
+        /**
+         * Convert rates to the given time unit.
+         *
+         * @param rateUnit a unit of time
+         * @return {@code this}
+         */
+        public Builder convertRatesTo(TimeUnit rateUnit) {
+            this.rateUnit = rateUnit;
+            return this;
+        }
+
+        /**
+         * Convert durations to the given time unit.
+         *
+         * @param durationUnit a unit of time
+         * @return {@code this}
+         */
+        public Builder convertDurationsTo(TimeUnit durationUnit) {
+            this.durationUnit = durationUnit;
+            return this;
+        }
+
+        /**
+         * Only report metrics which match the given filter.
+         *
+         * @param filter a {@link MetricFilter}
+         * @return {@code this}
+         */
+        public Builder filter(MetricFilter filter) {
+            this.filter = filter;
+            return this;
+        }
+
+        /**
+         * Don't report the passed metric attributes for all metrics (e.g. "p999", "stddev" or "m15").
+         * See {@link MetricAttribute}.
+         *
+         * @param disabledMetricAttributes a {@link MetricFilter}
+         * @return {@code this}
+         */
+        public Builder disabledMetricAttributes(Set<MetricAttribute> disabledMetricAttributes) {
+            this.disabledMetricAttributes = disabledMetricAttributes;
+            return this;
+        }
+
+        /**
+         * Builds a {@link OtGraphiteReporter} with the given properties, sending metrics using the
+         * given {@link GraphiteSender}.
+         * <p>
+         * Present for binary compatibility
+         *
+         * @param graphite a {@link com.codahale.metrics.graphite.Graphite}
+         * @return a {@link OtGraphiteReporter}
+         */
+        public OtGraphiteReporter build(Graphite graphite) {
+            return build((GraphiteSender) graphite);
+        }
+
+        /**
+         * Builds a {@link OtGraphiteReporter} with the given properties, sending metrics using the
+         * given {@link GraphiteSender}.
+         *
+         * @param graphite a {@link GraphiteSender}
+         * @return a {@link OtGraphiteReporter}
+         */
+        public OtGraphiteReporter build(GraphiteSender graphite) {
+            return new OtGraphiteReporter(registry,
+                    graphite,
+                    clock,
+                    prefix,
+                    rateUnit,
+                    durationUnit,
+                    filter,
+                    executor,
+                    shutdownExecutorOnStop,
+                    disabledMetricAttributes);
+        }
+    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OtGraphiteReporter.class);
 
@@ -120,17 +287,9 @@ public class OtGraphiteReporter extends GraphiteReporter {
                                  ScheduledExecutorService executor,
                                  boolean shutdownExecutorOnStop,
                                  Set<MetricAttribute> disabledMetricAttributes) {
-        super(registry,
-                graphite,
-                clock,
-                prefix,
-                rateUnit,
-                durationUnit,
-                filter,
-                executor,
-                shutdownExecutorOnStop,
-                disabledMetricAttributes,
-                false);
+        // CHANGE: The name was graphite-reporter
+        super(registry, "opentable-graphite-reporter", filter, rateUnit, durationUnit, executor, shutdownExecutorOnStop,
+                disabledMetricAttributes);
         this.graphite = graphite;
         this.clock = clock;
         this.prefix = prefix;
@@ -154,15 +313,15 @@ public class OtGraphiteReporter extends GraphiteReporter {
             }
 
             for (Map.Entry<String, Counter> entry : counters.entrySet()) {
-                reportCounterExtended(entry.getKey(), entry.getValue(), timestamp);
+                reportCounter(entry.getKey(), entry.getValue(), timestamp);
             }
 
             for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
-                reportHistogramExtended(entry.getKey(), entry.getValue(), timestamp);
+                reportHistogram(entry.getKey(), entry.getValue(), timestamp);
             }
 
             for (Map.Entry<String, Meter> entry : meters.entrySet()) {
-                reportMeteredExtended(entry.getKey(), entry.getValue(), timestamp);
+                reportMetered(entry.getKey(), entry.getValue(), timestamp);
             }
 
             for (Map.Entry<String, Timer> entry : timers.entrySet()) {
@@ -205,16 +364,16 @@ public class OtGraphiteReporter extends GraphiteReporter {
         sendIfEnabled(P98, name, convertDuration(snapshot.get98thPercentile()), timestamp);
         sendIfEnabled(P99, name, convertDuration(snapshot.get99thPercentile()), timestamp);
         sendIfEnabled(P999, name, convertDuration(snapshot.get999thPercentile()), timestamp);
-        reportMeteredExtended(name, timer, timestamp);
+        reportMetered(name, timer, timestamp);
     }
 
     /**
      * We replaced {@code sendIfEnabled(COUNT, name, meter.getCount(), timestamp)} with the
-     * call {@link OtGraphiteReporter#reportCounterExtended(String, Counter, long)}
+     * call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
      */
-    private void reportMeteredExtended(String name, Metered meter, long timestamp) throws IOException {
+    private void reportMetered(String name, Metered meter, long timestamp) throws IOException {
         if (!getDisabledMetricAttributes().contains(COUNT)) {
-            reportCounterExtended(name, meter.getCount(), timestamp);
+            reportCounter(name, meter.getCount(), timestamp);
         }
         sendIfEnabled(M1_RATE, name, convertRate(meter.getOneMinuteRate()), timestamp);
         sendIfEnabled(M5_RATE, name, convertRate(meter.getFiveMinuteRate()), timestamp);
@@ -224,12 +383,12 @@ public class OtGraphiteReporter extends GraphiteReporter {
 
     /**
      * We replaced {@code sendIfEnabled(COUNT, name, histogram.getCount(), timestamp)} with the
-     * call {@link OtGraphiteReporter#reportCounterExtended(String, Counter, long)}
+     * call {@link OtGraphiteReporter#reportCounter(String, Counter, long)}
      */
-    private void reportHistogramExtended(String name, Histogram histogram, long timestamp) throws IOException {
+    private void reportHistogram(String name, Histogram histogram, long timestamp) throws IOException {
         final Snapshot snapshot = histogram.getSnapshot();
         if (!getDisabledMetricAttributes().contains(COUNT)) {
-            reportCounterExtended(name, histogram.getCount(), timestamp);
+            reportCounter(name, histogram.getCount(), timestamp);
         }
         sendIfEnabled(MAX, name, snapshot.getMax(), timestamp);
         sendIfEnabled(MEAN, name, snapshot.getMean(), timestamp);
@@ -270,11 +429,11 @@ public class OtGraphiteReporter extends GraphiteReporter {
      * @param timestamp report timestamp
      * @throws IOException
      */
-    private void reportCounterExtended(String name, Counter counter, long timestamp) throws IOException {
-        this.reportCounterExtended(name, counter.getCount(), timestamp);
+    private void reportCounter(String name, Counter counter, long timestamp) throws IOException {
+        this.reportCounter(name, counter.getCount(), timestamp);
     }
 
-    private void reportCounterExtended(String name, long value, long timestamp) throws IOException {
+    private void reportCounter(String name, long value, long timestamp) throws IOException {
         graphite.send(prefix(name, COUNT.getCode()), format(value), timestamp);
         final long diff = value - Optional.ofNullable(reportedCounters.put(name, value)).orElse(0L);
         if (diff != 0L) {
