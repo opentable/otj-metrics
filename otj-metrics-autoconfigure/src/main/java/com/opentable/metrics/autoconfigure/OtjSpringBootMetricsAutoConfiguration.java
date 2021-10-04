@@ -19,7 +19,9 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleProperties;
 import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimplePropertiesConfigAdapter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +35,8 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import com.opentable.metrics.DefaultMetricsConfiguration;
 import com.opentable.metrics.MetricAnnotationConfiguration;
+import com.opentable.metrics.mvc.HealthHttpMVCConfiguration;
+import com.opentable.metrics.reactive.HealthHttpReactiveConfiguration;
 
 @Configuration
 public class OtjSpringBootMetricsAutoConfiguration {
@@ -94,6 +98,25 @@ public class OtjSpringBootMetricsAutoConfiguration {
         public MeterFilter defaultIgnoreKafkaCoordinator() {
             return MeterFilter.denyNameStartsWith("kafka.consumer.coordinator");
         }
+    }
 
+    @Configuration
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    @ConditionalOnClass(HealthHttpMVCConfiguration.class)
+    @Profile({"metric-test", "ci-rs", "pp-rs", "ci-sf", "pp-sf", "prod-sc", "prod-ln"})
+    @Import({
+            HealthHttpMVCConfiguration.class,
+    })
+    static class DefaultMvc {
+    }
+
+    @Configuration
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
+    @ConditionalOnClass(HealthHttpReactiveConfiguration.class)
+    @Profile({"metric-test", "ci-rs", "pp-rs", "ci-sf", "pp-sf", "prod-sc", "prod-ln"})
+    @Import({
+            HealthHttpReactiveConfiguration.class
+    })
+    static class DefaultReactive {
     }
 }
