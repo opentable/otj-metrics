@@ -41,10 +41,12 @@
         <dependency>
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-metrics-mvc</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-metrics-reactive</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
