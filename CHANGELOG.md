@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+5.2.4
+-----
+* "otj-metrics-actuator" now has ability to breakdown httpServerRequests by referring service. You need to opt-in for this feature by specifying list of services to track. Please see `otj-mvc-demo` project for example.  
+
 5.2.3
 -----
 * Fix stray "-". Metrics were emitted in PL3 was
