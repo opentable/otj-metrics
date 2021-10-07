@@ -1,11 +1,9 @@
 package com.opentable.metrics.micrometer;
 
 import java.time.Duration;
-import java.util.StringJoiner;
 
 import com.codahale.metrics.MetricRegistry;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration;
@@ -23,12 +21,6 @@ import io.micrometer.core.instrument.dropwizard.DropwizardMeterRegistry;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.graphite.GraphiteConfig;
 
-import com.opentable.metrics.graphite.GraphiteConfiguration;
-import com.opentable.service.AppInfo;
-import com.opentable.service.K8sInfo;
-import com.opentable.service.ServiceInfo;
-
-
 @Configuration
 @ConditionalOnProperty(prefix = "metrics.micrometer", name = "enabled", havingValue = "true")
 @ImportAutoConfiguration({
@@ -40,34 +32,7 @@ import com.opentable.service.ServiceInfo;
 })
 public class MicrometerMetricsConfiguration {
 
-    private final GraphiteConfiguration dropwizardGraphiteConfiguration;
-
     private static final String MicrometerMetricsPrefix = "micrometer";
-
-    @Value("${ot.graphite.prefix:app_metrics}")
-    private final String graphitePrefix = "app_metrics"; //NOPMD
-
-    private final ServiceInfo serviceInfo;
-
-    private final AppInfo appInfo;
-
-    private final K8sInfo k8sInfo;
-
-    @Value("${ot.graphite.reporting.include.flavors:#{true}}")
-    private final boolean showFlavorInPrefix = true; //NOPMD
-
-    @Value("ot.graphite.reporting.include.cluster.type:#{null}}")
-    private final String clusterNameType = null; //NOPMD
-
-    public MicrometerMetricsConfiguration(
-            GraphiteConfiguration dropwizardGraphiteConfiguration,
-            ServiceInfo serviceInfo,
-            AppInfo appInfo, K8sInfo k8sInfo) {
-        this.dropwizardGraphiteConfiguration = dropwizardGraphiteConfiguration;
-        this.serviceInfo = serviceInfo;
-        this.appInfo = appInfo;
-        this.k8sInfo = k8sInfo;
-    }
 
     @Bean
     public MeterRegistry graphite(MetricRegistry metricRegistry, Clock clock) {
@@ -90,24 +55,10 @@ public class MicrometerMetricsConfiguration {
 
         };
 
-        String prefix = dropwizardGraphiteConfiguration.getPrefix(
-                graphitePrefix,
-                serviceInfo,
-                appInfo,
-                k8sInfo,
-                showFlavorInPrefix,
-                GraphiteConfiguration.ClusterNameType.fromParameterName(clusterNameType)
-        );
-
-        StringJoiner sj = new StringJoiner(".");
-        sj.add(prefix);
-        sj.add(MicrometerMetricsPrefix);
-        prefix = sj.toString();
-
         return new DropwizardMeterRegistry(
                 graphiteConfig,
                 metricRegistry,
-                new CustomNameMapper(prefix),
+                new CustomNameMapper(MicrometerMetricsPrefix),
                 clock
         ) {
             @Override

@@ -38,18 +38,6 @@
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.opentable.components</groupId>
-            <artifactId>otj-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.opentable.components</groupId>
-            <artifactId>otj-spring</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
@@ -73,10 +61,6 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.opentable.components</groupId>
-            <artifactId>otj-metrics-core</artifactId>
         </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
