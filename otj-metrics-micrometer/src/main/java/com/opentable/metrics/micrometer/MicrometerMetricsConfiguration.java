@@ -3,6 +3,8 @@ package com.opentable.metrics.micrometer;
 import java.time.Duration;
 import java.util.StringJoiner;
 
+import com.codahale.metrics.MetricRegistry;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
@@ -17,9 +19,9 @@ import org.springframework.context.annotation.Configuration;
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.dropwizard.DropwizardMeterRegistry;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.graphite.GraphiteConfig;
-import io.micrometer.graphite.GraphiteMeterRegistry;
 
 import com.opentable.metrics.graphite.GraphiteConfiguration;
 import com.opentable.service.AppInfo;
@@ -68,7 +70,7 @@ public class MicrometerMetricsConfiguration {
     }
 
     @Bean
-    public GraphiteMeterRegistry graphite() {
+    public MeterRegistry graphite(MetricRegistry metricRegistry, Clock clock) {
         GraphiteConfig graphiteConfig = new GraphiteConfig() {
             @Override
             public Duration step() {
@@ -102,11 +104,17 @@ public class MicrometerMetricsConfiguration {
         sj.add(MicrometerMetricsPrefix);
         prefix = sj.toString();
 
-        return new GraphiteMeterRegistry(
+        return new DropwizardMeterRegistry(
                 graphiteConfig,
-                Clock.SYSTEM,
-                new CustomNameMapper(prefix)
-        );
+                metricRegistry,
+                new CustomNameMapper(prefix),
+                clock
+        ) {
+            @Override
+            protected Double nullGaugeValue() {
+                return null;
+            }
+        };
     }
 
     @Bean
