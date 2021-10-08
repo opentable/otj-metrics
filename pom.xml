@@ -50,6 +50,7 @@
         <!-- Last non forked release was 3.1.3, we now start at 3.9.9, the next release being 3.9.9.1, etc -->
         <!-- As this is forked, please see the opentable/metrics-spring-1 repo for source -->
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
+        <basepom.oss.skip-scala-doc>true</basepom.oss.skip-scala-doc>
     </properties>
 
     <dependencyManagement>
