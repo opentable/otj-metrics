@@ -1,5 +1,8 @@
 otj-metrics
 ===========
+5.2.5
+-----
+* Remove JAXRS Phase I (comment out modules)
 
 5.2.4
 -----
