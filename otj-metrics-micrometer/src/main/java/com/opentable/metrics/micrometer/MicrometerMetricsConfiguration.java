@@ -1,7 +1,5 @@
 package com.opentable.metrics.micrometer;
 
-import java.time.Duration;
-
 import com.codahale.metrics.MetricRegistry;
 
 import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
@@ -34,20 +32,31 @@ public class MicrometerMetricsConfiguration {
 
     private static final String MicrometerMetricsPrefix = "micrometer";
 
+    /**
+     Instead of creating an instance of {@link io.micrometer.graphite.GraphiteMeterRegistry}
+     We are creating an instance of super class {@link DropwizardMeterRegistry}
+     so that we can insert the pre-configured MetricRegistry also used in the previous DropWizard Config
+     @return MeterRegistry
+     */
     @Bean
     public MeterRegistry graphite(MetricRegistry metricRegistry, Clock clock) {
         GraphiteConfig graphiteConfig = new GraphiteConfig() {
-            @Override
-            public Duration step() {
-                return Duration.ofSeconds(10);
-            }
 
+            /**
+             accept the rest of the defaults by @return null.
+             Configuration for host, port and reportingPeriod are injected via
+             {@link com.opentable.metrics.graphite.GraphiteConfiguration}
+             */
             @Override
             @Nullable
             public String get(String k) {
                 return null;
             }
 
+            /**
+            Disable tags makes concise metric names:
+            eg process.cpu.usage -> processCpuUsage
+             */
             @Override
             public boolean graphiteTagsEnabled() {
                 return false;
@@ -61,7 +70,12 @@ public class MicrometerMetricsConfiguration {
                 new CustomNameMapper(MicrometerMetricsPrefix),
                 clock
         ) {
+            /**
+            If Gauge.value() returns null, @return null
+            This is also the default behavior in {@link io.micrometer.graphite.GraphiteMeterRegistry} class
+             */
             @Override
+            @Nullable
             protected Double nullGaugeValue() {
                 return null;
             }
