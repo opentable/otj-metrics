@@ -24,7 +24,6 @@ import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.ScheduledReporter;
-import com.codahale.metrics.graphite.GraphiteReporter;
 import com.codahale.metrics.graphite.GraphiteSender;
 import com.google.common.net.HostAndPort;
 
@@ -89,11 +88,33 @@ public class GraphiteConfiguration {
     @Value("ot.graphite.reporting.include.cluster.type:#{null}}")
     private String clusterNameType;
 
+    @Value("${metrics.micrometer.enabled:#{false}}")
+    private boolean micrometerEnabled;
+
     private MetricRegistry metricRegistry;
     private MetricSet registeredMetrics;
 
     public Duration getReportingPeriod() {
         return reportingPeriod;
+    }
+
+    @Bean
+    MetricFilter dropWizardMetricFilter() {
+        return (s, metric) -> {
+            if (micrometerEnabled) {
+
+                if (s.contains("micrometer")) {
+                    return true;
+                }
+
+                for (DWMetricsToFilter metricToFilter: DWMetricsToFilter.values()) {
+                    if (s.contains(metricToFilter.getMetricPathId())) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        };
     }
 
     @Bean
@@ -118,23 +139,12 @@ public class GraphiteConfiguration {
         });
 
         ScheduledReporter reporter;
-        if (Boolean.parseBoolean(environment.getProperty("ot.graphite.reporter.legacy", "false"))) {
-            LOG.debug("Using legacy graphite reporter");
-            reporter = GraphiteReporter.forRegistry(metricRegistry)
-                    .prefixedWith(prefix)
-                    .convertRatesTo(TimeUnit.SECONDS)
-                    .convertDurationsTo(TimeUnit.MILLISECONDS)
-                    .filter(MetricFilter.ALL)
-                    .build(sender.get());
-        } else {
-            LOG.debug("Using new graphite reporter");
-            reporter = OtGraphiteReporter.forRegistry(metricRegistry)
-                    .prefixedWith(prefix)
-                    .convertRatesTo(TimeUnit.SECONDS)
-                    .convertDurationsTo(TimeUnit.MILLISECONDS)
-                    .filter(MetricFilter.ALL)
-                    .build(sender.get());
-        }
+        reporter = OtGraphiteReporter.forRegistry(metricRegistry)
+                .prefixedWith(prefix)
+                .convertRatesTo(TimeUnit.SECONDS)
+                .convertDurationsTo(TimeUnit.MILLISECONDS)
+                .filter(dropWizardMetricFilter())
+                .build(sender.get());
 
         reporter.start(reportingPeriod.toMillis(), TimeUnit.MILLISECONDS);
         return reporter;
