@@ -18,7 +18,7 @@
     <parent>
         <groupId>com.opentable.components</groupId>
         <artifactId>otj-metrics-parent</artifactId>
-        <version>5.2.4-SNAPSHOT</version>
+        <version>5.2.6-SNAPSHOT</version>
     </parent>
     <artifactId>otj-metrics-mvc</artifactId>
     <name>OpenTable Metrics MVC</name>
@@ -58,11 +58,26 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-healthchecks</artifactId>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
 
         <dependency>
             <groupId>com.opentable.components</groupId>

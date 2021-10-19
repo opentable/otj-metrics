@@ -18,7 +18,7 @@
     <parent>
         <groupId>com.opentable.components</groupId>
         <artifactId>otj-metrics-parent</artifactId>
-        <version>5.2.4-SNAPSHOT</version>
+        <version>5.2.6-SNAPSHOT</version>
     </parent>
     <artifactId>otj-metrics-reactive</artifactId>
     <name>OpenTable Metrics Reactive</name>
@@ -65,8 +65,22 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
