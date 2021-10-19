@@ -2,6 +2,7 @@ package com.opentable.metrics.micrometer;
 
 import com.codahale.metrics.MetricRegistry;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.metrics.JvmMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.metrics.SystemMetricsAutoConfiguration;
@@ -30,7 +31,8 @@ import io.micrometer.graphite.GraphiteConfig;
 })
 public class MicrometerMetricsConfiguration {
 
-    private static final String MicrometerMetricsPrefix = "micrometer";
+    @Value("${management.metrics.export.dw-new.prefix:micrometer}")
+    private final String MicrometerMetricsPrefix = "micrometer"; // NOPMD
 
     /**
      Instead of creating an instance of {@link io.micrometer.graphite.GraphiteMeterRegistry}

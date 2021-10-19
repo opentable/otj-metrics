@@ -91,6 +91,9 @@ public class GraphiteConfiguration {
     @Value("${metrics.micrometer.enabled:#{false}}")
     private boolean micrometerEnabled;
 
+    @Value("${management.metrics.export.dw-new.prefix:micrometer}")
+    private final String MicrometerMetricsPrefix = "micrometer"; //NOPMD
+
     private MetricRegistry metricRegistry;
     private MetricSet registeredMetrics;
 
@@ -103,7 +106,7 @@ public class GraphiteConfiguration {
         return (s, metric) -> {
             if (micrometerEnabled) {
 
-                if (s.contains("micrometer")) {
+                if (s.contains(MicrometerMetricsPrefix)) {
                     return true;
                 }
 
