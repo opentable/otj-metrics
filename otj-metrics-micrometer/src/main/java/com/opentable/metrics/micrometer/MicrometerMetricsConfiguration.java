@@ -1,5 +1,8 @@
 package com.opentable.metrics.micrometer;
 
+import java.text.Normalizer;
+import java.util.regex.Pattern;
+
 import com.codahale.metrics.MetricRegistry;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,10 +18,13 @@ import org.springframework.context.annotation.Configuration;
 
 import io.micrometer.core.aop.TimedAspect;
 import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.dropwizard.DropwizardMeterRegistry;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.graphite.GraphiteConfig;
+import io.micrometer.graphite.GraphiteMeterRegistry;
 
 @Configuration
 @ConditionalOnProperty(prefix = "metrics.micrometer", name = "enabled", havingValue = "true")
@@ -31,14 +37,49 @@ import io.micrometer.graphite.GraphiteConfig;
 })
 public class MicrometerMetricsConfiguration {
 
+    private static final Pattern blacklistedChars = Pattern.compile("[{}(),=\\[\\]/]");
+
     @Value("${management.metrics.export.dw-new.prefix:micrometer}")
     private final String MicrometerMetricsPrefix = "micrometer"; // NOPMD
 
+
+    private NamingConvention graphiteNamingConvention() {
+        return new NamingConvention() {
+
+            @Override
+            public String name(String name, Meter.Type type, String baseUnit) {
+                return format(name);
+            }
+
+            @Override
+            public String tagKey(String key) {
+                return format(key);
+            }
+
+            @Override
+            public String tagValue(String value) {
+                return format(value);
+            }
+
+            /**
+             * Github Issue: https://github.com/graphite-project/graphite-web/issues/243
+             * Unicode is not OK. Some special chars are not OK.
+             */
+            private String format(String name) {
+                String sanitized = Normalizer.normalize(name, Normalizer.Form.NFKD);
+                sanitized = NamingConvention.camelCase.tagKey(sanitized);
+                return blacklistedChars.matcher(sanitized).replaceAll("_");
+            }
+
+        };
+    }
+
     /**
-     Instead of creating an instance of {@link io.micrometer.graphite.GraphiteMeterRegistry}
-     We are creating an instance of super class {@link DropwizardMeterRegistry}
-     so that we can insert the pre-configured MetricRegistry also used in the previous DropWizard Config
-     @return MeterRegistry
+     * Instead of creating an instance of {@link io.micrometer.graphite.GraphiteMeterRegistry}
+     * We are creating an instance of super class {@link DropwizardMeterRegistry}
+     * so that we can insert the pre-configured MetricRegistry also used in the previous DropWizard Config
+     *
+     * @return MeterRegistry
      */
     @Bean
     public MeterRegistry graphite(MetricRegistry metricRegistry, Clock clock) {
@@ -46,8 +87,7 @@ public class MicrometerMetricsConfiguration {
 
             /**
              accept the rest of the defaults by @return null.
-             Configuration for host, port and reportingPeriod are injected via
-             {@link com.opentable.metrics.graphite.GraphiteConfiguration}
+             Configuration for host, port and reportingPeriod are injected via GraphiteConfiguration
              */
             @Override
             @Nullable
@@ -56,8 +96,8 @@ public class MicrometerMetricsConfiguration {
             }
 
             /**
-            Disable tags makes concise metric names:
-            eg process.cpu.usage -> processCpuUsage
+             Disable tags makes concise metric names:
+             eg process.cpu.usage -> processCpuUsage
              */
             @Override
             public boolean graphiteTagsEnabled() {
@@ -66,15 +106,15 @@ public class MicrometerMetricsConfiguration {
 
         };
 
-        return new DropwizardMeterRegistry(
+        final DropwizardMeterRegistry res = new DropwizardMeterRegistry(
                 graphiteConfig,
                 metricRegistry,
                 new CustomNameMapper(MicrometerMetricsPrefix),
                 clock
         ) {
             /**
-            If Gauge.value() returns null, @return null
-            This is also the default behavior in {@link io.micrometer.graphite.GraphiteMeterRegistry} class
+             * If Gauge.value() returns null, @return null
+             * This is also the default behavior in {@link GraphiteMeterRegistry} class
              */
             @Override
             @Nullable
@@ -82,6 +122,8 @@ public class MicrometerMetricsConfiguration {
                 return null;
             }
         };
+        res.config().namingConvention(graphiteNamingConvention());
+        return res;
     }
 
     @Bean
