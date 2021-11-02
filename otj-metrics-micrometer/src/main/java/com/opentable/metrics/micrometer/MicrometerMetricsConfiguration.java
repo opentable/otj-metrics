@@ -31,8 +31,10 @@ import io.micrometer.graphite.GraphiteMeterRegistry;
 @ImportAutoConfiguration({
         SystemMetricsAutoConfiguration.class,
         JvmMetricsAutoConfiguration.class,
+        WebMvcMetricsCustomNameConfiguration.class,
         WebMvcMetricsAutoConfiguration.class,
         JettyMetricsAutoConfiguration.class,
+        TimedMetricsCustomNameConfiguration.class,
         MetricsAutoConfiguration.class
 })
 public class MicrometerMetricsConfiguration {
