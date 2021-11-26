@@ -9,7 +9,7 @@ import io.micrometer.core.instrument.config.MeterFilter;
 public class WebMvcMetricsCustomNameConfiguration {
 
     private static final String metricPrefix = "http.server.requests";
-    private static final String[] tagsToIgnore = {"exception", "outcome"};
+    private static final String[] tagsToIgnore = {"outcome"};
 
     @Bean
     public MeterFilter ignoreTagsInJvmMetrics() {
