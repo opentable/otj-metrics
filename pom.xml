@@ -43,6 +43,7 @@
         <module>otj-metrics-reactive</module>
 <!--        <module>otj-metrics</module>-->
         <module>otj-metrics-actuator</module>
+        <module>otj-metrics-micrometer</module>
     </modules>
 
     <properties>
@@ -90,6 +91,11 @@
             <dependency>
                 <groupId>com.opentable.components</groupId>
                 <artifactId>otj-metrics-actuator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.opentable.components</groupId>
+                <artifactId>otj-metrics-micrometer</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

@@ -79,6 +79,11 @@
 
 
 
+        <dependency>
+            <groupId>com.opentable.components</groupId>
+            <artifactId>otj-metrics-micrometer</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
