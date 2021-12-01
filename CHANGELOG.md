@@ -1,5 +1,10 @@
 otj-metrics
 ===========
+5.2.6
+-----
+* Add support for micrometer library
+* Add switch to allow MVCServer to enable emitting a subset of Micrometer metrics
+
 5.2.5
 -----
 * Remove JAXRS Phase I (comment out modules)
