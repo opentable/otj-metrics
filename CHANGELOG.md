@@ -1,5 +1,9 @@
 otj-metrics
 ===========
+5.2.7
+-----
+* Fix custom naming bugs in Micrometer library
+
 5.2.6
 -----
 * Add support for micrometer library
