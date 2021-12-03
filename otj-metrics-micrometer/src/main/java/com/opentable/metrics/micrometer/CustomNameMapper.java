@@ -16,6 +16,7 @@ package com.opentable.metrics.micrometer;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.util.HierarchicalNameMapper;
+import io.micrometer.core.instrument.Tag;
 
 public class CustomNameMapper implements HierarchicalNameMapper {
 
@@ -28,6 +29,15 @@ public class CustomNameMapper implements HierarchicalNameMapper {
     @Override
     public String toHierarchicalName(Meter.Id id, NamingConvention convention) {
 
-        return prefix + "." + id.getConventionName(convention);
+        StringBuilder hierarchicalName = new StringBuilder();
+
+        hierarchicalName.append(prefix);
+        hierarchicalName.append(".");
+        hierarchicalName.append(id.getConventionName(convention));
+        for (Tag tag : id.getTagsAsIterable()) {
+            hierarchicalName.append('.')
+                    .append(convention.tagValue(tag.getValue()));
+        }
+        return hierarchicalName.toString();
     }
 }
