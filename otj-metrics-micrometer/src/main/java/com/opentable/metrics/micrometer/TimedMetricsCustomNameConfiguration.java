@@ -12,7 +12,7 @@ public class TimedMetricsCustomNameConfiguration {
     private static final String[] tagsToIgnore = {"exception"};
 
     @Bean
-    public MeterFilter ignoreTagsInJvmMetrics() {
+    public MeterFilter ignoreTagsInTimedMetrics() {
         return MeterFilterUtils.ignoreTags(metricPrefix, tagsToIgnore);
     }
 }
