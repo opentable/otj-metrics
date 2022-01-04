@@ -26,6 +26,7 @@ import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 
 import com.opentable.metrics.graphite.MetricSets;
+import com.opentable.metrics.jvm.CpuLoadByCoreGauge;
 import com.opentable.metrics.jvm.CpuLoadGauge;
 import com.opentable.metrics.jvm.FileDescriptorMetricSet;
 import com.opentable.metrics.jvm.GcMemoryMetrics;
@@ -79,7 +80,7 @@ public class JvmMetricsConfiguration {
         metrics.registerAll(namespace("class", new ClassLoadingGaugeSet()));
         metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
         metrics.register(BASE + ".cpu.load", new CpuLoadGauge());
-
+        metrics.register(BASE + "cpu.loadbycore", new CpuLoadByCoreGauge());
         nmtMetrics.register();
     }
 }
