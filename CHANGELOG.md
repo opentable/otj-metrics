@@ -1,5 +1,10 @@
 otj-metrics
 ===========
+
+5.2.8
+-----
+* Add `cpu.loadbycore` metric
+
 5.2.7
 -----
 * Fix custom naming bugs in Micrometer library
