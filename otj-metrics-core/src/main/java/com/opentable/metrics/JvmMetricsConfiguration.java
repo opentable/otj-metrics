@@ -80,7 +80,7 @@ public class JvmMetricsConfiguration {
         metrics.registerAll(namespace("class", new ClassLoadingGaugeSet()));
         metrics.registerAll(namespace("thread", new ThreadStatesGaugeSet()));
         metrics.register(BASE + ".cpu.load", new CpuLoadGauge());
-        metrics.register(BASE + "cpu.loadbycore", new CpuLoadByCoreGauge());
+        metrics.register(BASE + ".cpu.loadbycore", new CpuLoadByCoreGauge());
         nmtMetrics.register();
     }
 }

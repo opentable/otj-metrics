@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+5.2.9
+-----
+* fix namespacing issue with `.cpu.loadbycore` metric
+
 5.2.8
 -----
 * Add `cpu.loadbycore` metric
