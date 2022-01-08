@@ -26,13 +26,13 @@
         <connection>scm:git:git://github.com/opentable/otj-metrics.git</connection>
         <developerConnection>scm:git:git@github.com:opentable/otj-metrics.git</developerConnection>
         <url>http://github.com/opentable/otj-metrics</url>
-        <tag>HEAD</tag>
+        <tag>otj-metrics-parent-5.2.9</tag>
     </scm>
 
     <groupId>com.opentable.components</groupId>
     <artifactId>otj-metrics-parent</artifactId>
     <name>OpenTable Metrics - Parent</name>
-    <version>5.2.9-SNAPSHOT</version>
+    <version>5.2.9</version>
     <packaging>pom</packaging>
     <description>OpenTable Metrics - Parent</description>
 
