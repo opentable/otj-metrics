@@ -32,7 +32,7 @@ public class CustomNameMapper implements HierarchicalNameMapper {
         StringBuilder hierarchicalName = new StringBuilder();
 
         hierarchicalName.append(prefix);
-        hierarchicalName.append(".");
+        hierarchicalName.append('.');
         hierarchicalName.append(id.getConventionName(convention));
         for (Tag tag : id.getTagsAsIterable()) {
             hierarchicalName.append('.')
