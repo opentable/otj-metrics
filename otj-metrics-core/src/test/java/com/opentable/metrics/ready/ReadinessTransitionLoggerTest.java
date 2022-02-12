@@ -2,7 +2,9 @@ package com.opentable.metrics.ready;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -10,17 +12,17 @@ import org.junit.Test;
 
 public class ReadinessTransitionLoggerTest {
     private ReadinessTransitionLogger readinessTransitionLogger;
-    private AtomicInteger counter = new AtomicInteger();
+    private final AtomicInteger counter = new AtomicInteger();
     @Before
     public void before() {
-
         readinessTransitionLogger = new ReadinessTransitionLogger() {
             @Override
             void transition(boolean newState) {
-               counter.incrementAndGet();
+                counter.incrementAndGet();
                super.transition(newState);
             }
         };
+        counter.set(0);
     }
 
     private void genericTest(boolean oldState, boolean newState) {
@@ -56,14 +58,23 @@ public class ReadinessTransitionLoggerTest {
 
     @Test
     public void assertStateMachine() {
-        readyToUnready();
-        readyToReady();
-        readyToReady();
-        readyToUnready();
-        unreadyToUnready();
+        final AtomicInteger independentCounter = new AtomicInteger(counter.get());
+        final int upper = ThreadLocalRandom.current().nextInt(10, 50);
+        // Randomlu flip stuff for a random number of times, and show consistent number of transitions.
+        IntStream.range(0, upper)
+                .forEachOrdered(t -> {
+                    boolean oldState = readinessTransitionLogger.getState();
+                    boolean newState = ThreadLocalRandom.current().nextBoolean();
+                    readinessTransitionLogger.onReadinessProbeEvent(getEvent(newState));
+                    if (oldState != newState) {
+                        independentCounter.incrementAndGet();
+                    }
+                });
+        assertEquals(independentCounter.get(), counter.get());
+
     }
     private ReadinessProbeEvent getEvent(boolean b) {
-        return new ReadinessProbeEvent(new Object(), b);
+        return new ReadinessProbeEvent(this, b);
     }
 
 }
