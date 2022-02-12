@@ -2,8 +2,9 @@ package com.opentable.metrics.ready;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 
 import com.opentable.bucket.BucketLog;
@@ -27,5 +28,15 @@ public class ReadinessTransitionLogger {
                 LOG.debug("Transition to UNREADY state");
             }
         }
+    }
+
+    @VisibleForTesting
+    boolean getState() {
+        return state.get();
+    }
+
+    @VisibleForTesting
+    void setState(boolean override) {
+        state.set(override);
     }
 }
