@@ -20,14 +20,23 @@ public class ReadinessTransitionLogger {
     public void onReadinessProbeEvent(ReadinessProbeEvent event)  {
         final boolean newState = event.isReady();
         // unready => ready
-        if (state.compareAndSet(false, newState)) {
-            LOG.debug("Transition to READY state");
-        } else {
-            // ready ==> unready
-            if (state.compareAndSet(true, event.isReady())) {
-                LOG.debug("Transition to UNREADY state");
+        if (newState) {
+            if (state.compareAndSet(false, true)) {
+                transition(newState);
             }
         }
+        if (!newState) {
+            // ready ==> unready
+            if (state.compareAndSet(true, false)) {
+                transition(newState);
+            }
+        }
+
+    }
+
+    @VisibleForTesting
+    void transition(boolean newState) {
+        LOG.debug("Transition to {} State", newState ? "READY" : "UNREADY");
     }
 
     @VisibleForTesting

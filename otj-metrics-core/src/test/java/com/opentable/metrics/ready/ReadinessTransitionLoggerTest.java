@@ -1,44 +1,57 @@
 package com.opentable.metrics.ready;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class ReadinessTransitionLoggerTest {
-    ReadinessTransitionLogger readinessTransitionLogger;
 
+public class ReadinessTransitionLoggerTest {
+    private ReadinessTransitionLogger readinessTransitionLogger;
+    private AtomicInteger counter = new AtomicInteger();
     @Before
     public void before() {
-        readinessTransitionLogger = new ReadinessTransitionLogger();
+
+        readinessTransitionLogger = new ReadinessTransitionLogger() {
+            @Override
+            void transition(boolean newState) {
+               counter.incrementAndGet();
+               super.transition(newState);
+            }
+        };
     }
 
+    private void genericTest(boolean oldState, boolean newState) {
+        readinessTransitionLogger.setState(oldState);
+        final int previousCounter = counter.get();
+        readinessTransitionLogger.onReadinessProbeEvent(getEvent(newState));
+        assertEquals(newState, readinessTransitionLogger.getState());
+        if (oldState != newState) {
+            assertEquals(previousCounter + 1, counter.get()); // transitioned
+        } else {
+            assertEquals(previousCounter, counter.get());
+        }
+    }
     @Test
     public void unreadyToReady() {
-        readinessTransitionLogger.setState(false);
-        readinessTransitionLogger.onReadinessProbeEvent(getEvent(true));
-        assertTrue(readinessTransitionLogger.getState());
+        genericTest(false, true);
     }
 
     @Test
     public void readyToUnready() {
-        readinessTransitionLogger.setState(true);
-        readinessTransitionLogger.onReadinessProbeEvent(getEvent(false));
-        assertFalse(readinessTransitionLogger.getState());
+        genericTest(true, false);
     }
 
     @Test
     public void readyToReady() {
-        readinessTransitionLogger.setState(true);
-        readinessTransitionLogger.onReadinessProbeEvent(getEvent(true));
-        assertTrue(readinessTransitionLogger.getState());
+        genericTest(true, true);
     }
 
     @Test
     public void unreadyToUnready() {
-        readinessTransitionLogger.setState(false);
-        readinessTransitionLogger.onReadinessProbeEvent(getEvent(false));
-        assertFalse(readinessTransitionLogger.getState());
+        genericTest(false, false);
     }
 
     @Test
