@@ -24,8 +24,7 @@ public class ReadinessTransitionLogger {
             if (state.compareAndSet(false, true)) {
                 transition(newState);
             }
-        }
-        if (!newState) {
+        } else {
             // ready ==> unready
             if (state.compareAndSet(true, false)) {
                 transition(newState);
