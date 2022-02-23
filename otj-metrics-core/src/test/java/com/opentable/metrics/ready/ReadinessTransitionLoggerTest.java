@@ -1,7 +1,10 @@
 package com.opentable.metrics.ready;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -17,7 +20,7 @@ public class ReadinessTransitionLoggerTest {
     public void before() {
         readinessTransitionLogger = new ReadinessTransitionLogger() {
             @Override
-            void transition(boolean newState) {
+            public void transition(boolean newState) {
                 counter.incrementAndGet();
                super.transition(newState);
             }
@@ -60,7 +63,7 @@ public class ReadinessTransitionLoggerTest {
     public void assertStateMachine() {
         final AtomicInteger independentCounter = new AtomicInteger(counter.get());
         final int upper = ThreadLocalRandom.current().nextInt(10, 50);
-        // Randomlu flip stuff for a random number of times, and show consistent number of transitions.
+        // Randomly flip stuff for a random number of times, and show consistent number of transitions.
         IntStream.range(0, upper)
                 .forEachOrdered(t -> {
                     boolean oldState = readinessTransitionLogger.getState();
@@ -72,6 +75,25 @@ public class ReadinessTransitionLoggerTest {
                 });
         assertEquals(independentCounter.get(), counter.get());
 
+        List<ReadinessTransitionLogger.Transition> transitionList = readinessTransitionLogger.getTransitions();
+        // Given this test is single threaded (if multithreaded things could get interleaved),
+        // we expect the parity to sum to 0
+        Boolean previousNewState = null;
+        Long previousInstance = null;
+        for (ReadinessTransitionLogger.Transition t : transitionList) {
+           // old state should equal previous steps new state, newState should= !oldState
+            assertTrue(t.isNewState() != t.isOldState());
+            if (previousNewState != null) {
+                assertEquals(t.isOldState(), previousNewState);
+            }
+            // monotonically increases.
+            if (previousInstance != null) {
+                assertTrue(t.getInstant().toEpochMilli() >= previousInstance);
+            }
+            previousNewState = t.isNewState();
+            previousInstance = t.getInstant().toEpochMilli();
+
+        }
     }
     private ReadinessProbeEvent getEvent(boolean b) {
         return new ReadinessProbeEvent(this, b);
