@@ -85,7 +85,10 @@ public class HealthConfiguration {
         }
 
         @PostConstruct
-        @SuppressWarnings({"PMD.EmptyCatchBlock", "PMD.UnusedPrivateMethod"})
+        @SuppressWarnings({
+                "PMD.EmptyCatchBlock",
+                "PMD.UnusedPrivateMethod"
+        })
         private void postConstruct() {
             // Hack since Dropwizard 4.1x craps out on this
             // Unfortunately the reason it occurs is simply unavoidably check then act
@@ -101,7 +104,10 @@ public class HealthConfiguration {
         }
 
         @PreDestroy
-        @SuppressWarnings({"PMD.UnusedPrivateMethod"})
+        @SuppressWarnings({
+                "PMD.EmptyCatchBlock",
+                "PMD.UnusedPrivateMethod"
+        })
         private void preDestroy() {
             checks.keySet().forEach(registry::unregister);
         }
