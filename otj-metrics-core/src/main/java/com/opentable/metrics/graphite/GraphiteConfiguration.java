@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 import com.opentable.service.AppInfo;
@@ -50,6 +51,7 @@ import com.opentable.spring.ConversionServiceConfiguration;
         ConversionServiceConfiguration.class,
         K8sInfo.class
 })
+@PropertySource("classpath:/com/opentable/metrics/micrometer.properties")
 /**
  * Spring-ey wrapper for Dropwizard Metrics Graphite reporter.
  *
