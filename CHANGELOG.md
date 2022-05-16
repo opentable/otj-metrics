@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+5.2.14
+-----
+* Fix for "Unable to report to Graphite" messages in logs.
+
 5.2.13
 -----
 * Parent POM-328 [changes see here]( https://github.com/opentable/otj-parent/blob/master/CHANGELOG.md#328)
