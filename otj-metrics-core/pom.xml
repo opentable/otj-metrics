@@ -207,4 +207,21 @@
         </dependency>
 
     </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>com.mycila</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>${dep.plugin.license.version}</version>
+                    <configuration combine.children="append">
+                        <excludes>
+                            <exclude>**/micrometer.properties</exclude>
+                        </excludes>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
