@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.codahale.metrics.Clock;
@@ -56,6 +57,7 @@ import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteSender;
+import com.mogwee.executors.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +102,9 @@ public class OtGraphiteReporter extends ScheduledReporter {
     public static Builder forRegistry(MetricRegistry registry) {
         return new Builder(registry);
     }
+
+    private final ScheduledExecutorService executor;
+    private ScheduledFuture<?> scheduledFuture;
 
     /**
      * A builder for {@link OtGraphiteReporter} instances. Defaults to not using a prefix, using the
@@ -250,7 +255,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
                     rateUnit,
                     durationUnit,
                     filter,
-                    executor,
+                    executor == null ? Executors.newSingleThreadScheduledExecutor("ot-graphite-reporter") : executor,
                     shutdownExecutorOnStop,
                     disabledMetricAttributes);
         }
@@ -290,6 +295,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
         // CHANGE: The name was graphite-reporter
         super(registry, "opentable-graphite-reporter", filter, rateUnit, durationUnit, executor, shutdownExecutorOnStop,
                 disabledMetricAttributes);
+        this.executor = executor;
         this.graphite = graphite;
         this.clock = clock;
         this.prefix = prefix;
@@ -329,12 +335,12 @@ public class OtGraphiteReporter extends ScheduledReporter {
             }
             graphite.flush();
         } catch (IOException e) {
-            LOGGER.warn("Unable to report to Graphite", graphite, e);
+            LOGGER.warn("Unable to report to Graphite {}", graphite, e);
         } finally {
             try {
                 graphite.close();
             } catch (IOException e1) {
-                LOGGER.warn("Error closing Graphite", graphite, e1);
+                LOGGER.warn("Error closing Graphite {}", graphite, e1);
             }
         }
     }
@@ -343,11 +349,14 @@ public class OtGraphiteReporter extends ScheduledReporter {
     public void stop() {
         try {
             super.stop();
+            if (!isShutdownExecutorOnStop()) {
+                cancelScheduledFuture();
+            }
         } finally {
             try {
                 graphite.close();
             } catch (IOException e) {
-                LOGGER.debug("Error disconnecting from Graphite", graphite, e);
+                LOGGER.debug("Error disconnecting from Graphite {}", graphite, e);
             }
         }
     }
@@ -489,7 +498,37 @@ public class OtGraphiteReporter extends ScheduledReporter {
     @Override
     public void start(long period, TimeUnit unit) {
         this.countFactor = 1.0 / (double)unit.toMillis(period) * 1000.0;
-        super.start(period, unit);
+        start(period, period, unit);
+    }
+
+    synchronized void start(long initialDelay, long period, TimeUnit unit, Runnable runnable) {
+        if (this.scheduledFuture != null) {
+            throw new IllegalArgumentException("Reporter already started");
+        }
+        this.scheduledFuture = executor.scheduleAtFixedRate(runnable, initialDelay, period, unit);
+    }
+
+    public synchronized void start(long initialDelay, long period, TimeUnit unit) {
+        start(initialDelay, period, unit, () -> {
+            try {
+                report();
+            } catch (Exception ex) {
+                LOGGER.error("Exception thrown from {}#report. Exception was suppressed.", this.getClass().getSimpleName(), ex);
+            }
+        });
+    }
+
+    private synchronized void cancelScheduledFuture() {
+        if (this.scheduledFuture == null) {
+            // was never started
+            return;
+        }
+        if (this.scheduledFuture.isCancelled()) {
+            // already cancelled
+            return;
+        }
+        // just cancel the scheduledFuture and exit
+        this.scheduledFuture.cancel(false);
     }
 
 }
