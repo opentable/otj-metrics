@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+5.3.0
+-----
+* Bucket 4j updated, hence incompatible with older versions
+
 5.2.14
 -----
 * Fix for "Unable to report to Graphite" messages in logs.
