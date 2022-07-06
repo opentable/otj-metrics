@@ -22,8 +22,6 @@ import javax.inject.Inject;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -155,17 +153,9 @@ public class GraphiteReporterPrefixTest {
         app.addInitializers(myContextInitializer);
         app.setWebApplicationType(WebApplicationType.NONE);
         ConfigurableApplicationContext c = app.run();
-        System.err.println("sources" + c.getEnvironment().getPropertySources());
-        System.err.println(c.getEnvironment().getProperty("OT_ENV", "unset"));
         c.getAutowireCapableBeanFactory().autowireBean(this);
         if (reporter == null) {
             return null;
-        }
-        try {
-            System.err.println(new ObjectMapper().writeValueAsString(appInfo));
-            System.err.println(new ObjectMapper().writeValueAsString(envInfo));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
         }
         try {
             Field f = reporter.getClass().getDeclaredField("prefix");
@@ -209,10 +199,7 @@ public class GraphiteReporterPrefixTest {
 
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             ConfigurableEnvironment environment = configurableApplicationContext.getEnvironment();
-            System.err.println("Initializing context....");
-            System.err.println(mapPropertySource.getSource());
             environment.getPropertySources().addFirst(mapPropertySource);
-          //  environment.getPropertySources().addLast(mapPropertySource);
         }
 
     }
