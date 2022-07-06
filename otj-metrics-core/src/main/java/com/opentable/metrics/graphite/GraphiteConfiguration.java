@@ -134,6 +134,7 @@ public class GraphiteConfiguration {
         final String prefix = getPrefix(graphitePrefix, serviceInfo, appInfo, k8sInfo,
                 showFlavorInPrefix, ClusterNameType.fromParameterName(clusterNameType));
         if (prefix == null) {
+            LOG.info("Debugging {}", appInfo);
             LOG.warn("insufficient information to construct metric prefix; skipping reporter initialization");
             return null;
         }

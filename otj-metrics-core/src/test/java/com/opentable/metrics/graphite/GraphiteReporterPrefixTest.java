@@ -22,6 +22,8 @@ import javax.inject.Inject;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,11 +35,22 @@ import org.springframework.context.annotation.Import;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
+import com.opentable.service.K8sInfo;
 import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
     @Inject
     private ScheduledReporter reporter;
+
+    @Inject
+    private AppInfo appInfo;
+
+    @Inject
+    private EnvInfo envInfo;
+
+    @Inject
+    private K8sInfo k8sInfo;
+
 
     @Test
     public void withFlavorEnabled() {
@@ -127,11 +140,18 @@ public class GraphiteReporterPrefixTest {
         if (instanceNo != null) {
             mockEnv.put("INSTANCE_NO", instanceNo);
         }
+
         app.setDefaultProperties(mockEnv);
         app.setWebApplicationType(WebApplicationType.NONE);
         app.run().getAutowireCapableBeanFactory().autowireBean(this);
         if (reporter == null) {
             return null;
+        }
+        try {
+            System.err.println(new ObjectMapper().writeValueAsString(appInfo));
+            System.err.println(new ObjectMapper().writeValueAsString(envInfo));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
         try {
             Field f = reporter.getClass().getDeclaredField("prefix");
