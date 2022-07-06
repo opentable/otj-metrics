@@ -37,21 +37,11 @@ import org.springframework.core.env.MapPropertySource;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
-import com.opentable.service.K8sInfo;
 import com.opentable.service.ServiceInfo;
 
 public class GraphiteReporterPrefixTest {
     @Inject
     private ScheduledReporter reporter;
-
-    @Inject
-    private AppInfo appInfo;
-
-    @Inject
-    private EnvInfo envInfo;
-
-    @Inject
-    private K8sInfo k8sInfo;
 
 
     @Test
@@ -147,9 +137,11 @@ public class GraphiteReporterPrefixTest {
             mockEnv.put("INSTANCE_NO", instanceNo);
         }
 
+        // This doesn't do the trick completely in K8s, since ENV VARS get a higher priority.
+        // We address this with a context initializer
         app.setDefaultProperties(mockEnv);
-        MyContextInitializer myContextInitializer = new MyContextInitializer();
-        myContextInitializer.setMapPropertySource(new MapPropertySource("map-source", mockEnv));
+        MyContextInitializer myContextInitializer = new MyContextInitializer(
+                new MapPropertySource("map-source", mockEnv));
         app.addInitializers(myContextInitializer);
         app.setWebApplicationType(WebApplicationType.NONE);
         ConfigurableApplicationContext c = app.run();
@@ -188,14 +180,13 @@ public class GraphiteReporterPrefixTest {
 
     }
 
-    public class MyContextInitializer implements
+    public static class MyContextInitializer implements
             ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-        private MapPropertySource mapPropertySource;
-
-        public void setMapPropertySource(MapPropertySource mapPropertySource) {
+        public MyContextInitializer(MapPropertySource mapPropertySource) {
             this.mapPropertySource = mapPropertySource;
         }
+        private final  MapPropertySource mapPropertySource;
 
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             ConfigurableEnvironment environment = configurableApplicationContext.getEnvironment();
