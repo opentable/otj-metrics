@@ -29,9 +29,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.MapPropertySource;
 
 import com.opentable.service.AppInfo;
 import com.opentable.service.EnvInfo;
@@ -142,6 +146,9 @@ public class GraphiteReporterPrefixTest {
         }
 
         app.setDefaultProperties(mockEnv);
+        MyContextInitializer myContextInitializer = new MyContextInitializer();
+        myContextInitializer.setMapPropertySource(new MapPropertySource("map-source", mockEnv));
+        app.addInitializers(myContextInitializer);
         app.setWebApplicationType(WebApplicationType.NONE);
         app.run().getAutowireCapableBeanFactory().autowireBean(this);
         if (reporter == null) {
@@ -181,5 +188,23 @@ public class GraphiteReporterPrefixTest {
         public MetricRegistry getMetrics() {
             return new MetricRegistry();
         }
+
+    }
+
+    public class MyContextInitializer implements
+            ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+        private MapPropertySource mapPropertySource;
+
+        public void setMapPropertySource(MapPropertySource mapPropertySource) {
+            this.mapPropertySource = mapPropertySource;
+        }
+
+        public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
+            ConfigurableEnvironment environment = configurableApplicationContext.getEnvironment();
+            System.err.println("Initializing context..,,");
+            environment.getPropertySources().addFirst(mapPropertySource);
+        }
+
     }
 }
