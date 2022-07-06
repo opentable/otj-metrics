@@ -60,6 +60,7 @@ public class GraphiteReporterPrefixTest {
     public void withFlavorEnabled() {
         final String prefix = prefixFrom("type-location.flavor", "0", true);
         Assert.assertNotNull(prefix);
+        System.err.println("Actual prefix : " + prefix);
         Assert.assertEquals("app_metrics.test-server-flavor.type.location.instance-0", prefix);
     }
 
