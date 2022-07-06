@@ -58,7 +58,8 @@ public class GraphiteReporterPrefixTest {
 
     @Test
     public void withFlavorEnabled() {
-        final String prefix = prefixFrom("type-location.flavor", "0", true);
+        final String prefix = prefixFrom("type-location.flavor",
+                "0", true);
         Assert.assertNotNull(prefix);
         System.err.println("Actual prefix : " + prefix);
         Assert.assertEquals("app_metrics.test-server-flavor.type.location.instance-0", prefix);
@@ -125,6 +126,8 @@ public class GraphiteReporterPrefixTest {
         if (kubernetesCluster != null) {
             mockEnv.put("IS_KUBERNETES", "true");
             mockEnv.put("K8S_CLUSTER_NAME", kubernetesCluster);
+        } else {
+            mockEnv.put("IS_KUBERNETES", "false");
         }
         if (prefix != null) {
             mockEnv.put("ot.graphite.prefix", prefix);
