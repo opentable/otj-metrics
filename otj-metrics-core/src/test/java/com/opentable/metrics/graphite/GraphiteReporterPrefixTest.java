@@ -150,7 +150,10 @@ public class GraphiteReporterPrefixTest {
         myContextInitializer.setMapPropertySource(new MapPropertySource("map-source", mockEnv));
         app.addInitializers(myContextInitializer);
         app.setWebApplicationType(WebApplicationType.NONE);
-        app.run().getAutowireCapableBeanFactory().autowireBean(this);
+        ConfigurableApplicationContext c = app.run();
+        System.err.println("sources" + c.getEnvironment().getPropertySources());
+        System.err.println(c.getEnvironment().getProperty("OT_ENV", "unset"));
+        c.getAutowireCapableBeanFactory().autowireBean(this);
         if (reporter == null) {
             return null;
         }
@@ -202,8 +205,10 @@ public class GraphiteReporterPrefixTest {
 
         public void initialize(ConfigurableApplicationContext configurableApplicationContext) {
             ConfigurableEnvironment environment = configurableApplicationContext.getEnvironment();
-            System.err.println("Initializing context..,,");
+            System.err.println("Initializing context....");
+            System.err.println(mapPropertySource.getSource());
             environment.getPropertySources().addFirst(mapPropertySource);
+          //  environment.getPropertySources().addLast(mapPropertySource);
         }
 
     }
