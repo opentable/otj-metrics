@@ -184,7 +184,7 @@ public class GraphiteConfiguration {
         final String applicationName = serviceInfo.getName();
         final EnvInfo env = appInfo.getEnvInfo();
         final Integer i = appInfo.getInstanceNumber();
-        if (env.getType() == null || env.getLocation() == null || i == null) {
+        if (env == null || env.getType() == null || env.getLocation() == null || i == null) {
             return null;
         }
         final String name = env.getFlavor() == null || (!includeFlavorInPrefix) ? applicationName : applicationName + "-" + env.getFlavor();

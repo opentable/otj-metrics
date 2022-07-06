@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+Future
+------
+* added env==null check
+
 5.3.0
 -----
 * Bucket 4j updated, hence incompatible with older versions
