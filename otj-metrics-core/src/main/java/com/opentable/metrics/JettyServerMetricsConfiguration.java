@@ -37,6 +37,7 @@ import com.opentable.conservedheaders.ConservedHeader;
  * and the other for a metrics-instrumented handler customizer.  These are both picked up by {@code EmbeddedJetty}
  * in {@code otj-server}.
  */
+@SuppressWarnings("ALL")
 @Configuration
 public class JettyServerMetricsConfiguration {
     private static final String PREFIX = "http-server";
@@ -108,7 +109,7 @@ public class JettyServerMetricsConfiguration {
             try {
                 job.run();
             } finally {
-                MDC.remove(ConservedHeader.REQUEST_ID.getLogName());
+                MDC.remove(ConservedHeader.REQUEST_ID.getMDCKey());
             }
         }
     }

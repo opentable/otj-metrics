@@ -1,9 +1,10 @@
 otj-metrics
 ===========
 
-Future
+5.3.1
 ------
 * added env==null check
+* OTPL-6894 work, adjusting and auditing
 
 5.3.0
 -----
