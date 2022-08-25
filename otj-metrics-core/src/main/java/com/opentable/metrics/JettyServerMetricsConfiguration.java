@@ -19,7 +19,6 @@ import java.util.function.Function;
 import javax.inject.Provider;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jetty9.InstrumentedQueuedThreadPool;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
@@ -29,6 +28,8 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import io.dropwizard.metrics.jetty10.InstrumentedQueuedThreadPool;
 
 import com.opentable.conservedheaders.ConservedHeader;
 

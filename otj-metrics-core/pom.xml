@@ -111,7 +111,7 @@
 
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
-            <artifactId>metrics-jetty9</artifactId>
+            <artifactId>metrics-jetty10</artifactId>
         </dependency>
 
         <dependency>

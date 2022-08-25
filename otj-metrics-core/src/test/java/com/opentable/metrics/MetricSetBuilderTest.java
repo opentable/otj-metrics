@@ -16,6 +16,7 @@ package com.opentable.metrics;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.management.ManagementFactory;
+import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 
@@ -154,7 +155,8 @@ public class MetricSetBuilderTest {
             registry = ctx.getBean(MetricRegistry.class);
             assertThat(registry.getMetrics())
                 .doesNotContainKeys(EXPECTED);
-            ctx.getBean(ApplicationEventMulticaster.class).multicastEvent(new ApplicationReadyEvent(new SpringApplication(), new String[0], ctx));
+            ctx.getBean(ApplicationEventMulticaster.class).multicastEvent(
+                    new ApplicationReadyEvent(new SpringApplication(), new String[0], ctx, Duration.ofSeconds(10)));
             assertThat(registry.getMetrics())
                 .containsKeys(EXPECTED);
             ctx.close();
