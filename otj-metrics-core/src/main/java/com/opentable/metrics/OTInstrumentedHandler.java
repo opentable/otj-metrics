@@ -39,7 +39,7 @@ import org.eclipse.jetty.server.handler.HandlerWrapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
- * Copy of Dropwizard Metrics {@link com.codahale.metrics.jetty9.InstrumentedHandler} which correctly records
+ * Copy of Dropwizard Metrics {@link io.dropwizard.metrics.jetty10.InstrumentedHandler} which correctly records
  * metrics about synchronous, asynchronous-suspended, and asynchronous-non-suspended requests.
  *
  * In any place where logic in this class does not match the Dropwizard InstrumentedHandler the logic was changed
