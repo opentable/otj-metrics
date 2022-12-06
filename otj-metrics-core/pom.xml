@@ -25,6 +25,7 @@
     <description>Manages metrics  and healthchecks and sends them to Graphite and exposes them via endpoints</description>
 
     <dependencies>
+
         <dependency>
             <groupId>com.opentable.components</groupId>
             <artifactId>otj-core</artifactId>
@@ -148,17 +149,12 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.jetty.toolchain</groupId>
-                    <artifactId>jetty-servlet-api</artifactId>
-                </exclusion>
-<!--                <exclusion>    -->
-<!--                    <groupId>org.slf4j</groupId>-->
-<!--                    <artifactId>slf4j-api</artifactId>-->
-<!--                </exclusion>-->
-            </exclusions>
         </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.jetty.toolchain</groupId>-->
+<!--            <artifactId>jetty-servlet-api</artifactId>-->
+<!--        </dependency>-->
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -194,7 +190,9 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <scope>runtime</scope>
         </dependency>
+
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
