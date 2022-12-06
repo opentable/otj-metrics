@@ -113,12 +113,6 @@
         <dependency>
             <groupId>io.dropwizard.metrics</groupId>
             <artifactId>metrics-jetty10</artifactId>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.slf4j</groupId>-->
-<!--                    <artifactId>slf4j-api</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
         </dependency>
 
         <dependency>
@@ -150,11 +144,6 @@
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.jetty.toolchain</groupId>-->
-<!--            <artifactId>jetty-servlet-api</artifactId>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -190,7 +179,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -227,6 +215,8 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <!-- this ignores the javadoc linting, currently a bunch of erroneous errors are thrown
+                    TODO remove and fix root cause -->
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <configuration>
                         <additionalOptions>-Xdoclint:none</additionalOptions>
