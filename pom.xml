@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.opentable</groupId>
         <artifactId>otj-parent-spring</artifactId>
-        <version>361-SNAPSHOT</version>
+        <version>362</version>
     </parent>
 
     <scm>
@@ -32,7 +32,7 @@
     <groupId>com.opentable.components</groupId>
     <artifactId>otj-metrics-parent</artifactId>
     <name>OpenTable Metrics - Parent</name>
-    <version>5.3.2-SNAPSHOT</version>
+    <version>6.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>OpenTable Metrics - Parent</description>
 
@@ -65,31 +65,21 @@
         <basepom.oss.skip-scala-doc>true</basepom.oss.skip-scala-doc>
         <basepom.check.skip-javadoc>false</basepom.check.skip-javadoc>
         <basepom.check.fail-javadoc>false</basepom.check.fail-javadoc>
+        <!-- override jetty9 in parent 9 in old pom
+some are redundant but better safe than sorry TODO: REMOVE ON PARENT UPDATE -->
+        <dep.jetty.version>10.0.12.1</dep.jetty.version>
+        <dep.jetty-server.version>10.0.12</dep.jetty-server.version>
+        <dep.otj-scopes.version>6.0.0</dep.otj-scopes.version>
+        <dep.otj-httpheaders.version>6.0.0</dep.otj-httpheaders.version>
+        <dep.otj-http-common.version>6.0.0</dep.otj-http-common.version>
+        <dep.otj-spring.version>6.0.0</dep.otj-spring.version>
+        <dep.otj-jvm.version>6.0.0</dep.otj-jvm.version>
+        <!-- override end -->
+
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- this is here to exclude the jetty-servlet-api in favour of the javax.servlet-api, which in theory
-            should be the same, some jetty 11 will need to be jakarta, this overrides the managed dependencies in
-            io.dropwizard.metrics:metrics-parent , where metrics-jetty10 gets the versioning from.
-            dep.metrics4.version gets its value from otj-parent
-            -->
-            <dependency>
-                <groupId>io.dropwizard.metrics</groupId>
-                <artifactId>metrics-jetty10</artifactId>
-                <version>${dep.metrics4.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.eclipse.jetty.toolchain</groupId>
-                        <artifactId>jetty-servlet-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.slf4j</groupId>
-                        <artifactId>slf4j-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <dependency>
                 <groupId>com.ryantenney.metrics</groupId>
                 <artifactId>metrics-spring</artifactId>
@@ -100,13 +90,11 @@
                 <version>${dep.metrics-spring.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>com.opentable.components</groupId>
                 <artifactId>otj-metrics-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
 
 <!--            <dependency>-->
 <!--                <groupId>com.opentable.components</groupId>-->
@@ -133,6 +121,23 @@
                 <artifactId>otj-metrics-micrometer</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <!-- mitigation to remove jetty-servlet-api conflict TODO: REMOVE on parent pom update -->
+            <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-jetty10</artifactId>
+                <version>${dep.metrics4.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.eclipse.jetty.toolchain</groupId>
+                        <artifactId>jetty-servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <!--  end mitigation to remove jetty-servlet-api conflict TODO: REMOVE on parent pom update -->
         </dependencies>
     </dependencyManagement>
 
