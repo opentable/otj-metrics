@@ -32,7 +32,7 @@
     <groupId>com.opentable.components</groupId>
     <artifactId>otj-metrics-parent</artifactId>
     <name>OpenTable Metrics - Parent</name>
-    <version>6.0.0</version>
+    <version>6.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <description>OpenTable Metrics - Parent</description>
 
