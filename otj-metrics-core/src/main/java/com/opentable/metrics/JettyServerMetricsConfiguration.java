@@ -19,7 +19,7 @@ import java.util.function.Function;
 import javax.inject.Provider;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jetty9.InstrumentedQueuedThreadPool;
+import io.dropwizard.metrics.jetty10.InstrumentedQueuedThreadPool;
 
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;

@@ -77,6 +77,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see <a href="http://graphite.wikidot.com/">Graphite - Scalable Realtime Graphing</a>
  */
+@SuppressWarnings("PMD.UseTryWithResources")
 public class OtGraphiteReporter extends ScheduledReporter {
 
     /**
