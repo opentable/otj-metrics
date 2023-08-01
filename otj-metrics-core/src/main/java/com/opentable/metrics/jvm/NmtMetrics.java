@@ -28,6 +28,9 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.opentable.jvm.Memory;
 
 /**
@@ -36,6 +39,7 @@ import com.opentable.jvm.Memory;
  *
  */
 public class NmtMetrics {
+    private static final Logger LOG = LoggerFactory.getLogger(NmtMetrics.class);
     private static final Duration REFRESH_PERIOD = Duration.ofSeconds(10);
 
     private final String prefix;
@@ -45,6 +49,7 @@ public class NmtMetrics {
         1,
         new ThreadFactoryBuilder()
             .setNameFormat("nmt-fetcher-%d")
+            .setDaemon(true)
             .build()
     );
 
@@ -73,13 +78,17 @@ public class NmtMetrics {
     }
 
     private void poll() {
-        Optional.ofNullable(Memory.getNmt())
-            .map(i -> i.categories)
-            .orElse(Collections.emptyMap())
-            .forEach((key, value) -> {
-                final String fullMetricName = prefix + "." + key.toLowerCase(Locale.ROOT).replaceAll(" ", "-");
-                setGaugeValue(fullMetricName + ".reserved", value.reserved);
-                setGaugeValue(fullMetricName + ".committed", value.committed);
-            });
+        try {
+            Optional.ofNullable(Memory.getNmt())
+                .map(i -> i.categories)
+                .orElse(Collections.emptyMap())
+                .forEach((key, value) -> {
+                    final String fullMetricName = prefix + "." + key.toLowerCase(Locale.ROOT).replaceAll(" ", "-");
+                    setGaugeValue(fullMetricName + ".reserved", value.reserved);
+                    setGaugeValue(fullMetricName + ".committed", value.committed);
+                });
+        } catch (RuntimeException r) {
+            LOG.error("Error polling NMT metrics", r);
+        }
     }
 }
