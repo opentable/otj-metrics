@@ -1,5 +1,10 @@
 otj-metrics
 ===========
+
+6.0.1
+-----
+* Substantial rewrite to `NmtMetrics` to handle some breaking issues in Java 17.0.8
+
 6.0.0
 -----
 * Update Parent Pom to 362 [changes see here]( https://github.com/opentable/otj-parent/blob/master/CHANGELOG.md#362)
