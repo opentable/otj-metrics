@@ -27,7 +27,6 @@ import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.concurrent.GuardedBy;
 import javax.management.Notification;
 import javax.management.NotificationEmitter;
 import javax.management.openmbean.CompositeData;
@@ -51,10 +50,10 @@ import com.opentable.metrics.FloatingPointHistogram;
 @SuppressWarnings("restriction")
 public class GcMemoryMetrics {
     private final String prefix;
-    @GuardedBy("this")
+    //@GuardedBy("this")
     private final MetricRegistry metricRegistry;
     /** {@link GarbageCollectionNotificationInfo#getGcName()} &rarr; {@link GcInfo#endTime} of last GC */
-    @GuardedBy("this")
+    //@GuardedBy("this")
     private final Map<String, Duration> lastEndTimes = new HashMap<>();
 
     public GcMemoryMetrics(final String prefix, final MetricRegistry metricRegistry) {

@@ -19,8 +19,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 
-import javax.annotation.concurrent.GuardedBy;
-
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
@@ -57,9 +55,9 @@ public class GraphiteSenderWrapper implements GraphiteSender, Closeable, MetricS
     private final String host;
     private final int port;
 
-    @GuardedBy("this")
+   // @GuardedBy("this")
     private Graphite delegate; // either connect()ed or null
-    @GuardedBy("this")
+   // @GuardedBy("this")
     private Instant lastReconnect = Instant.now();
 
     GraphiteSenderWrapper(String host, int port, Graphite delegate) {

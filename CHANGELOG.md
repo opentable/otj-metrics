@@ -1,6 +1,10 @@
 otj-metrics
 ===========
 
+Future
+----
+* POM 391
+
 6.0.1
 -----
 * Substantial rewrite to `NmtMetrics` to handle some breaking issues in Java 17.0.8

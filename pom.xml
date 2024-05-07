@@ -19,7 +19,7 @@
     <parent>
         <groupId>com.opentable</groupId>
         <artifactId>otj-parent-spring</artifactId>
-        <version>362</version>
+        <version>391</version>
     </parent>
 
     <scm>
@@ -47,34 +47,11 @@
     </modules>
 
     <properties>
-        <dep.otj-conservedheaders.version>5.2.4</dep.otj-conservedheaders.version>
-        <dep.otj-logging.version>5.3.1</dep.otj-logging.version>
-        <!-- end remove -->
-
-<!--        <basepom.check.fail-dependency>false</basepom.check.fail-dependency>-->
-<!--        <basepom.check.skip-duplicate-finder>true</basepom.check.skip-duplicate-finder>-->
-<!--        <basepom.check.fail-dependency-management>false</basepom.check.fail-dependency-management>-->
-<!--        <basepom.check.fail-dependency-scope>false</basepom.check.fail-dependency-scope>-->
-<!--        <basepom.check.fail-dependency-versions-check>false</basepom.check.fail-dependency-versions-check>-->
-<!--        <dep.otj-logging.version>5.3.2-SNAPSHOT</dep.otj-logging.version>-->
-        <!-- This wasn't managed before but should have been -->
-        <!-- Last non forked release was 3.1.3, we now start at 3.9.9, the next release being 3.9.9.1, etc -->
-        <!-- As this is forked, please see the opentable/metrics-spring-1 repo for source -->
-<!--        <dep.javax.servlet-api.version>4.0.1</dep.javax.servlet-api.version>-->
         <dep.metrics-spring.version>3.9.9</dep.metrics-spring.version>
         <basepom.oss.skip-scala-doc>true</basepom.oss.skip-scala-doc>
         <basepom.check.skip-javadoc>false</basepom.check.skip-javadoc>
         <basepom.check.fail-javadoc>false</basepom.check.fail-javadoc>
-        <!-- override jetty9 in parent 9 in old pom
-some are redundant but better safe than sorry TODO: REMOVE ON PARENT UPDATE -->
-        <dep.jetty.version>10.0.12.1</dep.jetty.version>
-        <dep.jetty-server.version>10.0.12</dep.jetty-server.version>
-        <dep.otj-scopes.version>6.0.0</dep.otj-scopes.version>
-        <dep.otj-httpheaders.version>6.0.0</dep.otj-httpheaders.version>
-        <dep.otj-http-common.version>6.0.0</dep.otj-http-common.version>
-        <dep.otj-spring.version>6.0.0</dep.otj-spring.version>
-        <dep.otj-jvm.version>6.0.0</dep.otj-jvm.version>
-        <!-- override end -->
+
 
     </properties>
 

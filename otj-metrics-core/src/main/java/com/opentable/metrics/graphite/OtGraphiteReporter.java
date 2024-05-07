@@ -330,12 +330,12 @@ public class OtGraphiteReporter extends ScheduledReporter {
             }
             graphite.flush();
         } catch (IOException e) {
-            LOGGER.warn("Unable to report to Graphite", graphite, e);
+            LOGGER.warn("Unable to report to Graphite {}", graphite, e);
         } finally {
             try {
                 graphite.close();
             } catch (IOException e1) {
-                LOGGER.warn("Error closing Graphite", graphite, e1);
+                LOGGER.warn("Error closing Graphite {}", graphite, e1);
             }
         }
     }
@@ -348,7 +348,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
             try {
                 graphite.close();
             } catch (IOException e) {
-                LOGGER.debug("Error disconnecting from Graphite", graphite, e);
+                LOGGER.debug("Error disconnecting from Graphite {}", graphite, e);
             }
         }
     }
@@ -487,6 +487,7 @@ public class OtGraphiteReporter extends ScheduledReporter {
         return String.format(Locale.US, "%2.2f", v);
     }
 
+    @SuppressWarnings("PMD")
     @Override
     public void start(long period, TimeUnit unit) {
         this.countFactor = 1.0 / (double)unit.toMillis(period) * 1000.0;

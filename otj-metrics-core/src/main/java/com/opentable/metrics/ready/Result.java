@@ -163,7 +163,7 @@ public class Result {
 
     @Override
     public String toString() {
-        final StringBuilder builder = new StringBuilder("Result{isReady=");
+        final StringBuilder builder = new StringBuilder(128).append("Result{isReady=");
         builder.append(ready);
         if (message != null) {
             builder.append(", message=").append(message);
